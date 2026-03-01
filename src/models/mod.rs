@@ -33,7 +33,7 @@ pub use usuario::{Usuario};
 pub use loja::Loja;
 pub use pedido::{Pedido, EstadoDePedido, ItemPedido, AdicionalDeItemDePedido};
 pub use ingrediente::Ingrediente;
-pub use endereco::EnderecoLoja;
+pub use endereco::{EnderecoLoja, EnderecoEntrega, EnderecoUsuario};
 pub use entregador::Entregador;
 pub use funcionario::Funcionario;
 pub use produto::Produto;

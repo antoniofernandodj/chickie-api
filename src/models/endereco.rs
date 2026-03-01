@@ -102,7 +102,8 @@ impl EnderecoUsuario {
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct EnderecoEntrega {
     pub uuid: Uuid,
-    pub pedido_uuid: Option<Uuid>,
+    pub loja_uuid: Uuid,
+    pub pedido_uuid: Uuid,
     pub cep: Option<String>,
     pub logradouro: String,
     pub numero: String,
@@ -116,7 +117,8 @@ pub struct EnderecoEntrega {
 
 impl EnderecoEntrega {
     pub fn new(
-        pedido_uuid: Option<Uuid>,
+        pedido_uuid: Uuid,
+        loja_uuid: Uuid,
         cep: Option<String>,
         logradouro: String,
         numero: String,
@@ -128,6 +130,7 @@ impl EnderecoEntrega {
         Self {
             uuid: Uuid::new_v4(),
             pedido_uuid,
+            loja_uuid,
             cep,
             logradouro,
             numero,

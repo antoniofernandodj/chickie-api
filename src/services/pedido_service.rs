@@ -4,14 +4,67 @@ use chrono::Datelike;
 use uuid::Uuid;
 
 use crate::models::{Pedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
-use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, PedidoRepository, PromocaoRepository, Repository as _};
+use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
 use crate::utils::agora;
+
+
+use crate::models::EnderecoEntrega;
+
+/// DTO para retorno de pedido com endereço de entrega
+pub struct PedidoComEntrega {
+    pub pedido: Pedido,
+    pub endereco_entrega: Option<EnderecoEntrega>,
+}
+
+/// Dados de entrada para criar endereço de entrega (vindo do request HTTP)
+pub struct DadosEnderecoEntrega {
+    pub cep: Option<String>,
+    pub logradouro: String,
+    pub numero: String,
+    pub complemento: Option<String>,
+    pub bairro: String,
+    pub cidade: String,
+    pub estado: String,
+    // pub latitude: Option<f64>,
+    // pub longitude: Option<f64>,
+}
+
+impl DadosEnderecoEntrega {
+    pub fn to_endereco_entrega(
+        self,
+        pedido_uuid: Uuid,
+        loja_uuid: Uuid,
+    ) -> EnderecoEntrega {
+        EnderecoEntrega::new(
+            pedido_uuid,
+            loja_uuid,
+            self.cep,
+            self.logradouro,
+            self.numero,
+            self.complemento,
+            self.bairro,
+            self.cidade,
+            self.estado,
+            // self.latitude,
+            // self.longitude,
+        )
+    }
+}
+
+
+
+
+
+
+
+
 
 pub struct PedidoService {
     pedido_repo: Arc<PedidoRepository>,
     config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
     cupom_repo: Arc<CupomRepository>,
     promocao_repo: Arc<PromocaoRepository>,
+    endereco_entrega_repo: Arc<EnderecoEntregaRepository>,
 }
 
 impl PedidoService {
@@ -20,8 +73,9 @@ impl PedidoService {
         config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
         cupom_repo: Arc<CupomRepository>,
         promocao_repo: Arc<PromocaoRepository>,
+        endereco_entrega_repo: Arc<EnderecoEntregaRepository>,
     ) -> Self {
-        Self { pedido_repo, config_repo, cupom_repo, promocao_repo }
+        Self { pedido_repo, config_repo, cupom_repo, promocao_repo, endereco_entrega_repo }
     }
 
     pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
@@ -248,6 +302,53 @@ impl PedidoService {
             }
         }
         Ok((0.0, String::new()))
+    }
+
+    /// Método principal para criar pedido COM endereço de entrega
+    pub async fn criar_pedido_com_entrega(
+        &self,
+        pedido: &mut Pedido,
+        mut endereco_entrega: crate::models::EnderecoEntrega,  // <-- Modelo, não Request
+        codigo_cupom: Option<String>,
+    ) -> Result<Uuid, String> {
+        
+        // 1. Processar preços e descontos (lógica existente)
+        self.processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
+
+        // 2. Salvar o pedido no banco (retorna UUID)
+        let pedido_uuid = self.pedido_repo.criar(pedido).await?;
+
+        // 3. Atualizar o endereço com os UUIDs reais antes de salvar
+        endereco_entrega.uuid = Uuid::new_v4();
+        endereco_entrega.pedido_uuid = pedido_uuid;
+        endereco_entrega.loja_uuid = pedido.loja_uuid;
+        
+        // 4. Criar endereço de entrega vinculado ao pedido (snapshot imutável)
+        self.endereco_entrega_repo
+            .criar(&endereco_entrega)  // Usa o método padrão do trait Repository
+            .await?;
+
+        Ok(pedido_uuid)
+    }
+
+
+    /// Busca um pedido completo COM endereço de entrega
+    pub async fn buscar_pedido_com_entrega(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<PedidoComEntrega, String> {
+        
+        let pedido = self.pedido_repo.buscar_completo(pedido_uuid).await?
+            .ok_or("Pedido não encontrado")?;
+
+        let endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(pedido_uuid)
+            .await?;
+
+        Ok(PedidoComEntrega {
+            pedido,
+            endereco_entrega,
+        })
     }
 
 

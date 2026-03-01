@@ -150,15 +150,8 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
             .map_err(|e| e.to_string())
     }
 
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-                SELECT * FROM usuarios
-                WHERE loja_uuid = ?;
-            ")
-            .bind(loja_uuid)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
+    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Usuario>, String> {
+        Err("não se aplica".into())
     }
 }
 
@@ -344,7 +337,7 @@ impl<'a> Repository<Loja> for LojaRepository {
     }
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Loja>, String> {
-        Err("Não é possivel executar este método".into())
+        Err("não se aplica".into())
     }
 }
 
@@ -3343,5 +3336,310 @@ impl<'a> ParteDeItemPedidoRepository {
             .await
             .map_err(|e| e.to_string())?;
         Ok(())
+    }
+}
+
+
+
+// ==================== REPOSITÓRIO DE ENDEREÇOS DE USUÁRIO ====================
+pub struct EnderecoUsuarioRepository { pool: Arc<SqlitePool> }
+
+impl<'a> EnderecoUsuarioRepository {
+    pub fn new(pool: Arc<SqlitePool>) -> Self { 
+        Self { pool } 
+    }
+
+    /// Busca todos os endereços registrados de um usuário
+    pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
+        sqlx::query_as::<_, EnderecoUsuario>("
+            SELECT * FROM enderecos_usuario 
+            WHERE usuario_uuid = ?;
+        ")
+        .bind(usuario_uuid)
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())
+    }
+
+    /// Busca um endereço específico pelo UUID (helper para validações)
+    pub async fn buscar_por_uuid_e_usuario(
+        &self, 
+        uuid: Uuid, 
+        usuario_uuid: Uuid
+    ) -> Result<Option<EnderecoUsuario>, String> {
+        sqlx::query_as::<_, EnderecoUsuario>("
+            SELECT * FROM enderecos_usuario 
+            WHERE uuid = ? AND usuario_uuid = ?;
+        ")
+        .bind(uuid)
+        .bind(usuario_uuid)
+        .fetch_optional(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
+    fn table_name(&self) -> String { "enderecos_usuario".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoUsuario>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, EnderecoUsuario>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn criar(&self, item: &EnderecoUsuario) -> Result<Uuid, String> {
+        sqlx::query("
+            INSERT INTO enderecos_usuario (
+                uuid, usuario_uuid, cep, logradouro, numero, 
+                complemento, bairro, cidade, estado, latitude, longitude
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        ")
+        .bind(item.uuid)
+        .bind(item.usuario_uuid)
+        .bind(&item.cep)
+        .bind(&item.logradouro)
+        .bind(&item.numero)
+        .bind(&item.complemento)
+        .bind(&item.bairro)
+        .bind(&item.cidade)
+        .bind(&item.estado)
+        .bind(item.latitude)
+        .bind(item.longitude)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+        Ok(item.uuid)
+    }
+
+    async fn atualizar(&self, item: EnderecoUsuario) -> Result<(), String> {
+        let uuid = item.get_uuid();
+        let result = sqlx::query("
+            UPDATE enderecos_usuario
+            SET 
+                usuario_uuid = ?, cep = ?, logradouro = ?, numero = ?,
+                complemento = ?, bairro = ?, cidade = ?, estado = ?,
+                latitude = ?, longitude = ?
+            WHERE uuid = ?;
+        ")
+        .bind(item.usuario_uuid)
+        .bind(&item.cep)
+        .bind(&item.logradouro)
+        .bind(&item.numero)
+        .bind(&item.complemento)
+        .bind(&item.bairro)
+        .bind(&item.cidade)
+        .bind(&item.estado)
+        .bind(item.latitude)
+        .bind(item.longitude)
+        .bind(uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Endereço de usuário não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
+        let result = sqlx::query("DELETE FROM enderecos_usuario WHERE uuid = ?;")
+            .bind(uuid)
+            .execute(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Endereço de usuário não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn listar_todos(&self) -> Result<Vec<EnderecoUsuario>, String> {
+        sqlx::query_as::<_, EnderecoUsuario>("SELECT * FROM enderecos_usuario;")
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
+        Err("não se aplica - endereços de usuário não estão vinculados a lojas".into())
+    }
+}
+
+
+// ==================== REPOSITÓRIO DE ENDEREÇOS DE ENTREGA ====================
+pub struct EnderecoEntregaRepository { pool: Arc<SqlitePool> }
+
+impl<'a> EnderecoEntregaRepository {
+    pub fn new(pool: Arc<SqlitePool>) -> Self { 
+        Self { pool } 
+    }
+
+    /// Busca o endereço de entrega vinculado a um pedido específico
+    pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
+        sqlx::query_as::<_, EnderecoEntrega>("
+            SELECT * FROM enderecos_entrega 
+            WHERE pedido_uuid = ?;
+        ")
+        .bind(pedido_uuid)
+        .fetch_optional(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())
+    }
+
+    /// Busca endereços de entrega por loja (útil para relatórios/auditoria)
+    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
+        sqlx::query_as::<_, EnderecoEntrega>("
+            SELECT * FROM enderecos_entrega 
+            WHERE loja_uuid = ?
+            ORDER BY criado_em DESC;
+        ")
+        .bind(loja_uuid)
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())
+    }
+
+    /// Cria um endereço de entrega vinculado a um pedido (uso interno no fluxo de checkout)
+    pub async fn criar_para_pedido(
+        &self, 
+        endereco: &EnderecoEntrega, 
+        pedido_uuid: Uuid,
+        loja_uuid: Uuid
+    ) -> Result<Uuid, String> {
+        sqlx::query("
+            INSERT INTO enderecos_entrega (
+                uuid, loja_uuid, pedido_uuid, cep, logradouro, 
+                numero, complemento, bairro, cidade, estado, latitude, longitude
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        ")
+        .bind(endereco.uuid)
+        .bind(loja_uuid)
+        .bind(pedido_uuid)
+        .bind(&endereco.cep)
+        .bind(&endereco.logradouro)
+        .bind(&endereco.numero)
+        .bind(&endereco.complemento)
+        .bind(&endereco.bairro)
+        .bind(&endereco.cidade)
+        .bind(&endereco.estado)
+        .bind(endereco.latitude)
+        .bind(endereco.longitude)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+        Ok(endereco.uuid)
+    }
+}
+
+#[async_trait::async_trait]
+impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
+    fn table_name(&self) -> String { "enderecos_entrega".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, EnderecoEntrega>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn criar(&self, item: &EnderecoEntrega) -> Result<Uuid, String> {
+        // Nota: criar diretamente sem pedido_uuid pode não fazer sentido no domínio
+        // Use `criar_para_pedido` para o fluxo normal
+        sqlx::query("
+            INSERT INTO enderecos_entrega (
+                uuid, loja_uuid, pedido_uuid, cep, logradouro, 
+                numero, complemento, bairro, cidade, estado, latitude, longitude
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        ")
+        .bind(item.uuid)
+        .bind(item.loja_uuid)
+        .bind(item.pedido_uuid)
+        .bind(&item.cep)
+        .bind(&item.logradouro)
+        .bind(&item.numero)
+        .bind(&item.complemento)
+        .bind(&item.bairro)
+        .bind(&item.cidade)
+        .bind(&item.estado)
+        .bind(item.latitude)
+        .bind(item.longitude)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+        Ok(item.uuid)
+    }
+
+    async fn atualizar(&self, item: EnderecoEntrega) -> Result<(), String> {
+        let uuid = item.get_uuid();
+        let result = sqlx::query("
+            UPDATE enderecos_entrega
+            SET 
+                loja_uuid = ?, pedido_uuid = ?, cep = ?, logradouro = ?, 
+                numero = ?, complemento = ?, bairro = ?, cidade = ?, 
+                estado = ?, latitude = ?, longitude = ?
+            WHERE uuid = ?;
+        ")
+        .bind(item.loja_uuid)
+        .bind(item.pedido_uuid)
+        .bind(&item.cep)
+        .bind(&item.logradouro)
+        .bind(&item.numero)
+        .bind(&item.complemento)
+        .bind(&item.bairro)
+        .bind(&item.cidade)
+        .bind(&item.estado)
+        .bind(item.latitude)
+        .bind(item.longitude)
+        .bind(uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Endereço de entrega não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
+        let result = sqlx::query("DELETE FROM enderecos_entrega WHERE uuid = ?;")
+            .bind(uuid)
+            .execute(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Endereço de entrega não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn listar_todos(&self) -> Result<Vec<EnderecoEntrega>, String> {
+        sqlx::query_as::<_, EnderecoEntrega>("SELECT * FROM enderecos_entrega;")
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
+        self.buscar_por_loja(loja_uuid).await
     }
 }

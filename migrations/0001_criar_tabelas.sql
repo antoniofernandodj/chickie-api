@@ -187,7 +187,7 @@ CREATE INDEX IF NOT EXISTS idx_enderecos_usuario_usuario ON enderecos_usuario(us
 CREATE TABLE IF NOT EXISTS enderecos_entrega (
     uuid TEXT PRIMARY KEY NOT NULL,
     loja_uuid TEXT NOT NULL,
-    pedido_uuid TEXT,
+    pedido_uuid TEXT NOT NULL,
     cep TEXT,
     logradouro TEXT NOT NULL,
     numero TEXT NOT NULL,

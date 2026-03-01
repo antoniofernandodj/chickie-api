@@ -12,6 +12,7 @@ use crate::{
         ClienteRepository,
         ConfiguracaoPedidosLojaRepository,
         CupomRepository,
+        EnderecoEntregaRepository,
         EntregadorRepository,
         FuncionarioRepository,
         HorarioFuncionamentoRepository,
@@ -80,7 +81,8 @@ impl AppState {
             Arc::new(ConfiguracaoPedidosLojaRepository::new(pool.clone()));
         let cliente_repo =
             Arc::new(ClienteRepository::new(pool.clone()));
-
+        let endereco_entrega_repo =
+            Arc::new(EnderecoEntregaRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
         let usuario_service = UsuarioService::new(
@@ -106,7 +108,8 @@ impl AppState {
             Arc::clone(&pedido_repo),
             Arc::clone(&config_partes_repo),
             Arc::clone(&cupom_repo),
-            Arc::clone(&promocao_repo)
+            Arc::clone(&promocao_repo),
+            Arc::clone(&endereco_entrega_repo),
         );
 
         let marketing_service = MarketingService::new(

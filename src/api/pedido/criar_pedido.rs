@@ -1,10 +1,11 @@
 use axum::{
     Json, extract::{Path, State}, http::StatusCode, response::{IntoResponse, Response}
 };
+use serde_json::json;
 use uuid::Uuid;
 
 use std::sync::Arc;
-use crate::{api::CreatePedidoRequest, models::{ParteDeItemPedido, Pedido}};
+use crate::{api::{CreatePedidoRequest, dto::AppError}, models::{ParteDeItemPedido, Pedido}};
 use crate::repositories::Repository;
 use crate::api::AppState;
 
@@ -15,68 +16,71 @@ pub async fn criar_pedido(
     Path(loja_uuid): Path<Uuid>,
     Json(payload): Json<CreatePedidoRequest>,
 ) -> Response {
+
+    // 2. Buscar produtos e montar as partes do pedido (validação de existência)
+    let mut partes_por_item: Vec<Vec<ParteDeItemPedido>> = Vec::new();
     
-    // 1. Buscar produtos para montar as partes (validação básica)
-    let mut partes_pedido: Vec<ParteDeItemPedido> = Vec::new();
-    
-    // Nota: Em produção, isso deveria ser otimizado (buscar todos produtos de uma vez)
     for item_req in &payload.itens {
+        let mut partes_item = Vec::new();
         for parte_req in &item_req.partes {
             let produto = match state
                 .produto_repo
                 .buscar_por_uuid(parte_req.produto_uuid)
                 .await {
                     Ok(Some(p)) => p,
-                    Ok(None) => return (StatusCode::NOT_FOUND, "Produto não encontrado").into_response(),
-                    Err(e) => return (StatusCode::BAD_REQUEST, format!("Erro ao buscar produto: {}", e)).into_response(),
+                    Ok(None) => return AppError::NotFound(
+                        format!("Produto {} não encontrado", parte_req.produto_uuid)
+                    ).into_response(),
+                    Err(e) => return AppError::BadRequest(
+                        format!("Erro ao buscar produto: {}", e)
+                    ).into_response(),
                 };
 
-
-            partes_pedido.push(ParteDeItemPedido::new(&produto, parte_req.posicao));
+            partes_item.push(ParteDeItemPedido::new(&produto, parte_req.posicao));
         }
+        partes_por_item.push(partes_item);
     }
 
-    // 2. Criar struct Pedido
+    // 3. Criar struct Pedido base
     let mut pedido = Pedido::new(
         payload.usuario_uuid,
-        payload.loja_uuid,
-        0.0, // Subtotal calculado depois
+        loja_uuid,
+        0.0, // subtotal calculado pelo service
         payload.taxa_entrega,
         payload.forma_pagamento,
         payload.observacoes,
     );
 
-    // 3. Adicionar itens ao pedido
-    // Nota: A lógica atual do seu modelo adiciona todas as partes de uma vez em um item.
-    // Aqui estou simplificando para adicionar os itens do payload.
-    let mut partes_iter = partes_pedido.into_iter();
+    // 4. Adicionar itens ao pedido com suas partes
+    let mut partes_iter = partes_por_item.into_iter();
     for item_req in payload.itens {
-        let mut partes_item: Vec<ParteDeItemPedido> = Vec::new();
-        for _ in 0..item_req.partes.len() {
-            if let Some(p) = partes_iter.next() {
-                partes_item.push(p);
-            }
+        if let Some(partes_item) = partes_iter.next() {
+            pedido.adicionar_item(
+                item_req.quantidade, 
+                item_req.observacoes, 
+                partes_item
+            );
         }
-        pedido.adicionar_item(item_req.quantidade, item_req.observacoes, partes_item);
     }
 
-    // 4. Processar e Salvar
-    if let Err(e) = state
+    // 5. Extrair e converter endereço de entrega para o modelo de domínio
+    let endereco_entrega: crate::models::EnderecoEntrega = payload
+        .endereco_entrega
+        .to_endereco_entrega(Uuid::nil(), loja_uuid); // UUID temporário, será substituído
+
+    // 6. Chamar o service method unificado (processa + salva pedido + cria endereço)
+    match state
         .pedido_service
-        .processar_e_finalizar_pedido(
+        .criar_pedido_com_entrega(
             &mut pedido,
-            payload.codigo_cupom
-        ).await {
-            return (StatusCode::BAD_REQUEST, e).into_response();
-    }
-    
-    if let Err(e) = state
-        .pedido_service
-        .salvar(&pedido)
+            endereco_entrega,
+            payload.codigo_cupom,
+        )
         .await {
-            return (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response();
+            Ok(pedido_uuid) => {
+                // Retorna apenas o UUID ou o pedido completo, conforme necessidade
+                Json(json!({ "uuid": pedido_uuid })).into_response()
+            },
+            Err(e) => AppError::BadRequest(e).into_response(),
     }
-
-    Json(pedido).into_response()
-
 }

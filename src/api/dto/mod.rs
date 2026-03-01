@@ -32,13 +32,54 @@ pub struct CreateLojaRequest {
 #[derive(Deserialize)]
 pub struct CreatePedidoRequest {
     pub usuario_uuid: Uuid,
-    pub loja_uuid: Uuid,
     pub taxa_entrega: f64,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub codigo_cupom: Option<String>,
     pub itens: Vec<ItemPedidoRequest>,
+
+    // === NOVO: Endereço de entrega para o pedido ===
+    pub endereco_entrega: DadosEnderecoEntregaRequest,
 }
+
+
+/// Dados de entrada para o endereço de entrega (snapshot no momento do pedido)
+#[derive(Deserialize, Clone)]
+pub struct DadosEnderecoEntregaRequest {
+    pub cep: Option<String>,
+    pub logradouro: String,
+    pub numero: String,
+    pub complemento: Option<String>,
+    pub bairro: String,
+    pub cidade: String,
+    pub estado: String,
+    // pub latitude: Option<f64>,
+    // pub longitude: Option<f64>,
+}
+
+impl DadosEnderecoEntregaRequest {
+    /// Converte para o modelo de domínio EnderecoEntrega
+    pub fn to_endereco_entrega(
+        self,
+        pedido_uuid: Uuid,
+        loja_uuid: Uuid,
+    ) -> crate::models::EnderecoEntrega {
+        crate::models::EnderecoEntrega::new(
+            pedido_uuid,
+            loja_uuid,
+            self.cep,
+            self.logradouro,
+            self.numero,
+            self.complemento,
+            self.bairro,
+            self.cidade,
+            self.estado,
+            // self.latitude,
+            // self.longitude,
+        )
+    }
+}
+
 
 #[derive(Deserialize)]
 pub struct ItemPedidoRequest {
