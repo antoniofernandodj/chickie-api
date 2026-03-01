@@ -1,379 +1,254 @@
-use crate::models::{Pedido, Produto, ItemPedido};
-use crate::repositories::{PedidoRepository, ProdutoRepository, Repository};
-use crate::services::{CupomService, LojaService, ProdutoService};
+use std::sync::Arc;
+
+use chrono::Datelike;
 use uuid::Uuid;
-use chrono::Utc;
+
+use crate::models::{Pedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
+use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, PedidoRepository, PromocaoRepository, Repository as _};
+use crate::utils::agora;
 
 pub struct PedidoService {
-    pedido_repo: PedidoRepository,
-    produto_repo: ProdutoRepository,
+    pedido_repo: Arc<PedidoRepository>,
+    config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
+    cupom_repo: Arc<CupomRepository>,
+    promocao_repo: Arc<PromocaoRepository>,
 }
 
 impl PedidoService {
     pub fn new(
-        pedido_repo: PedidoRepository,
-        produto_repo: ProdutoRepository,
+        pedido_repo: Arc<PedidoRepository>,
+        config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
+        cupom_repo: Arc<CupomRepository>,
+        promocao_repo: Arc<PromocaoRepository>,
     ) -> Self {
-        Self {
-            pedido_repo,
-            produto_repo,
-        }
+        Self { pedido_repo, config_repo, cupom_repo, promocao_repo }
     }
 
-    /// Cria um novo pedido com validações completas
-    pub fn criar_pedido(
-        &mut self,
-        usuario_uuid: Uuid,
-        loja_uuid: Uuid,
-        telefone_entrega: String,
-        data_hora_entrega: String,
-        taxa_entrega: f64,
-        observacoes: String,
-        itens: Vec<ItemPedidoDto>,
-        cupom_codigo: Option<String>,
-        loja_service: &LojaService,
-        cupom_service: &mut CupomService,
-    ) -> Result<Pedido, String> {
-        // 1. Validar loja está aberta
-        if !loja_service.esta_aberta(loja_uuid)? {
-            return Err("Loja fechada no momento".to_string());
-        }
+    pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
+        self.pedido_repo.criar(pedido).await
+    }
 
-        // 2. Validar que há itens
-        if itens.is_empty() {
-            return Err("Pedido deve ter ao menos um item".to_string());
-        }
+    /// Calcula e exibe os preços baseado na configuração da loja
+    pub async fn processar_e_exibir_precos(
+        &self,
+        pedido: &mut Pedido,
+        loja_uuid: uuid::Uuid
+    ) -> Result<(), String> {
+        let config_loja = self
+            .config_repo
+            .buscar_por_loja(loja_uuid)
+            .await?
+            .unwrap();
 
-        // 3. Validar telefone
-        if !self.validar_telefone(&telefone_entrega) {
-            return Err("Telefone inválido".to_string());
-        }
-
-        // 4. Criar pedido
-        let mut pedido = Pedido::new(
-            telefone_entrega,
-            data_hora_entrega,
-            loja_uuid,
-            taxa_entrega,
-            observacoes,
-            usuario_uuid,
-        );
-
-        // 5. Adicionar itens e calcular subtotal
-        let mut subtotal = 0.0;
-        for item_dto in itens {
-            // Buscar produto
-            let produto = self.produto_repo
-                .buscar_por_uuid(item_dto.produto_uuid)
-                .ok_or("Produto não encontrado")?;
-
-            // Verificar se produto está disponível
-            if !produto.disponivel {
-                return Err(format!("Produto '{}' indisponível", produto.nome));
-            }
-
-            // Verificar se produto pertence à loja
-            if produto.loja_uuid != loja_uuid {
-                return Err(format!("Produto '{}' não pertence a esta loja", produto.nome));
-            }
-
-            // Adicionar item ao pedido
-            let item = pedido.adicionar_item_pedido(
-                &produto,
-                item_dto.quantidade,
-                item_dto.observacoes,
-                loja_uuid,
+        println!("--- Processando Pedido {} ---", pedido.uuid);
+        for item in &pedido.itens {
+            let preco_media = calcular_preco_por_partes(
+                &item.partes, &TipoCalculoPedido::MediaPonderada
+            );
+            let preco_caro = calcular_preco_por_partes(
+                &item.partes, &TipoCalculoPedido::MaisCaro
+            );
+            let preco_loja = calcular_preco_por_partes(
+                &item.partes, &config_loja.tipo_calculo
             );
 
-            // Adicionar adicionais ao item
-            for adicional_uuid in item_dto.adicionais_uuids {
-                item.adicionar_adicional_por_uuid(adicional_uuid)
-                    .map_err(|e| format!("Erro ao adicionar adicional: {}", e))?;
-            }
-
-            // Somar ao subtotal
-            subtotal += item.calcular_total();
+            println!(
+                "Item: Média: {:.2} | Mais caro: {:.2} | Loja Config: {:.2}",
+                preco_media,
+                preco_caro,
+                preco_loja
+            );
         }
-
-        // 6. Aplicar cupom se houver
-        let desconto = if let Some(codigo) = cupom_codigo {
-            cupom_service.aplicar_cupom(
-                &codigo,
-                loja_uuid,
-                usuario_uuid,
-                subtotal,
-                taxa_entrega,
-                false, // Aqui você deveria verificar se é primeira compra
-            )?
-        } else {
-            0.0
-        };
-
-        // 7. Calcular total final
-        pedido.valor_total = subtotal + taxa_entrega - desconto;
-
-        // Validar valor mínimo do pedido (se houver)
-        if pedido.valor_total < 0.0 {
-            return Err("Valor total inválido".to_string());
-        }
-
-        // 8. Salvar pedido
-        self.pedido_repo.criar(pedido.clone())
-            .map_err(|e| format!("Erro ao criar pedido: {}", e))?;
-
-        Ok(pedido)
+        Ok(())
     }
 
-    /// Busca pedido por UUID
-    pub fn buscar_pedido(&self, uuid: Uuid) -> Option<Pedido> {
-        self.pedido_repo.buscar_por_uuid(uuid)
+    pub async fn buscar_completo(
+        &self,
+        pedido_uuid: uuid::Uuid
+    ) -> Result<Option<Pedido>, String> {
+        self.pedido_repo.buscar_completo(pedido_uuid).await
     }
 
-    /// Lista pedidos de um usuário
-    pub fn listar_pedidos_usuario(&self, usuario_uuid: Uuid) -> Vec<Pedido> {
-        self.pedido_repo.listar_todos()
-            .into_iter()
-            .filter(|p| p.usuario_uuid == usuario_uuid)
-            .collect()
+    pub async fn listar(&self) -> Result<Vec<Pedido>, String> {
+        self.pedido_repo.listar_todos().await
     }
 
-    /// Lista pedidos de uma loja
-    pub fn listar_pedidos_loja(&self, loja_uuid: Uuid) -> Vec<Pedido> {
-        self.pedido_repo.listar_todos()
-            .into_iter()
-            .filter(|p| p.loja_uuid == loja_uuid)
-            .collect()
-    }
-
-    /// Lista pedidos por status
-    pub fn listar_pedidos_por_status(&self, loja_uuid: Uuid, status: &str) -> Vec<Pedido> {
-        self.listar_pedidos_loja(loja_uuid)
-            .into_iter()
-            .filter(|p| p.status == status)
-            .collect()
-    }
-
-    /// Atualiza status do pedido
-    pub fn atualizar_status(
-        &mut self,
-        pedido_uuid: Uuid,
-        novo_status: String,
-    ) -> Result<Pedido, String> {
-        let mut pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid)
-            .ok_or("Pedido não encontrado")?;
-
-        // Validar transição de status
-        self.validar_transicao_status(&pedido.status, &novo_status)?;
-
-        pedido.status = novo_status;
-        pedido.atualizado_em = Utc::now();
-
-        self.pedido_repo.atualizar(pedido.clone())
-            .map_err(|e| format!("Erro ao atualizar pedido: {}", e))?;
-
-        Ok(pedido)
-    }
-
-    /// Valida se a transição de status é permitida
-    fn validar_transicao_status(&self, status_atual: &str, novo_status: &str) -> Result<(), String> {
-        let transicoes_validas = match status_atual {
-            "pendente" => vec!["confirmado", "cancelado"],
-            "confirmado" => vec!["preparando", "cancelado"],
-            "preparando" => vec!["pronto", "cancelado"],
-            "pronto" => vec!["saiu_para_entrega"],
-            "saiu_para_entrega" => vec!["entregue"],
-            "entregue" => vec![],
-            "cancelado" => vec![],
-            _ => vec![],
-        };
-
-        if transicoes_validas.contains(&novo_status) {
-            Ok(())
-        } else {
-            Err(format!(
-                "Transição de '{}' para '{}' não permitida",
-                status_atual,
-                novo_status
-            ))
-        }
-    }
-
-    /// Cancela um pedido
-    pub fn cancelar_pedido(
-        &mut self,
-        pedido_uuid: Uuid,
-        motivo: String,
-    ) -> Result<Pedido, String> {
-        let mut pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid)
-            .ok_or("Pedido não encontrado")?;
-
-        // Validar se pode ser cancelado
-        if pedido.status == "entregue" {
-            return Err("Pedido já entregue não pode ser cancelado".to_string());
-        }
-
-        if pedido.status == "cancelado" {
-            return Err("Pedido já está cancelado".to_string());
-        }
-
-        pedido.status = "cancelado".to_string();
-        pedido.atualizado_em = Utc::now();
-
-        self.pedido_repo.atualizar(pedido.clone())
-            .map_err(|e| format!("Erro ao cancelar pedido: {}", e))?;
-
-        Ok(pedido)
-    }
-
-    /// Calcula tempo estimado de entrega
-    pub fn calcular_tempo_estimado(&self, loja_uuid: Uuid) -> Result<u32, String> {
-        // Buscar pedidos ativos da loja
-        let pedidos_ativos = self.listar_pedidos_loja(loja_uuid)
-            .into_iter()
-            .filter(|p| !matches!(p.status.as_str(), "entregue" | "cancelado"))
-            .count();
-
-        // Calcular tempo base + tempo por pedido na fila
-        let tempo_base = 30; // minutos
-        let tempo_por_pedido = 10; // minutos
-
-        Ok(tempo_base + (pedidos_ativos as u32 * tempo_por_pedido))
-    }
-
-    /// Calcula estatísticas de pedidos
-    pub fn calcular_estatisticas(&self, loja_uuid: Uuid) -> EstatisticasPedidos {
-        let pedidos = self.listar_pedidos_loja(loja_uuid);
-
-        let total = pedidos.len();
-        let entregues = pedidos.iter().filter(|p| p.status == "entregue").count();
-        let cancelados = pedidos.iter().filter(|p| p.status == "cancelado").count();
-        let em_andamento = pedidos.iter()
-            .filter(|p| !matches!(p.status.as_str(), "entregue" | "cancelado"))
-            .count();
-
-        let faturamento_total: f64 = pedidos.iter()
-            .filter(|p| p.status == "entregue")
-            .map(|p| p.valor_total)
-            .sum();
-
-        let ticket_medio = if entregues > 0 {
-            faturamento_total / entregues as f64
-        } else {
-            0.0
-        };
-
-        EstatisticasPedidos {
-            total_pedidos: total,
-            pedidos_entregues: entregues,
-            pedidos_cancelados: cancelados,
-            pedidos_em_andamento: em_andamento,
-            faturamento_total,
-            ticket_medio,
-        }
-    }
-
-    /// Adiciona observação ao pedido
-    pub fn adicionar_observacao(
-        &mut self,
-        pedido_uuid: Uuid,
-        observacao: String,
-    ) -> Result<Pedido, String> {
-        let mut pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid)
-            .ok_or("Pedido não encontrado")?;
-
-        if !pedido.observacoes.is_empty() {
-            pedido.observacoes.push_str("\n");
-        }
-        pedido.observacoes.push_str(&observacao);
-        pedido.atualizado_em = Utc::now();
-
-        self.pedido_repo.atualizar(pedido.clone())
-            .map_err(|e| format!("Erro ao adicionar observação: {}", e))?;
-
-        Ok(pedido)
-    }
-
-    /// Valida formato de telefone
-    fn validar_telefone(&self, telefone: &str) -> bool {
-        let numeros: String = telefone.chars().filter(|c| c.is_numeric()).collect();
-        numeros.len() >= 10 && numeros.len() <= 11
-    }
-
-    /// Deleta um pedido (apenas se cancelado ou muito antigo)
-    pub fn deletar_pedido(&mut self, pedido_uuid: Uuid) -> Result<(), String> {
-        let pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid)
-            .ok_or("Pedido não encontrado")?;
-
-        if pedido.status != "cancelado" {
-            return Err("Apenas pedidos cancelados podem ser deletados".to_string());
-        }
-
-        self.pedido_repo.deletar(pedido_uuid)
-            .map_err(|e| format!("Erro ao deletar pedido: {}", e))
-    }
-
-    /// Lista pedidos recentes (últimos 30 dias)
-    pub fn listar_pedidos_recentes(&self, loja_uuid: Uuid, dias: i64) -> Vec<Pedido> {
-        let data_limite = Utc::now() - chrono::Duration::days(dias);
+    /// Método principal que orquestra o cálculo de preço, promoções e cupons
+    pub async fn processar_e_finalizar_pedido(
+        &self,
+        pedido: &mut Pedido,
+        codigo_cupom: Option<String>,
+    ) -> Result<(), String> {
         
-        self.listar_pedidos_loja(loja_uuid)
-            .into_iter()
-            .filter(|p| p.criado_em >= data_limite)
-            .collect()
-    }
-}
+        // 1. Buscar configuração da loja (como calcular preço dos sabores)
+        let config_loja = self.config_repo
+            .buscar_por_loja(pedido.loja_uuid)
+            .await?
+            .ok_or("Configuração da loja não encontrada")?;
 
-/// DTO para criar item de pedido
-#[derive(Debug, Clone)]
-pub struct ItemPedidoDto {
-    pub produto_uuid: Uuid,
-    pub quantidade: u32,
-    pub observacoes: String,
-    pub adicionais_uuids: Vec<Uuid>,
-}
+        // 2. Calcular Subtotal dos Itens
+        // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
+        // Aqui usamos os preços que já vieram no objeto Pedido (snapshots).
+        let mut subtotal_calculado = 0.0;
+        
+        for item in &pedido.itens {
+            // Soma o preço base do item (calculado pela regra de sabores)
+            let preco_item = calcular_preco_por_partes(
+                &item.partes,
+                &config_loja.tipo_calculo
+            );
 
-impl ItemPedidoDto {
-    pub fn new(
-        produto_uuid: Uuid,
-        quantidade: u32,
-        observacoes: String,
-        adicionais_uuids: Vec<Uuid>,
-    ) -> Self {
-        Self {
-            produto_uuid,
-            quantidade,
-            observacoes,
-            adicionais_uuids,
+            // Soma adicionais
+            let total_adicionais: f64 = item.partes.iter()
+                .flat_map(|p| &p.adicionais)
+                .map(|a| a.preco)
+                .sum();
+
+            subtotal_calculado += (preco_item + total_adicionais) * item.quantidade as f64;
         }
-    }
-}
 
-/// Estatísticas de pedidos
-#[derive(Debug, Clone)]
-pub struct EstatisticasPedidos {
-    pub total_pedidos: usize,
-    pub pedidos_entregues: usize,
-    pub pedidos_cancelados: usize,
-    pub pedidos_em_andamento: usize,
-    pub faturamento_total: f64,
-    pub ticket_medio: f64,
-}
+        pedido.subtotal = subtotal_calculado;
+        
+        // 3. Calcular descontos
+        let (desconto_promocao, descricao_promo) =
+            self.calcular_melhor_promocao(pedido).await?;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+        let (desconto_cupom, descricao_cupom) = self.validar_cupom(
+            pedido,
+            codigo_cupom
+        ).await?;
 
-    #[test]
-    fn test_validar_transicao_status() {
-        let service = PedidoService::new(
-            PedidoRepository::new(),
-            ProdutoRepository::new(),
+        // 4. Decisão de negócio: Escolher o maior desconto (não acumulativo)
+        // Ou aplicar lógica de prioridade. Ex: Cupom tem prioridade, senão usa promoção.
+        
+        let desconto_final;
+        let observacao_desconto;
+
+        if desconto_cupom > 0.0 {
+            desconto_final = desconto_cupom;
+            observacao_desconto = format!("Cupom aplicado: {}", descricao_cupom);
+            // Aqui você poderia marcar o cupom como usado no banco
+        } else if desconto_promocao > 0.0 {
+            desconto_final = desconto_promocao;
+            observacao_desconto = format!("Promoção aplicada: {}", descricao_promo);
+        } else {
+            desconto_final = 0.0;
+            observacao_desconto = "Nenhum desconto aplicado".to_string();
+        }
+
+        pedido.desconto = Some(desconto_final);
+        pedido.total = pedido.subtotal + pedido.taxa_entrega - desconto_final;
+
+        // Atualiza observações do pedido com info do desconto
+        if let Some(mut obs) = pedido.observacoes.clone() {
+            obs.push_str(&format!(" | {}", observacao_desconto));
+            pedido.observacoes = Some(obs);
+        } else {
+            pedido.observacoes = Some(observacao_desconto);
+        }
+
+        println!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}", 
+            pedido.subtotal,
+            desconto_final,
+            pedido.total
         );
 
-        // Transição válida
-        assert!(service.validar_transicao_status("pendente", "confirmado").is_ok());
-        
-        // Transição inválida
-        assert!(service.validar_transicao_status("entregue", "pendente").is_err());
+        self.salvar(pedido).await?;
+
+        Ok(())
     }
+
+
+
+
+    /// Lógica para verificar promoções ativas da loja
+    async fn calcular_melhor_promocao(
+        &self,
+        pedido: &Pedido
+    ) -> Result<(f64, String), String> {
+        // Assumindo que existe um método buscar_ativas no repo (ou listar_todos filtrado)
+        // Para simplificar, vamos simular a busca:
+    
+
+        // Ideal: filtrar por loja_uuid e status ativo
+        let promocoes = self.promocao_repo.listar_todos().await?; 
+        let agora = agora(); // String de data hora atual
+        
+        // Helper simples para obter dia da semana (0=Domingo, 6=Sábado)
+        // Nota: Em produção, use chrono para parsing correto da string
+        let dia_semana_atual = chrono::Utc::now().weekday().num_days_from_sunday() as u8;
+
+        let mut melhor_desconto = 0.0;
+        let mut melhor_descricao = String::new();
+
+        for promo in promocoes {
+            if promo.loja_uuid != pedido.loja_uuid { continue; }
+            
+            // Usa o método eh_aplicavel do modelo Promocao
+            if promo.eh_aplicavel(
+                pedido.subtotal,
+                agora.clone(),
+                dia_semana_atual
+            ) {
+
+                let valor_desc = promo.calcular_desconto(
+                    pedido.subtotal,
+                    pedido.taxa_entrega
+                );
+
+                if valor_desc > melhor_desconto {
+                    melhor_desconto = valor_desc;
+                    melhor_descricao = promo.nome;
+                }
+            }
+        }
+
+        Ok((melhor_desconto, melhor_descricao))
+    }
+
+
+    /// Lógica para validar e calcular cupom
+    async fn validar_cupom(
+        &self,
+        pedido: &Pedido,
+        codigo: Option<String>
+    ) -> Result<(f64, String), String> {
+
+        if let Some(cod) = codigo {
+            // Busca cupom pelo código
+            if let Some(cupom) = self.cupom_repo.buscar_por_codigo(&cod).await? {
+
+                // Validações básicas
+                if cupom.loja_uuid != pedido.loja_uuid {
+                    return Ok((0.0, "Cupom inválido para esta loja".to_string()));
+                }
+
+                if cupom.status != StatusCupom::Ativo {
+                    return Ok((0.0, "Cupom inativo".to_string()));
+                }
+
+                // Verifica validade (simples comparação de string ISO 8601
+                // funciona se formato for igual)
+                if agora() > cupom.data_validade {
+                     return Ok((0.0, "Cupom expirado".to_string()));
+                }
+                // Verifica valor mínimo
+                if let Some(minimo) = cupom.valor_minimo {
+                    if pedido.subtotal < minimo {
+                        return Ok((0.0, format!("Pedido abaixo do mínimo de {:.2}", minimo)));
+                    }
+                }
+
+                let desconto = cupom.calcular_desconto(
+                    pedido.subtotal,
+                    pedido.taxa_entrega
+                );
+
+                return Ok((desconto, cupom.codigo));
+            }
+        }
+        Ok((0.0, String::new()))
+    }
+
+
 }

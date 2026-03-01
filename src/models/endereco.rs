@@ -1,230 +1,141 @@
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 
+// --- EnderecoLoja (flat, compatível com FromRow) ---
 
-#[derive(Debug)]
-struct EnderecoBase {
-    pub uf: String,
-    pub cidade: String,
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+pub struct EnderecoLoja {
+    pub uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub cep: Option<String>,
     pub logradouro: String,
     pub numero: String,
-    pub bairro: String,
-    pub cep: Option<String>,
     pub complemento: Option<String>,
-    pub uuid: Uuid,
-}
-
-impl EnderecoBase {
-    fn new(
-        uf: String,
-        cidade: String,
-        logradouro: String,
-        numero: String,
-        bairro: String,
-        cep: Option<String>,
-        complemento: Option<String>,
-    ) -> Self {
-
-        Self {
-            uf,
-            cidade,
-            logradouro,
-            numero,
-            bairro,
-            cep,
-            complemento,
-            uuid: Uuid::new_v4(),
-        }
-
-    }
-}
-
-
-#[derive(Debug)]
-pub struct EnderecoLoja {
-    pub endereco: EnderecoBase,
-    pub loja_uuid: Uuid,
+    pub bairro: String,
+    pub cidade: String,
+    pub estado: String,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
 }
 
 impl EnderecoLoja {
-
     pub fn get_uuid(&self) -> Uuid {
-        return self.endereco.uuid.clone();
+        self.uuid
     }
 
     pub fn new(
-        uf: String,
-        cidade: String,
+        loja_uuid: Uuid,
+        cep: Option<String>,
         logradouro: String,
         numero: String,
-        bairro: String,
-        cep: Option<String>,
         complemento: Option<String>,
-        loja_uuid: Uuid,
+        bairro: String,
+        cidade: String,
+        estado: String,
+        latitude: Option<f64>,
+        longitude: Option<f64>,
     ) -> Self {
-
-        let endereco = EnderecoBase::new(
-            uf,
-            cidade,
+        Self {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
+            cep,
             logradouro,
             numero,
-            bairro,
-            cep,
             complemento,
-        );
-
-        Self {
-            endereco,
-            loja_uuid,
+            bairro,
+            cidade,
+            estado,
+            latitude,
+            longitude,
         }
     }
 }
 
+// --- EnderecoUsuario (flat, para uso futuro com seu repository) ---
 
-#[derive(Debug)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct EnderecoUsuario {
-    pub endereco: EnderecoBase,
+    pub uuid: Uuid,
     pub usuario_uuid: Uuid,
+    pub cep: Option<String>,
+    pub logradouro: String,
+    pub numero: String,
+    pub complemento: Option<String>,
+    pub bairro: String,
+    pub cidade: String,
+    pub estado: String,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
 }
 
 impl EnderecoUsuario {
     pub fn new(
-        uf: String,
-        cidade: String,
+        usuario_uuid: Uuid,
+        cep: Option<String>,
         logradouro: String,
         numero: String,
-        bairro: String,
-        cep: Option<String>,
         complemento: Option<String>,
-        usuario_uuid: Uuid,
+        bairro: String,
+        cidade: String,
+        estado: String,
     ) -> Self {
-
-        let endereco = EnderecoBase::new(
-            uf,
-            cidade,
+        Self {
+            uuid: Uuid::new_v4(),
+            usuario_uuid,
+            cep,
             logradouro,
             numero,
-            bairro,
-            cep,
             complemento,
-        );
-
-        Self {
-            endereco,
-            usuario_uuid,
+            bairro,
+            cidade,
+            estado,
+            latitude: None,
+            longitude: None,
         }
-
     }
 }
 
+// --- EnderecoEntrega (flat, para uso futuro com seu repository) ---
 
-
-#[derive(Debug)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct EnderecoEntrega {
-    pub endereco: EnderecoBase,
-    pub pedido_uuid: Option<String>
+    pub uuid: Uuid,
+    pub pedido_uuid: Option<Uuid>,
+    pub cep: Option<String>,
+    pub logradouro: String,
+    pub numero: String,
+    pub complemento: Option<String>,
+    pub bairro: String,
+    pub cidade: String,
+    pub estado: String,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
 }
 
 impl EnderecoEntrega {
     pub fn new(
-        uf: String,
-        cidade: String,
+        pedido_uuid: Option<Uuid>,
+        cep: Option<String>,
         logradouro: String,
         numero: String,
-        bairro: String,
-        cep: Option<String>,
         complemento: Option<String>,
-        pedido_uuid: Option<String>,
+        bairro: String,
+        cidade: String,
+        estado: String,
     ) -> Self {
-
-        let endereco = EnderecoBase::new(
-            uf,
-            cidade,
+        Self {
+            uuid: Uuid::new_v4(),
+            pedido_uuid,
+            cep,
             logradouro,
             numero,
-            bairro,
-            cep,
             complemento,
-        );
-
-        Self {
-            endereco,
-            pedido_uuid,
+            bairro,
+            cidade,
+            estado,
+            latitude: None,
+            longitude: None,
         }
-
-    }
-}
-
-
-
-#[derive(Debug)]
-pub struct EnderecosLoja {
-    payload: Vec<EnderecoLoja>,
-    limit: i32,
-    offset: i32,
-}
-
-impl EnderecosLoja {
-    pub fn new(
-        payload: Vec<EnderecoLoja>,
-        limit: i32,
-        offset: i32,
-    ) -> Self {
-
-        Self {
-            payload,
-            limit,
-            offset,
-        }
-
-    }
-}
-
-
-#[derive(Debug)]
-pub struct EnderecosEntrega {
-    payload: Vec<EnderecoEntrega>,
-    limit: i32,
-    offset: i32
-}
-
-impl EnderecosEntrega {
-    pub fn new(
-        payload: Vec<EnderecoEntrega>,
-        limit: i32,
-        offset: i32,
-    ) -> Self {
-
-        Self {
-            payload,
-            limit,
-            offset,
-        }
-
-    }
-}
-
-
-
-#[derive(Debug)]
-pub struct EnderecosUsuario {
-    payload: Vec<EnderecoUsuario>,
-    limit: i32,
-    offset: i32,
-}
-
-impl EnderecosUsuario {
-    pub fn new(
-        payload: Vec<EnderecoUsuario>,
-        limit: i32,
-        offset: i32,
-    ) -> Self {
-
-        Self {
-            payload,
-            limit,
-            offset,
-        }
-
     }
 }

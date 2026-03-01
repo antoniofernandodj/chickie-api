@@ -11,6 +11,8 @@ mod entregador;
 mod funcionario;
 mod produto;
 mod promocoes;
+mod horarios_de_funcionamento;
+mod parte_de_pedido;
 
 
 
@@ -18,30 +20,34 @@ pub use adicional::Adicional;
 pub use avaliacao::{
     AvaliacaoDeLoja,
     AvaliacaoDeProduto,
-    AvaliacoesDeProduto,
-    AvaliacoesDeLoja,
 };
 
-
 pub use categoria::{
-    CategoriaProdutos,
-    CategoriasProdutos
+    CategoriaProdutos
 };
 
 pub use cliente::Cliente;
-pub use usuario::{Usuario, Usuarios};
-pub use loja::{Loja, Lojas};
-pub use pedido::{Pedido, Pedidos, EstadoDePedido};
-pub use ingrediente::{Ingrediente};
-pub use endereco::{EnderecoLoja, EnderecosLoja};
-pub use entregador::{Entregador, Entregadores};
-pub use funcionario::{Funcionario, Funcionarios};
-pub use produto::{Produto, Produtos};
+pub use usuario::{Usuario};
+pub use loja::Loja;
+pub use pedido::{Pedido, EstadoDePedido, ItemPedido, AdicionalDeItemDePedido};
+pub use ingrediente::Ingrediente;
+pub use endereco::EnderecoLoja;
+pub use entregador::Entregador;
+pub use funcionario::Funcionario;
+pub use produto::Produto;
+pub use parte_de_pedido::{
+    ParteDeItemPedido,
+    ConfiguracaoDePedidosLoja,
+    TipoCalculoPedido,
+    calcular_preco_por_partes
+};
 pub use promocoes::{
-    TipoDesconto,
-    CondicoesCupom,
     StatusCupom,
     Cupom,
     UsoCupom,
     Promocao
+};
+
+pub use horarios_de_funcionamento::{
+    HorarioFuncionamento
 };

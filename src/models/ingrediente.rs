@@ -1,34 +1,36 @@
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
+use crate::utils::agora;
 
-
-#[derive(Debug, FromRow)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Ingrediente {
-    pub nome: String,
-    pub descricao: String,
-    pub preco_base: f64,
+    pub uuid: Uuid,
     pub loja_uuid: Uuid,
+    pub nome: String,
+    pub unidade_medida: Option<String>,
     pub quantidade: f64,
-    pub uuid: Uuid
+    pub preco_unitario: f64,
+    pub criado_em: String,
+    pub atualizado_em: String,
 }
-
 
 impl Ingrediente {
     pub fn new(
         nome: String,
-        descricao: String,
         loja_uuid: Uuid,
-        preco_base: f64,
+        unidade_medida: Option<String>,
+        preco_unitario: f64,
     ) -> Self {
-
         Self {
-            nome,
-            preco_base,
-            descricao,
-            loja_uuid,
-            quantidade: 0.0,
             uuid: Uuid::new_v4(),
+            loja_uuid,
+            nome,
+            unidade_medida,
+            quantidade: 0.0,
+            preco_unitario,
+            criado_em: agora(),
+            atualizado_em: agora(),
         }
-
     }
 }

@@ -1,8 +1,10 @@
 use uuid::Uuid;
 use sqlx::FromRow;
+use serde::{Serialize, Deserialize};
+use crate::utils::agora;
 
 
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Adicional {
     pub id: Uuid,
     pub nome: String,
@@ -10,6 +12,7 @@ pub struct Adicional {
     pub disponivel: bool,
     pub descricao: String,
     pub preco: f64,
+    pub criado_em: String,
 }
 
 impl Adicional {
@@ -26,7 +29,8 @@ impl Adicional {
             disponivel: false,
             descricao,
             preco,
-            id: Uuid::new_v4()
+            id: Uuid::new_v4(),
+            criado_em: agora()
         }
 
     }

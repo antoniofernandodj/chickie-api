@@ -1,20 +1,22 @@
+use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, FromRow)]
+use crate::utils::agora;
+
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Usuario {
     pub nome: String,
     pub username: String,
     pub email: String,
     pub celular: String,
-    pub criado_em: DateTime<Utc>,
-    pub atualizado_em: Option<DateTime<Utc>>,
+    pub criado_em: String,
+    pub atualizado_em: String,
     
     pub modo_de_cadastro: String,
     
     pub telefone: Option<String>,
-    pub senha_hash: Option<String>,
+    pub senha_hash: String,
     pub uuid: Uuid,
     pub ativo: bool,
     pub passou_pelo_primeiro_acesso: bool
@@ -25,6 +27,7 @@ impl Usuario {
         nome: String,
         username: String,
         email: String,
+        senha_hash: String,
         celular: String,
         modo_de_cadastro: String,
     ) -> Self {
@@ -34,42 +37,15 @@ impl Usuario {
             username,
             email,
             celular,
-            criado_em: Utc::now(),
-            atualizado_em: None,
+            criado_em: agora(),
+            atualizado_em: agora(),
             modo_de_cadastro,
 
             telefone: None,
-            senha_hash: None,
+            senha_hash,
             uuid: Uuid::new_v4(),
             ativo: true,
             passou_pelo_primeiro_acesso: false,
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub struct Usuarios {
-    payload: Vec<Usuario>,
-    limit: i32,
-    offset: i32,
-    length: i32,
-}
-
-
-impl Usuarios {
-    pub fn new(
-        payload: Vec<Usuario>,
-        limit: i32,
-        offset: i32,
-    ) -> Self {
-        let length = payload.len() as i32;
-
-        Self {
-            payload,
-            limit,
-            offset,
-            length,
         }
     }
 }

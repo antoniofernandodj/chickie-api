@@ -1,54 +1,32 @@
 use uuid::Uuid;
 use sqlx::FromRow;
+use crate::utils::agora;
+use serde::{Serialize, Deserialize};
 
-
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct CategoriaProdutos {
-    pub nome: String,
-    pub descricao: String,
+    pub uuid: Uuid,
     pub loja_uuid: Uuid,
-
-    pub uuid: Uuid
+    pub nome: String,
+    pub descricao: Option<String>,
+    pub ordem: Option<i32>,
+    pub criado_em: String,
 }
 
 impl CategoriaProdutos {
     pub fn new(
         nome: String,
-        descricao: String,
+        descricao: Option<String>,
         loja_uuid: Uuid,
+        ordem: Option<i32>,
     ) -> Self {
         Self {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
             nome,
             descricao,
-            loja_uuid,
-            uuid: Uuid::new_v4(),
-        }
-    }
-}
-
-
-#[derive(Debug)]
-pub struct CategoriasProdutos {
-    payload: Vec<CategoriaProdutos>,
-    limit: i32,
-    offset: i32,
-    length: i32,
-}
-
-
-impl CategoriasProdutos {
-    pub fn new(
-        payload: Vec<CategoriaProdutos>,
-        limit: i32,
-        offset: i32,
-    ) -> Self {
-        let length = payload.len() as i32;
-
-        Self {
-            payload,
-            limit,
-            offset,
-            length,
+            ordem,
+            criado_em: agora()
         }
     }
 }

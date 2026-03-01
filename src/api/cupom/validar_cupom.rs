@@ -1,0 +1,26 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+    response::{IntoResponse}
+};
+
+
+use std::sync::Arc;
+use crate::{api::{AppState, dto::AppError}};
+
+
+pub async fn validar_cupom(
+    State(state): State<Arc<AppState>>,
+    Path(codigo): Path<String>,
+) -> Result<impl IntoResponse, AppError> {
+
+    let cupom = state.cupom_repo
+        .buscar_por_codigo(&codigo)
+        .await
+        // Erro de banco -> Internal
+        .map_err(|e| AppError::Internal(e.to_string()))?
+        // None -> NotFound
+        .ok_or_else(|| AppError::NotFound("Cupom não encontrado".into()))?;
+
+    Ok(Json(cupom))
+}
