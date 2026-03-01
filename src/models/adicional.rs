@@ -1,12 +1,12 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Adicional {
-    pub id: Uuid,
+    pub uuid: Uuid,
     pub nome: String,
     pub loja_uuid: Uuid,
     pub disponivel: bool,
@@ -29,9 +29,14 @@ impl Adicional {
             disponivel: false,
             descricao,
             preco,
-            id: Uuid::new_v4(),
+            uuid: Uuid::new_v4(),
             criado_em: agora()
         }
 
     }
+}
+
+impl Model for Adicional {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

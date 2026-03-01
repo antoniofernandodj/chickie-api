@@ -2,7 +2,7 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -68,3 +68,12 @@ impl AvaliacaoDeProduto {
     }
 }
 
+impl Model for AvaliacaoDeProduto {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+impl Model for AvaliacaoDeLoja {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}

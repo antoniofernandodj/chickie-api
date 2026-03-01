@@ -6,7 +6,7 @@ use axum::{
 };
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
-use crate::{api::{AppState, Claims}, models::Usuario}; // Importe seus Claims e AppState
+use crate::{api::{AppState, Claims}, models::Usuario, repositories::Repository}; // Importe seus Claims e AppState
 
 
 pub async fn auth_middleware(

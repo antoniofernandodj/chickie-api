@@ -1,6 +1,7 @@
 use axum::{
-    Json, extract::State, http::StatusCode, response::{IntoResponse, Response}
+    Json, extract::{Path, State}, http::StatusCode, response::{IntoResponse, Response}
 };
+use uuid::Uuid;
 
 use std::sync::Arc;
 use crate::{api::CreatePedidoRequest, models::{ParteDeItemPedido, Pedido}};
@@ -11,6 +12,7 @@ use crate::api::AppState;
 
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
+    Path(loja_uuid): Path<Uuid>,
     Json(payload): Json<CreatePedidoRequest>,
 ) -> Response {
     

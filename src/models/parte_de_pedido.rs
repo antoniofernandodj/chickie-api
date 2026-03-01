@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::{models::{Adicional, AdicionalDeItemDePedido, Produto}, utils::agora};
+use crate::{models::{Adicional, AdicionalDeItemDePedido, Model, Produto}, utils::agora};
 
 // ---------------------------------------------------------------------------
 // TipoCalculoPedido — como o preço é calculado quando há múltiplos sabores
@@ -190,4 +190,15 @@ pub fn calcular_preco_por_partes(
                 .fold(f64::NEG_INFINITY, f64::max)
         }
     }
+}
+
+impl Model for ParteDeItemPedido {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+
+impl Model for ConfiguracaoDePedidosLoja {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

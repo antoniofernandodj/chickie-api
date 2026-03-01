@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use bcrypt::{DEFAULT_COST, hash, verify};
+use jsonwebtoken::crypto::CryptoProvider;
 use crate::models::Usuario;
 use crate::repositories::{UsuarioRepository, Repository as _};
 
@@ -8,10 +9,7 @@ pub struct UsuarioService {
 }
 
 impl UsuarioService {
-    pub fn new(repo: Arc<UsuarioRepository>) -> Self {
-        Self { repo }
-    }
-
+    pub fn new(repo: Arc<UsuarioRepository>) -> Self { Self { repo } }
     pub async fn registrar(
         &self,
         nome: String,
@@ -53,6 +51,7 @@ impl UsuarioService {
         email: String,
         senha_plana: String,
     ) -> Result<Usuario, String> {
+
         // 1. Busca o usuário pelo email
         let usuario: Usuario = self.repo
             .buscar_por_email(&email)

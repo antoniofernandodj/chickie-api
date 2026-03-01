@@ -1,0 +1,96 @@
+
+
+use std::sync::Arc;
+
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{models::{Produto, Usuario}, services::CatalogoService};
+
+pub struct CatalogoUsecase {
+    pub catalogo_service: Arc<CatalogoService>,
+    pub loja_uuid: Uuid,
+    pub usuario: Usuario,
+}
+
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AtualizarProdutoRequest {
+    nome: String,
+    descricao: Option<String>,
+    preco: f64,
+    categoria_uuid: Uuid,
+    tempo_preparo_min: Option<i32>,
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateProdutoRequest {
+    pub uuid: Uuid,
+    pub categoria_uuid: Uuid,
+    pub nome: String,
+    pub descricao: Option<String>,
+    pub preco: f64,
+    pub imagem_url: Option<String>,
+    pub disponivel: bool,
+    pub tempo_preparo_min: Option<i32>,
+    pub destaque: bool,
+    pub criado_em: String,
+    pub atualizado_em: String,
+}
+
+
+impl CatalogoUsecase {
+    pub fn new(
+        catalogo_service: Arc<CatalogoService>,
+        loja_uuid: Uuid,
+        usuario: Usuario
+    ) -> Self {
+        Self { catalogo_service, loja_uuid, usuario }
+    }
+
+    pub async fn listar_produtos(&self) -> Result<Vec<Produto>, String> {
+        // Llamar al servicio de catalogo
+        self.catalogo_service.listar_produtos_de_loja(self.loja_uuid).await
+    }
+
+    pub async fn atualizar_produto(
+        &self,
+        produto_uuid: Uuid,
+        data: AtualizarProdutoRequest
+    ) -> Result<Produto, String> {
+        let produto = self
+            .catalogo_service
+            .atualizar_produto(
+                produto_uuid,
+                data.nome,
+                data.descricao,
+                data.preco, 
+                data.categoria_uuid,
+                data.tempo_preparo_min
+            )
+            .await?;
+
+        Ok(produto)
+    }
+
+    pub async fn criar_produto(
+        &self,
+        data: CreateProdutoRequest,
+    ) -> Result<Produto, String> {
+
+        let produto = self
+            .catalogo_service
+            .criar_produto(
+                data.nome,
+                data.descricao,
+                data.preco, 
+                data.categoria_uuid,
+                self.loja_uuid,
+                data.tempo_preparo_min
+            )
+            .await?;
+
+        Ok(produto)
+    }
+}

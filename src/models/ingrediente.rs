@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Ingrediente {
@@ -33,4 +33,9 @@ impl Ingrediente {
             atualizado_em: agora(),
         }
     }
+}
+
+impl Model for Ingrediente {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

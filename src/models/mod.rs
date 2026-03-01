@@ -1,3 +1,5 @@
+mod model;
+
 mod adicional;
 mod avaliacao;
 mod categoria;
@@ -14,7 +16,7 @@ mod promocoes;
 mod horarios_de_funcionamento;
 mod parte_de_pedido;
 
-
+pub use model::Model;
 
 pub use adicional::Adicional;
 pub use avaliacao::{

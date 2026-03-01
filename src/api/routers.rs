@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{Router, middleware::from_fn_with_state, routing::{get, post}};
+use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put}};
 
 use crate::api::{AppState, auth_middleware};
 use crate::api::{
@@ -17,7 +17,8 @@ use crate::api::{
     criar_produto,
     listar_produtos,
     criar_cupom,
-    validar_cupom
+    validar_cupom,
+    atualizar_produto
 };
 
 
@@ -51,6 +52,7 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_produto))
         .route("/", get(listar_produtos))
+        .route("/{uuid}", put(atualizar_produto))
 }
 
 // Rotas de Marketing / Cupons

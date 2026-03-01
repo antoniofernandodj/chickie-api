@@ -58,8 +58,8 @@ CREATE INDEX IF NOT EXISTS idx_lojas_ativa ON lojas(ativa);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS clientes (
     uuid TEXT PRIMARY KEY NOT NULL,
-    usuario_uuid TEXT NOT NULL,
     loja_uuid TEXT NOT NULL,
+    usuario_uuid TEXT NOT NULL,
     criado_em TEXT NOT NULL,
     FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE CASCADE,
     FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE,
@@ -112,7 +112,7 @@ CREATE INDEX IF NOT EXISTS idx_produtos_disponivel ON produtos(disponivel);
 -- TABELA: adicionais
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS adicionais (
-    id TEXT PRIMARY KEY NOT NULL,
+    uuid TEXT PRIMARY KEY NOT NULL,
     loja_uuid TEXT NOT NULL,
     nome TEXT NOT NULL,
     descricao TEXT NOT NULL,
@@ -186,6 +186,7 @@ CREATE INDEX IF NOT EXISTS idx_enderecos_usuario_usuario ON enderecos_usuario(us
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS enderecos_entrega (
     uuid TEXT PRIMARY KEY NOT NULL,
+    loja_uuid TEXT NOT NULL,
     pedido_uuid TEXT,
     cep TEXT,
     logradouro TEXT NOT NULL,
@@ -270,8 +271,8 @@ CREATE TABLE IF NOT EXISTS configuracoes_pedidos_loja (
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS pedidos (
     uuid TEXT PRIMARY KEY NOT NULL,
-    usuario_uuid TEXT NOT NULL,
     loja_uuid TEXT NOT NULL,
+    usuario_uuid TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'criado' CHECK (
         status IN ('criado', 'aguardando_confirmacao_de_loja', 'confirmado_pela_loja', 'em_preparo', 'pronto_para_retirada', 'saiu_para_entrega', 'entregue')
     ),
@@ -313,8 +314,8 @@ CREATE INDEX IF NOT EXISTS idx_itens_pedido ON itens_pedido(pedido_uuid);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS partes_item_pedido (
     uuid TEXT PRIMARY KEY NOT NULL,
-    item_uuid TEXT,
     loja_uuid TEXT NOT NULL,
+    item_uuid TEXT,
     produto_uuid TEXT NOT NULL,
     produto_nome TEXT NOT NULL,
     preco_unitario REAL NOT NULL,
@@ -364,8 +365,8 @@ CREATE INDEX IF NOT EXISTS idx_avaliacoes_loja_usuario ON avaliacoes_loja(usuari
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS avaliacoes_produto (
     uuid TEXT PRIMARY KEY NOT NULL,
-    usuario_uuid TEXT NOT NULL,
     loja_uuid TEXT NOT NULL,
+    usuario_uuid TEXT NOT NULL,
     produto_uuid TEXT NOT NULL,
     nota REAL NOT NULL CHECK (nota >= 0 AND nota <= 5),
     comentario TEXT,
@@ -408,6 +409,7 @@ CREATE INDEX IF NOT EXISTS idx_cupons_status ON cupons(status);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS uso_cupons (
     uuid TEXT PRIMARY KEY NOT NULL,
+    loja_uuid TEXT NOT NULL,
     cupom_uuid TEXT NOT NULL,
     usuario_uuid TEXT NOT NULL,
     pedido_uuid TEXT NOT NULL,

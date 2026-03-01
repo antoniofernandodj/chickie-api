@@ -1,8 +1,7 @@
 use axum::{
-    extract::{State},
-    response::{IntoResponse},
-    Json
+    Json, extract::{Path, State}, response::IntoResponse
 };
+use uuid::Uuid;
 
 
 use std::sync::Arc;
@@ -13,6 +12,7 @@ use crate::api::AppState;
 
 pub async fn criar_cupom(
     State(state): State<Arc<AppState>>,
+    Path(loja_uuid): Path<Uuid>,
     Json(p): Json<Cupom>,
 ) -> Result<impl IntoResponse, AppError> {
 

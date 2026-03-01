@@ -29,6 +29,8 @@ use repositories::{
 };
 use uuid::Uuid;
 
+use jsonwebtoken::crypto::rust_crypto::DEFAULT_PROVIDER; // ou aws_lc::DEFAULT_PROVIDER
+
 use crate::{
     models::{
         ParteDeItemPedido,
@@ -46,6 +48,9 @@ use crate::{
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
+
+    // ✅ Instale o provider NO INÍCIO da aplicação
+    DEFAULT_PROVIDER.install();
 
     let pool = database::criar_pool().await.unwrap();
 

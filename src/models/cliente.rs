@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 
 #[derive(Debug, FromRow, Serialize, Deserialize)]
@@ -25,4 +25,9 @@ impl Cliente {
             criado_em: agora()
         }
     }
+}
+
+impl Model for Cliente {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

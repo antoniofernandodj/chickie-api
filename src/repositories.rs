@@ -9,27 +9,17 @@ use crate::{models::*, utils::agora};
 pub trait Repository<T> {
     async fn criar(&self, item: &T) -> Result<Uuid, String>;
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<T>, String>;
-    async fn atualizar(&self, uuid: Uuid, item: T) -> Result<(), String>;
+    async fn atualizar(&self, item: T) -> Result<(), String>;
     async fn deletar(&self, uuid: Uuid) -> Result<(), String>;
     async fn listar_todos(&self) -> Result<Vec<T>, String>;
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<T>, String>;
+    fn table_name(&self) -> String;
 }
 
 // ==================== REPOSITÓRIO DE USUÁRIOS ====================
 pub struct UsuarioRepository { pool: Arc<SqlitePool> }
 impl UsuarioRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
-
-    pub async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Usuario>, String> {
         sqlx::query_as::<_, Usuario>("
@@ -64,6 +54,18 @@ impl UsuarioRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Usuario> for UsuarioRepository {
+    fn table_name(&self) -> String { "usuarios".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Usuario>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Usuario>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO usuarios (
@@ -95,17 +97,9 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
 
-    async fn atualizar(&self, uuid: Uuid, item: Usuario) -> Result<(), String> {
+    async fn atualizar(&self, item: Usuario) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE usuarios
             SET
@@ -155,24 +149,23 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Usuario>, String> {
+        sqlx::query_as::<_, Usuario>("
+                SELECT * FROM usuarios
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE LOJAS ====================
 pub struct LojaRepository { pool: Arc<SqlitePool> }
 impl LojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
-
-    pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
-        sqlx::query_as::<_, Loja>("
-            SELECT * FROM lojas WHERE slug = ?;
-        ")
-        .bind(slug)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Loja>, String> {
         sqlx::query_as::<_, Loja>("
@@ -196,6 +189,18 @@ impl LojaRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Loja> for LojaRepository {
+    fn table_name(&self) -> String { "lojas".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Loja>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Loja) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO lojas (
@@ -218,7 +223,26 @@ impl<'a> Repository<Loja> for LojaRepository {
                 criado_em,
                 atualizado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?, 
+                ?
+            );
         ")
         .bind(item.uuid)
         .bind(&item.nome)
@@ -245,17 +269,10 @@ impl<'a> Repository<Loja> for LojaRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
-        sqlx::query_as::<_, Loja>("
-            SELECT * FROM lojas WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
 
-    async fn atualizar(&self, uuid: Uuid, item: Loja) -> Result<(), String> {
+
+    async fn atualizar(&self, item: Loja) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE lojas
             SET
@@ -325,14 +342,16 @@ impl<'a> Repository<Loja> for LojaRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Loja>, String> {
+        Err("Não é possivel executar este método".into())
+    }
 }
 
 // ==================== REPOSITÓRIO DE CLIENTES ====================
 pub struct ClienteRepository { pool: Arc<SqlitePool> }
 impl<'a> ClienteRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("
@@ -353,10 +372,33 @@ impl<'a> ClienteRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
+        sqlx::query_as::<_, Produto>("
+                SELECT * FROM produtos
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 #[async_trait::async_trait]
 impl<'a> Repository<Cliente> for ClienteRepository {
+    fn table_name(&self) -> String { "clientes".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cliente>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Cliente>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Cliente) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO clientes (
@@ -378,17 +420,8 @@ impl<'a> Repository<Cliente> for ClienteRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cliente>, String> {
-        sqlx::query_as::<_, Cliente>(
-            "SELECT * FROM clientes WHERE uuid = ?;"
-        )
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Cliente) -> Result<(), String> {
+    async fn atualizar(&self, item: Cliente) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query(
             "UPDATE clientes
             SET
@@ -432,14 +465,23 @@ impl<'a> Repository<Cliente> for ClienteRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
+        sqlx::query_as::<_, Cliente>("
+                SELECT * FROM clientes
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE PRODUTOS ====================
 pub struct ProdutoRepository { pool: Arc<SqlitePool> }
 impl<'a> ProdutoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
@@ -485,10 +527,24 @@ impl<'a> ProdutoRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+
 }
 
 #[async_trait::async_trait]
 impl<'a> Repository<Produto> for ProdutoRepository {
+    fn table_name(&self) -> String { "produtos".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Produto>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Produto>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Produto) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO produtos (
@@ -526,18 +582,8 @@ impl<'a> Repository<Produto> for ProdutoRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Produto>, String> {
-        sqlx::query_as::<_, Produto>("
-            SELECT * FROM produtos
-            WHERE uuid = ?
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Produto) -> Result<(), String> {
+    async fn atualizar(&self, item: Produto) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE produtos
             SET
@@ -597,14 +643,23 @@ impl<'a> Repository<Produto> for ProdutoRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
+        sqlx::query_as::<_, Produto>("
+                SELECT * FROM produtos
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE CATEGORIAS ====================
 pub struct CategoriaProdutosRepository { pool: Arc<SqlitePool> }
 impl<'a> CategoriaProdutosRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(
         &self,
@@ -635,6 +690,18 @@ impl<'a> CategoriaProdutosRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
+    fn table_name(&self) -> String { "categorias_produtos".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, CategoriaProdutos>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &CategoriaProdutos) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO categorias_produtos (
@@ -660,18 +727,8 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
-        sqlx::query_as::<_, CategoriaProdutos>("
-            SELECT * FROM categorias_produtos
-            WHERE uuid = ?
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: CategoriaProdutos) -> Result<(), String> {
+    async fn atualizar(&self, item: CategoriaProdutos) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE categorias_produtos
                 SET loja_uuid = ?,
@@ -718,14 +775,23 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<CategoriaProdutos>, String> {
+        sqlx::query_as::<_, CategoriaProdutos>("
+                SELECT * FROM categorias_produtos
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE PEDIDOS ====================
 pub struct PedidoRepository { pool: Arc<SqlitePool> }
 impl<'a> PedidoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("
@@ -965,6 +1031,18 @@ impl<'a> PedidoRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Pedido> for PedidoRepository {
+    fn table_name(&self) -> String { "pedidos".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Pedido>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Pedido>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(
         &self,
         pedido: &Pedido
@@ -1110,17 +1188,8 @@ impl<'a> Repository<Pedido> for PedidoRepository {
         Ok(pedido.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE uuid = ?
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Pedido) -> Result<(), String> {
+    async fn atualizar(&self, item: Pedido) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE pedidos
             SET
@@ -1179,14 +1248,22 @@ impl<'a> Repository<Pedido> for PedidoRepository {
             .map_err(|e| e.to_string())
     }
     
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
+        sqlx::query_as::<_, Pedido>("
+                SELECT * FROM pedidos
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE ADICIONAIS ====================
 pub struct AdicionalRepository { pool: Arc<SqlitePool> }
 impl<'a> AdicionalRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>("
@@ -1211,10 +1288,22 @@ impl<'a> AdicionalRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Adicional> for AdicionalRepository {
+    fn table_name(&self) -> String { "adicionais".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Adicional>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Adicional>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Adicional) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO adicionais (
-                id,
+                uuid,
                 loja_uuid, 
                 nome, 
                 descricao, 
@@ -1224,7 +1313,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
             ) 
             VALUES (?, ?, ?, ?, ?, ?, ?);
         ")
-        .bind(item.id)
+        .bind(item.uuid)
         .bind(item.loja_uuid)
         .bind(&item.nome)
         .bind(&item.descricao)
@@ -1233,22 +1322,13 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
         .bind(&item.criado_em)
         .execute(&*self.pool)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: sqlx::Error| e.to_string())?;
         
-        Ok(item.id)
+        Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Adicional>, String> {
-        sqlx::query_as::<_, Adicional>("
-            SELECT * FROM adicionais WHERE id = ?
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Adicional) -> Result<(), String> {
+    async fn atualizar(&self, item: Adicional) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query(
             "UPDATE adicionais
                 SET loja_uuid = ?,
@@ -1256,7 +1336,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
                 descricao = ?,
                 preco = ?, 
                 disponivel = ?
-            WHERE id = ?
+            WHERE uuid = ?
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1277,7 +1357,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM adicionais WHERE id = ?
+            DELETE FROM adicionais WHERE uuid = ?
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1297,14 +1377,23 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
+        sqlx::query_as::<_, Adicional>("
+                SELECT * FROM adicionais
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE INGREDIENTES ====================
 pub struct IngredienteRepository { pool: Arc<SqlitePool> }
 impl<'a> IngredienteRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Ingrediente>, String> {
         sqlx::query_as::<_, Ingrediente>("
@@ -1331,6 +1420,18 @@ impl<'a> IngredienteRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Ingrediente> for IngredienteRepository {
+    fn table_name(&self) -> String { "ingredientes".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Ingrediente>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Ingrediente>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Ingrediente) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO ingredientes (
@@ -1343,7 +1444,16 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -1360,17 +1470,8 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Ingrediente>, String> {
-        sqlx::query_as::<_, Ingrediente>(
-            "SELECT * FROM ingredientes WHERE uuid = ?"
-        )
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Ingrediente) -> Result<(), String> {
+    async fn atualizar(&self, item: Ingrediente) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE ingredientes
             SET
@@ -1380,7 +1481,7 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
                 quantidade = ?,
                 preco_unitario = ?,
                 atualizado_em = ?
-                WHERE uuid = ?
+            WHERE uuid = ?
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1422,14 +1523,23 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Ingrediente>, String> {
+        sqlx::query_as::<_, Ingrediente>("
+                SELECT * FROM ingredientes
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE ENDEREÇOS DE LOJA ====================
 pub struct EnderecoLojaRepository { pool: Arc<SqlitePool> }
 impl<'a> EnderecoLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
         sqlx::query_as::<_, EnderecoLoja>("
@@ -1445,6 +1555,18 @@ impl<'a> EnderecoLojaRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
+    fn table_name(&self) -> String { "enderecos_loja".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoLoja>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, EnderecoLoja>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &EnderecoLoja) -> Result<Uuid, String> {
         let uuid = item.get_uuid();
         sqlx::query("
@@ -1461,7 +1583,19 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
                 latitude,
                 longitude
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )
         ")
         .bind(uuid)
         .bind(item.loja_uuid)
@@ -1481,17 +1615,8 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
         Ok(uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoLoja>, String> {
-        sqlx::query_as::<_, EnderecoLoja>(
-            "SELECT * FROM enderecos_loja WHERE uuid = ?"
-        )
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: EnderecoLoja) -> Result<(), String> {
+    async fn atualizar(&self, item: EnderecoLoja) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE enderecos_loja
                 SET
@@ -1549,14 +1674,23 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
+        sqlx::query_as::<_, EnderecoLoja>("
+                SELECT * FROM enderecos_loja
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE ENTREGADORES ====================
 pub struct EntregadorRepository { pool: Arc<SqlitePool> }
 impl<'a> EntregadorRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("
@@ -1592,6 +1726,18 @@ impl<'a> EntregadorRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Entregador> for EntregadorRepository {
+    fn table_name(&self) -> String { "entregadores".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Entregador>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Entregador>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Entregador) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO entregadores (
@@ -1621,17 +1767,8 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Entregador) -> Result<(), String> {
+    async fn atualizar(&self, item: Entregador) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE entregadores
             SET
@@ -1683,14 +1820,24 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
+        sqlx::query_as::<_, Entregador>("
+                SELECT * FROM entregadores
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
 }
 
 // ==================== REPOSITÓRIO DE FUNCIONÁRIOS ====================
 pub struct FuncionarioRepository { pool: Arc<SqlitePool> }
 impl<'a> FuncionarioRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("
@@ -1728,6 +1875,18 @@ impl<'a> FuncionarioRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Funcionario> for FuncionarioRepository {
+    fn table_name(&self) -> String { "funcionarios".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Funcionario>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Funcionario>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Funcionario) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO funcionarios (
@@ -1757,17 +1916,8 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("
-            SELECT * FROM funcionarios WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Funcionario) -> Result<(), String> {
+    async fn atualizar(&self, item: Funcionario) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE funcionarios
             SET
@@ -1819,14 +1969,23 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
+        sqlx::query_as::<_, Funcionario>("
+                SELECT * FROM funcionarios
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE AVALIAÇÕES DE LOJA ====================
 pub struct AvaliacaoDeLojaRepository { pool: Arc<SqlitePool> }
 impl<'a> AvaliacaoDeLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("
@@ -1860,10 +2019,23 @@ impl<'a> AvaliacaoDeLojaRepository {
 
         Ok(result.try_get("media").unwrap_or(0.0))
     }
+
 }
 
 #[async_trait::async_trait]
 impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
+    fn table_name(&self) -> String { "avaliacoes_loja".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeLoja>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, AvaliacaoDeLoja>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &AvaliacaoDeLoja) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO avaliacoes_loja (
@@ -1889,18 +2061,8 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeLoja>, String> {
-        sqlx::query_as::<_, AvaliacaoDeLoja>("
-            SELECT * FROM avaliacoes_loja
-            WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: AvaliacaoDeLoja) -> Result<(), String> {
+    async fn atualizar(&self, item: AvaliacaoDeLoja) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE avaliacoes_loja
             SET 
@@ -1948,14 +2110,23 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
+        sqlx::query_as::<_, AvaliacaoDeLoja>("
+                SELECT * FROM avaliacoes_loja
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE AVALIAÇÕES DE PRODUTO ====================
 pub struct AvaliacaoDeProdutoRepository { pool: Arc<SqlitePool> }
 impl<'a> AvaliacaoDeProdutoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_produto(&self, produto_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
         sqlx::query_as::<_, AvaliacaoDeProduto>("
@@ -2006,6 +2177,18 @@ impl<'a> AvaliacaoDeProdutoRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
+    fn table_name(&self) -> String { "avaliacoes_produto".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeProduto>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, AvaliacaoDeProduto>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &AvaliacaoDeProduto) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO avaliacoes_produto (
@@ -2035,18 +2218,8 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-            SELECT * FROM avaliacoes_produto
-            WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: AvaliacaoDeProduto) -> Result<(), String> {
+    async fn atualizar(&self, item: AvaliacaoDeProduto) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE avaliacoes_produto
             SET
@@ -2097,14 +2270,23 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
+        sqlx::query_as::<_, AvaliacaoDeProduto>("
+                SELECT * FROM avaliacoes_produto
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE CUPONS ====================
 pub struct CupomRepository { pool: Arc<SqlitePool> }
 impl<'a> CupomRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Option<Cupom>, String> {
         sqlx::query_as::<_, Cupom>("
@@ -2142,6 +2324,18 @@ impl<'a> CupomRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Cupom> for CupomRepository {
+    fn table_name(&self) -> String { "cupons".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cupom>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Cupom>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Cupom) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO cupons (
@@ -2177,18 +2371,8 @@ impl<'a> Repository<Cupom> for CupomRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cupom>, String> {
-        sqlx::query_as::<_, Cupom>("
-            SELECT * FROM cupons
-            WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Cupom) -> Result<(), String> {
+    async fn atualizar(&self, item: Cupom) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE cupons
             SET 
@@ -2246,14 +2430,23 @@ impl<'a> Repository<Cupom> for CupomRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
+        sqlx::query_as::<_, Cupom>("
+                SELECT * FROM cupons
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE USO DE CUPONS ====================
 pub struct UsoCupomRepository { pool: Arc<SqlitePool> }
 impl<'a> UsoCupomRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("
@@ -2294,6 +2487,18 @@ impl<'a> UsoCupomRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<UsoCupom> for UsoCupomRepository {
+    fn table_name(&self) -> String { "uso_cupons".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<UsoCupom>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, UsoCupom>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &UsoCupom) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO uso_cupons (
@@ -2317,18 +2522,8 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<UsoCupom>, String> {
-        sqlx::query_as::<_, UsoCupom>("
-            SELECT * FROM uso_cupons
-            WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: UsoCupom) -> Result<(), String> {
+    async fn atualizar(&self, item: UsoCupom) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE uso_cupons
             SET
@@ -2377,14 +2572,23 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
+        sqlx::query_as::<_, UsoCupom>("
+                SELECT * FROM uso_cupons
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 // ==================== REPOSITÓRIO DE PROMOÇÕES ====================
 pub struct PromocaoRepository { pool: Arc<SqlitePool> }
 impl<'a> PromocaoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("
@@ -2425,6 +2629,18 @@ impl<'a> PromocaoRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<Promocao> for PromocaoRepository {
+    fn table_name(&self) -> String { "promocoes".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Promocao>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, Promocao>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &Promocao) -> Result<Uuid, String> {
         sqlx::query("
             INSERT INTO promocoes (
@@ -2460,18 +2676,8 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("
-            SELECT * FROM promocoes
-            WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: Promocao) -> Result<(), String> {
+    async fn atualizar(&self, item: Promocao) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE promocoes
             SET
@@ -2530,15 +2736,24 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
             .await
             .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
+        sqlx::query_as::<_, Promocao>("
+                SELECT * FROM promocoes
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 
 // ==================== REPOSITÓRIO DE HORÁRIOS DE FUNCIONAMENTO ====================
 pub struct HorarioFuncionamentoRepository { pool: Arc<SqlitePool> }
 impl<'a> HorarioFuncionamentoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     /// Busca todos os horários de uma loja, ordenados pelo dia da semana
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
@@ -2714,22 +2929,25 @@ impl<'a> HorarioFuncionamentoRepository {
 
 #[async_trait::async_trait]
 impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
+    fn table_name(&self) -> String { "horarios_funcionamento".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<HorarioFuncionamento>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        sqlx::query_as::<_, HorarioFuncionamento>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn criar(&self, item: &HorarioFuncionamento) -> Result<Uuid, String> {
         self.adicionar_sem_sobrescrever(item).await?;
         Ok(item.uuid)
     }
 
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-            SELECT * FROM horarios_funcionamento WHERE uuid = ?;
-        ")
-        .bind(uuid)
-        .fetch_optional(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
-    }
-
-    async fn atualizar(&self, uuid: Uuid, item: HorarioFuncionamento) -> Result<(), String> {
+    async fn atualizar(&self, item: HorarioFuncionamento) -> Result<(), String> {
+        let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE horarios_funcionamento
             SET
@@ -2777,6 +2995,17 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
+        sqlx::query_as::<_, HorarioFuncionamento>("
+                SELECT * FROM horarios_funcionamento
+                WHERE loja_uuid = ?;
+            ")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
 }
 
 
@@ -2784,9 +3013,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
 pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<SqlitePool> }
 
 impl<'a> ConfiguracaoPedidosLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     /// Busca a configuração de pedidos da loja (única por loja)
     pub async fn buscar_por_loja(
@@ -2818,7 +3045,12 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
 
         sqlx::query("
             INSERT INTO configuracoes_pedidos_loja (
-                uuid, loja_uuid, max_pedidos, tipo_calculo, criado_em, atualizado_em
+                uuid,
+                loja_uuid,
+                max_pedidos,
+                tipo_calculo,
+                criado_em,
+                atualizado_em
             )
             VALUES (?, ?, ?, ?, ?, ?);
         ")
@@ -2925,12 +3157,116 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
     }
 }
 
+#[async_trait::async_trait]
+impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository {
+    fn table_name(&self) -> String { "configuracoes_pedidos_loja".to_string() }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
+        let t = self.table_name();
+        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);        
+        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>(&query)
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn criar(&self, item: &ConfiguracaoDePedidosLoja) -> Result<Uuid, String> {
+        sqlx::query("
+            INSERT INTO configuracoes_pedidos_loja (
+                uuid,
+                loja_uuid,
+                max_partes,
+                tipo_calculo,
+                criado_em,
+                atualizado_em
+            )
+            VALUES (?, ?, ?, ?, ?, ?);
+        ")
+        .bind(item.uuid)
+        .bind(item.loja_uuid)
+        .bind(item.max_partes)
+        .bind(item.tipo_calculo.to_string())
+        .bind(&item.criado_em)
+        .bind(&item.atualizado_em)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+        
+        Ok(item.uuid)
+    }
+
+    async fn atualizar(&self, item: ConfiguracaoDePedidosLoja) -> Result<(), String> {
+        let uuid = item.get_uuid();
+        let result = sqlx::query("
+            UPDATE configuracoes_pedidos_loja
+            SET
+                loja_uuid = ?,
+                max_partes = ?,
+                tipo_calculo = ?,
+                atualizado_em = ?
+            WHERE uuid = ?;
+        ")
+        .bind(item.loja_uuid)
+        .bind(item.max_partes)
+        .bind(item.tipo_calculo.to_string())
+        .bind(&item.atualizado_em)
+        .bind(uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Configuração de pedidos não encontrada".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
+        let result = sqlx::query("
+            DELETE FROM configuracoes_pedidos_loja WHERE uuid = ?;
+        ")
+        .bind(uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Configuração de pedidos não encontrada".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn listar_todos(&self) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
+        let query = format!(
+            "SELECT * FROM {};",
+            self.table_name()
+        );
+        
+        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>(&query)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
+        // Como há apenas 1 configuração por loja, retorna Vec com 0 ou 1 elemento
+        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("
+            SELECT * FROM configuracoes_pedidos_loja
+            WHERE loja_uuid = ?;
+        ")
+        .bind(loja_uuid)
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())
+    }
+}
 // ==================== REPOSITÓRIO DE PARTES DE ITEM ====================
 pub struct ParteDeItemPedidoRepository { pool: Arc<SqlitePool> }
 impl<'a> ParteDeItemPedidoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self {
-        Self { pool }
-    }
+    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_item(
         &self,

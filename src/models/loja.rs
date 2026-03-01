@@ -2,7 +2,7 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Loja {
@@ -63,4 +63,10 @@ impl Loja {
             atualizado_em: agora(),
         }
     }
+}
+
+
+impl Model for Loja {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

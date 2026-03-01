@@ -2,7 +2,11 @@ use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 
+use crate::models::Model;
+
 // --- EnderecoLoja (flat, compatível com FromRow) ---
+
+
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct EnderecoLoja {
@@ -20,9 +24,6 @@ pub struct EnderecoLoja {
 }
 
 impl EnderecoLoja {
-    pub fn get_uuid(&self) -> Uuid {
-        self.uuid
-    }
 
     pub fn new(
         loja_uuid: Uuid,
@@ -138,4 +139,19 @@ impl EnderecoEntrega {
             longitude: None,
         }
     }
+}
+    
+impl Model for EnderecoLoja {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+impl Model for EnderecoEntrega {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+impl Model for EnderecoUsuario {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

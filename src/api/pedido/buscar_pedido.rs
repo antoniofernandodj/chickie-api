@@ -11,6 +11,7 @@ use crate::api::AppState;
 pub async fn buscar_pedido(
     State(state): State<Arc<AppState>>,
     Path(uuid): Path<Uuid>,
+    Path(loja_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let pedido = state

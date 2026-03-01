@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{models::{ParteDeItemPedido}, utils::agora};
+use crate::{models::{Model, ParteDeItemPedido}, utils::agora};
 use sqlx::FromRow;
 
 // --- AdicionalDeItemDePedido ---
@@ -226,4 +226,9 @@ impl Pedido {
             .find(|i| i.uuid == item_uuid)
             .expect("Item não encontrado")
     }
+}
+
+impl Model for Pedido {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

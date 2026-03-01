@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Usuario {
@@ -48,4 +48,9 @@ impl Usuario {
             passou_pelo_primeiro_acesso: false,
         }
     }
+}
+
+impl Model for Usuario {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }

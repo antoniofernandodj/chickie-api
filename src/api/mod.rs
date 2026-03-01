@@ -7,6 +7,7 @@ mod produto;
 mod cupom;
 mod routers;
 mod auth;
+mod usecases;
 
 pub use routers::api_routes;
 
@@ -22,6 +23,10 @@ pub use dto::{
     CreateLojaRequest,
     CreatePedidoRequest,
     Claims
+};
+
+pub use usecases::{
+    CatalogoUsecase
 };
 
 pub use pedido::{
@@ -43,6 +48,7 @@ pub use loja::{
 pub use produto::{
     criar_produto,
     listar_produtos, // buscar_produto
+    atualizar_produto
 };
 
 pub use cupom::{

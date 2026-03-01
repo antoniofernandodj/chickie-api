@@ -3,6 +3,7 @@ use axum::{
     extract::{Path, State},
     response::{IntoResponse}
 };
+use uuid::Uuid;
 
 
 use std::sync::Arc;
@@ -12,6 +13,7 @@ use crate::{api::{AppState, dto::AppError}};
 pub async fn validar_cupom(
     State(state): State<Arc<AppState>>,
     Path(codigo): Path<String>,
+    Path(loja_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let cupom = state.cupom_repo

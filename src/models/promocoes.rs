@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 
-use crate::utils::agora;
+use crate::{models::Model, utils::agora};
 
 // --- StatusCupom ---
 
@@ -271,4 +271,20 @@ impl Promocao {
     pub fn desativar(&mut self) {
         self.status = StatusCupom::Inativo;
     }
+}
+
+
+impl Model for Promocao {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+impl Model for Cupom {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+impl Model for UsoCupom {
+    fn get_uuid(&self) -> Uuid { self.uuid }
+    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
