@@ -25,8 +25,8 @@ impl EnderecoUsuarioService {
         bairro: String,
         cidade: String,
         estado: String,
-        latitude: Option<f64>,
-        longitude: Option<f64>,
+        // latitude: Option<f64>,
+        // longitude: Option<f64>,
     ) -> Result<EnderecoUsuario, String> {
         
         let endereco = EnderecoUsuario::new(

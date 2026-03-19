@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use sqlx::{SqlitePool, Row};
+use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::Row;
 use uuid::Uuid;
 use crate::{models::*, utils::agora};
 
@@ -17,13 +18,13 @@ pub trait Repository<T> {
 }
 
 // ==================== REPOSITÓRIO DE USUÁRIOS ====================
-pub struct UsuarioRepository { pool: Arc<SqlitePool> }
+pub struct UsuarioRepository { pool: Arc<PgPool> }
 impl UsuarioRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Usuario>, String> {
         sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE email = ?;
+            SELECT * FROM usuarios WHERE email = $1;
         ")
         .bind(email)
         .fetch_optional(&*self.pool)
@@ -33,7 +34,7 @@ impl UsuarioRepository {
 
     pub async fn buscar_por_username(&self, username: &str) -> Result<Option<Usuario>, String> {
         sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE username = ?;
+            SELECT * FROM usuarios WHERE username = $1;
         ")
         .bind(username)
         .fetch_optional(&*self.pool)
@@ -43,7 +44,7 @@ impl UsuarioRepository {
 
     pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Usuario>, String> {
         sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE telefone = ?;
+            SELECT * FROM usuarios WHERE telefone = $1;
         ")
         .bind(telefone)
         .fetch_optional(&*self.pool)
@@ -58,7 +59,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Usuario>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Usuario>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -79,7 +80,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
                 criado_em,
                 atualizado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
         ")
         .bind(&item.uuid)
         .bind(&item.nome)
@@ -103,12 +104,12 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
         let result = sqlx::query("
             UPDATE usuarios
             SET
-                username = ?,
-                email = ?,
-                senha_hash = ?,
-                telefone = ?,
-                atualizado_em = ? 
-            WHERE uuid = ?;
+                username = $1,
+                email = $2,
+                senha_hash = $3,
+                telefone = $4,
+                atualizado_em = $5 
+            WHERE uuid = $6
         ")
         .bind(&item.username)
         .bind(&item.email)
@@ -129,7 +130,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-                DELETE FROM usuarios WHERE uuid = ?;
+                DELETE FROM usuarios WHERE uuid = $1
             ")
             .bind(uuid)
             .execute(&*self.pool)
@@ -156,13 +157,13 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
 }
 
 // ==================== REPOSITÓRIO DE LOJAS ====================
-pub struct LojaRepository { pool: Arc<SqlitePool> }
+pub struct LojaRepository { pool: Arc<PgPool> }
 impl LojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Loja>, String> {
         sqlx::query_as::<_, Loja>("
-            SELECT * FROM lojas WHERE email = ?;
+            SELECT * FROM lojas WHERE email = $1;
         ")
         .bind(email)
         .fetch_optional(&*self.pool)
@@ -186,7 +187,7 @@ impl<'a> Repository<Loja> for LojaRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Loja>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -217,24 +218,24 @@ impl<'a> Repository<Loja> for LojaRepository {
                 atualizado_em
             ) 
             VALUES (
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?, 
-                ?
+                $1, 
+                $2, 
+                $3, 
+                $4, 
+                $5, 
+                $6, 
+                $7, 
+                $8, 
+                $9, 
+                $10, 
+                $11, 
+                $12, 
+                $13, 
+                $14, 
+                $15, 
+                $16, 
+                $17, 
+                $18
             );
         ")
         .bind(item.uuid)
@@ -269,23 +270,23 @@ impl<'a> Repository<Loja> for LojaRepository {
         let result = sqlx::query("
             UPDATE lojas
             SET
-                nome = ?,
-                slug = ?,
-                descricao = ?,
-                email = ?,
-                telefone = ?,
-                ativa = ?, 
-                logo_url = ?,
-                banner_url = ?,
-                horario_abertura = ?,
-                horario_fechamento = ?, 
-                dias_funcionamento = ?,
-                tempo_preparo_min = ?,
-                taxa_entrega = ?,
-                valor_minimo_pedido = ?, 
-                raio_entrega_km = ?,
-                atualizado_em = ?
-            WHERE uuid = ?;
+                nome = $1,
+                slug = $2,
+                descricao = $3,
+                email = $4,
+                telefone = $5,
+                ativa = $6, 
+                logo_url = $7,
+                banner_url = $8,
+                horario_abertura = $9,
+                horario_fechamento = $10, 
+                dias_funcionamento = $11,
+                tempo_preparo_min = $12,
+                taxa_entrega = $13,
+                valor_minimo_pedido = $14, 
+                raio_entrega_km = $15,
+                atualizado_em = $16
+            WHERE uuid = $17
         ")
         .bind(&item.nome)
         .bind(&item.slug)
@@ -316,7 +317,7 @@ impl<'a> Repository<Loja> for LojaRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM lojas WHERE uuid = ?;")
+        let result = sqlx::query("DELETE FROM lojas WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await
@@ -342,13 +343,13 @@ impl<'a> Repository<Loja> for LojaRepository {
 }
 
 // ==================== REPOSITÓRIO DE CLIENTES ====================
-pub struct ClienteRepository { pool: Arc<SqlitePool> }
+pub struct ClienteRepository { pool: Arc<PgPool> }
 impl<'a> ClienteRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("
-            SELECT * FROM clientes WHERE usuario_uuid = ?;
+            SELECT * FROM clientes WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -358,7 +359,7 @@ impl<'a> ClienteRepository {
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("
-            SELECT * FROM clientes WHERE loja_uuid = ?;
+            SELECT * FROM clientes WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -369,7 +370,7 @@ impl<'a> ClienteRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
                 SELECT * FROM produtos
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -384,7 +385,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cliente>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Cliente>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -400,7 +401,12 @@ impl<'a> Repository<Cliente> for ClienteRepository {
                 loja_uuid,
                 criado_em
             )
-            VALUES (?, ?, ?, ?);
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4
+            );
         ")
         .bind(item.uuid)
         .bind(item.usuario_uuid)
@@ -418,9 +424,9 @@ impl<'a> Repository<Cliente> for ClienteRepository {
         let result = sqlx::query(
             "UPDATE clientes
             SET
-                usuario_uuid = ?,
-                loja_uuid = ?
-            WHERE uuid = ?;
+                usuario_uuid = $1,
+                loja_uuid = $2
+            WHERE uuid = $3
         ")
         .bind(item.usuario_uuid)
         .bind(item.loja_uuid)
@@ -438,7 +444,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-                DELETE FROM clientes WHERE uuid = ?;
+                DELETE FROM clientes WHERE uuid = $1
             ")
             .bind(uuid)
             .execute(&*self.pool)
@@ -462,7 +468,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("
                 SELECT * FROM clientes
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -472,14 +478,14 @@ impl<'a> Repository<Cliente> for ClienteRepository {
 }
 
 // ==================== REPOSITÓRIO DE PRODUTOS ====================
-pub struct ProdutoRepository { pool: Arc<SqlitePool> }
+pub struct ProdutoRepository { pool: Arc<PgPool> }
 impl<'a> ProdutoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
             SELECT * FROM produtos
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -490,7 +496,7 @@ impl<'a> ProdutoRepository {
     pub async fn buscar_por_categoria(&self, categoria_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
             SELECT * FROM produtos
-            WHERE categoria_uuid = ?;
+            WHERE categoria_uuid = $1;
         ")
         .bind(categoria_uuid)
         .fetch_all(&*self.pool)
@@ -501,7 +507,7 @@ impl<'a> ProdutoRepository {
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
             SELECT * FROM produtos
-            WHERE loja_uuid = ? AND disponivel = true;
+            WHERE loja_uuid = $1 AND disponivel = true;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -512,7 +518,7 @@ impl<'a> ProdutoRepository {
     pub async fn buscar_por_nome(&self, nome: &str, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
             SELECT * FROM produtos
-            WHERE loja_uuid = ? AND nome LIKE ?;
+            WHERE loja_uuid = $1 AND nome LIKE $2;
         ")
         .bind(loja_uuid)
         .bind(format!("%{}%", nome))
@@ -530,7 +536,7 @@ impl<'a> Repository<Produto> for ProdutoRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Produto>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Produto>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -554,7 +560,20 @@ impl<'a> Repository<Produto> for ProdutoRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                $10,
+                $11,
+                $12
+            );
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -580,17 +599,17 @@ impl<'a> Repository<Produto> for ProdutoRepository {
         let result = sqlx::query("
             UPDATE produtos
             SET
-                loja_uuid = ?,
-                categoria_uuid = ?,
-                nome = ?,
-                descricao = ?, 
-                preco = ?,
-                imagem_url = ?,
-                disponivel = ?,
-                tempo_preparo_min = ?,
-                destaque = ?, 
-                atualizado_em = ?
-            WHERE uuid = ?;
+                loja_uuid = $1,
+                categoria_uuid = $2,
+                nome = $3,
+                descricao = $4, 
+                preco = $5,
+                imagem_url = $6,
+                disponivel = $7,
+                tempo_preparo_min = $8,
+                destaque = $9, 
+                atualizado_em = $10,
+            WHERE uuid = $11
         ")
         .bind(item.loja_uuid)
         .bind(item.categoria_uuid)
@@ -616,7 +635,7 @@ impl<'a> Repository<Produto> for ProdutoRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-                DELETE FROM produtos WHERE uuid = ?
+                DELETE FROM produtos WHERE uuid = $1
             ")
             .bind(uuid)
             .execute(&*self.pool)
@@ -640,7 +659,7 @@ impl<'a> Repository<Produto> for ProdutoRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
         sqlx::query_as::<_, Produto>("
                 SELECT * FROM produtos
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -650,9 +669,9 @@ impl<'a> Repository<Produto> for ProdutoRepository {
 }
 
 // ==================== REPOSITÓRIO DE CATEGORIAS ====================
-pub struct CategoriaProdutosRepository { pool: Arc<SqlitePool> }
+pub struct CategoriaProdutosRepository { pool: Arc<PgPool> }
 impl<'a> CategoriaProdutosRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(
         &self,
@@ -660,7 +679,7 @@ impl<'a> CategoriaProdutosRepository {
     ) -> Result<Vec<CategoriaProdutos>, String> {
         sqlx::query_as::<_, CategoriaProdutos>("
             SELECT * FROM categorias_produtos
-            WHERE loja_uuid = ?
+            WHERE loja_uuid = $1
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -671,7 +690,7 @@ impl<'a> CategoriaProdutosRepository {
     pub async fn buscar_por_nome(&self, nome: &str, loja_uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
         sqlx::query_as::<_, CategoriaProdutos>("
             SELECT * FROM categorias_produtos
-            WHERE loja_uuid = ? AND nome = ?
+            WHERE loja_uuid = $1 AND nome = $2
         ")
         .bind(loja_uuid)
         .bind(nome)
@@ -687,7 +706,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, CategoriaProdutos>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -705,7 +724,14 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
                 ordem,
                 criado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (
+                $1, 
+                $2, 
+                $3, 
+                $4, 
+                $5, 
+                $6
+            )
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -724,11 +750,11 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
         let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE categorias_produtos
-                SET loja_uuid = ?,
-                nome = ?,
-                descricao = ?,
-                ordem = ? 
-             WHERE uuid = ?
+                SET loja_uuid = $1,
+                nome = $2,
+                descricao = $3,
+                ordem = $4 
+             WHERE uuid = $5
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -748,7 +774,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-                DELETE FROM categorias_produtos WHERE uuid = ?
+                DELETE FROM categorias_produtos WHERE uuid = $1
             ")
             .bind(uuid)
             .execute(&*self.pool)
@@ -772,7 +798,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<CategoriaProdutos>, String> {
         sqlx::query_as::<_, CategoriaProdutos>("
                 SELECT * FROM categorias_produtos
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -782,13 +808,13 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
 }
 
 // ==================== REPOSITÓRIO DE PEDIDOS ====================
-pub struct PedidoRepository { pool: Arc<SqlitePool> }
+pub struct PedidoRepository { pool: Arc<PgPool> }
 impl<'a> PedidoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE usuario_uuid = ?;
+            SELECT * FROM pedidos WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -798,7 +824,7 @@ impl<'a> PedidoRepository {
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE loja_uuid = ?;
+            SELECT * FROM pedidos WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -808,7 +834,7 @@ impl<'a> PedidoRepository {
 
     pub async fn buscar_por_status(&self, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>(
-            "SELECT * FROM pedidos WHERE status = ?;"
+            "SELECT * FROM pedidos WHERE status = $1;"
         )
         .bind(status.to_string())
         .fetch_all(&*self.pool)
@@ -819,7 +845,7 @@ impl<'a> PedidoRepository {
     pub async fn buscar_pendentes(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("
             SELECT * FROM pedidos
-            WHERE loja_uuid = ? AND (status = ? OR status = ?)
+            WHERE loja_uuid = $1 AND (status = $2 OR status = $3)
         ")
         .bind(loja_uuid)
         .bind(EstadoDePedido::EmPreparo.to_string())
@@ -836,7 +862,7 @@ impl<'a> PedidoRepository {
     ) -> Result<Option<Pedido>, String> {
         // 1. Busca o pedido base
         let mut pedido = match sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE uuid = ?;
+            SELECT * FROM pedidos WHERE uuid = $1
         ")
         .bind(uuid)
         .fetch_optional(&*self.pool)
@@ -850,8 +876,8 @@ impl<'a> PedidoRepository {
         // 2. Busca todos os itens do pedido
         let mut itens = sqlx::query_as::<_, ItemPedido>("
             SELECT * FROM itens_pedido
-            WHERE pedido_uuid = ?
-            ORDER BY rowid ASC;
+            WHERE pedido_uuid = $1
+            ORDER BY criado_em ASC;
         ")
         .bind(uuid)
         .fetch_all(&*self.pool)
@@ -874,7 +900,7 @@ impl<'a> PedidoRepository {
 
         let partes = sqlx::query_as::<_, ParteDeItemPedido>("
             SELECT * FROM partes_item_pedido
-            WHERE item_uuid = ?
+            WHERE item_uuid = $1
             ORDER BY posicao ASC;
         ")
         .bind(item.uuid)
@@ -892,7 +918,7 @@ impl<'a> PedidoRepository {
 
         let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>("
             SELECT * FROM adicionais_item_pedido
-            WHERE item_uuid = ?;
+            WHERE item_uuid = $1;
         ")
         .bind(item.uuid)
         .fetch_all(&*self.pool)
@@ -909,7 +935,7 @@ impl<'a> PedidoRepository {
     ) -> Result<Vec<Pedido>, String> {
         let pedidos = sqlx::query_as::<_, Pedido>("
             SELECT * FROM pedidos
-            WHERE loja_uuid = ?
+            WHERE loja_uuid = $1
             ORDER BY criado_em DESC;
         ")
         .bind(loja_uuid)
@@ -926,7 +952,7 @@ impl<'a> PedidoRepository {
     ) -> Result<Vec<Pedido>, String> {
         let pedidos = sqlx::query_as::<_, Pedido>("
             SELECT * FROM pedidos
-            WHERE usuario_uuid = ?
+            WHERE usuario_uuid = $1
             ORDER BY criado_em DESC;
         ")
         .bind(usuario_uuid)
@@ -951,16 +977,17 @@ impl<'a> PedidoRepository {
             .iter()
             .map(|p| format!("'{}'", p.uuid))
             .collect();
-        let placeholder = uuids_pedidos.join(", ");
 
-        let mut itens = sqlx::query_as::<_, ItemPedido>(&format!("
-            SELECT * FROM itens_pedido
-            WHERE pedido_uuid IN ({})
-            ORDER BY pedido_uuid, rowid ASC;
-        ", placeholder))
-        .fetch_all(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
+        let mut itens = // ✅ Seguro e idiomático PostgreSQL
+            sqlx::query_as::<_, ItemPedido>("
+                SELECT * FROM itens_pedido 
+                WHERE pedido_uuid = ANY($1)
+                ORDER BY pedido_uuid, criado_em ASC;
+            ")
+            .bind(&uuids_pedidos)  // &[Uuid]
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())?;
 
         // Busca adicionais e partes de todos os itens em duas queries únicas
         if !itens.is_empty() {
@@ -1028,7 +1055,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Pedido>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Pedido>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1064,7 +1091,21 @@ impl<'a> Repository<Pedido> for PedidoRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                $10,
+                $11,
+                $12,
+                $13
+            )
         ")
         .bind(&pedido.uuid)
         .bind(&pedido.usuario_uuid)
@@ -1098,7 +1139,13 @@ impl<'a> Repository<Pedido> for PedidoRepository {
                     quantidade,
                     observacoes
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5
+                )
             ")
             .bind(i.uuid)
             .bind(i.pedido_uuid)
@@ -1124,7 +1171,15 @@ impl<'a> Repository<Pedido> for PedidoRepository {
                             preco_unitario,
                             posicao
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?);
+                        VALUES (
+                            $1,
+                            $2,
+                            $3,
+                            $4,
+                            $5,
+                            $6,
+                            $7
+                        );
                     ")
                     .bind(&parte.uuid)
                     .bind(&parte.loja_uuid)
@@ -1154,7 +1209,14 @@ impl<'a> Repository<Pedido> for PedidoRepository {
                         descricao,
                         preco
                     )
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (
+                        $1,
+                        $2,
+                        $3,
+                        $4,
+                        $5,
+                        $6
+                    )
                 ")
                 .bind(a.uuid)
                 .bind(a.item_uuid)
@@ -1186,16 +1248,16 @@ impl<'a> Repository<Pedido> for PedidoRepository {
         let result = sqlx::query("
             UPDATE pedidos
             SET
-                status = ?,
-                total = ?,
-                subtotal = ?,
-                taxa_entrega = ?, 
-                desconto = ?,
-                forma_pagamento = ?,
-                observacoes = ?,
-                tempo_estimado_min = ?, 
-                atualizado_em = ?
-            WHERE uuid = ?
+                status = $1,
+                total = $2,
+                subtotal = $3,
+                taxa_entrega = $4, 
+                desconto = $5,
+                forma_pagamento = $6,
+                observacoes = $7,
+                tempo_estimado_min = $8, 
+                atualizado_em = $9
+            WHERE uuid = $10
         ")
         .bind(item.status.to_string())
         .bind(item.total)
@@ -1220,7 +1282,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM pedidos WHERE uuid = ?;
+            DELETE FROM pedidos WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1244,7 +1306,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("
                 SELECT * FROM pedidos
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1254,13 +1316,13 @@ impl<'a> Repository<Pedido> for PedidoRepository {
 }
 
 // ==================== REPOSITÓRIO DE ADICIONAIS ====================
-pub struct AdicionalRepository { pool: Arc<SqlitePool> }
+pub struct AdicionalRepository { pool: Arc<PgPool> }
 impl<'a> AdicionalRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>("
-            SELECT * FROM adicionais WHERE loja_uuid = ?;
+            SELECT * FROM adicionais WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1270,7 +1332,7 @@ impl<'a> AdicionalRepository {
 
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>(
-            "SELECT * FROM adicionais WHERE loja_uuid = ? AND disponivel = true;"
+            "SELECT * FROM adicionais WHERE loja_uuid = $1 AND disponivel = true;"
         )
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1285,7 +1347,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Adicional>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Adicional>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1304,7 +1366,15 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
                 disponivel, 
                 criado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7
+            );
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -1324,12 +1394,12 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
         let uuid = item.get_uuid();
         let result = sqlx::query(
             "UPDATE adicionais
-                SET loja_uuid = ?,
-                nome = ?,
-                descricao = ?,
-                preco = ?, 
-                disponivel = ?
-            WHERE uuid = ?
+                SET loja_uuid = $1,
+                nome = $2,
+                descricao = $3,
+                preco = $4, 
+                disponivel = $5
+            WHERE uuid = $6
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1350,7 +1420,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM adicionais WHERE uuid = ?
+            DELETE FROM adicionais WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1374,7 +1444,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>("
                 SELECT * FROM adicionais
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1384,14 +1454,14 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
 }
 
 // ==================== REPOSITÓRIO DE INGREDIENTES ====================
-pub struct IngredienteRepository { pool: Arc<SqlitePool> }
+pub struct IngredienteRepository { pool: Arc<PgPool> }
 impl<'a> IngredienteRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Ingrediente>, String> {
         sqlx::query_as::<_, Ingrediente>("
             SELECT * FROM ingredientes
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1402,7 +1472,7 @@ impl<'a> IngredienteRepository {
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Ingrediente>, String> {
         sqlx::query_as::<_, Ingrediente>("
             SELECT * FROM ingredientes
-            WHERE loja_uuid = ? AND quantidade > 0
+            WHERE loja_uuid = $1 AND quantidade > 0
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1417,7 +1487,7 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Ingrediente>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Ingrediente>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1438,14 +1508,14 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
                 atualizado_em
             )
             VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8
             )
         ")
         .bind(item.uuid)
@@ -1468,13 +1538,13 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
         let result = sqlx::query("
             UPDATE ingredientes
             SET
-                loja_uuid = ?,
-                nome = ?,
-                unidade_medida = ?, 
-                quantidade = ?,
-                preco_unitario = ?,
-                atualizado_em = ?
-            WHERE uuid = ?
+                loja_uuid = $1,
+                nome = $2,
+                unidade_medida = $3, 
+                quantidade = $4,
+                preco_unitario = $5,
+                atualizado_em = $6
+            WHERE uuid = $7
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1496,7 +1566,7 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM ingredientes WHERE uuid = ?
+            DELETE FROM ingredientes WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1520,7 +1590,7 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Ingrediente>, String> {
         sqlx::query_as::<_, Ingrediente>("
                 SELECT * FROM ingredientes
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1530,13 +1600,13 @@ impl<'a> Repository<Ingrediente> for IngredienteRepository {
 }
 
 // ==================== REPOSITÓRIO DE ENDEREÇOS DE LOJA ====================
-pub struct EnderecoLojaRepository { pool: Arc<SqlitePool> }
+pub struct EnderecoLojaRepository { pool: Arc<PgPool> }
 impl<'a> EnderecoLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
         sqlx::query_as::<_, EnderecoLoja>("
-            SELECT * FROM enderecos_loja WHERE loja_uuid = ?;
+            SELECT * FROM enderecos_loja WHERE loja_uuid = $1;
         "
         )
         .bind(loja_uuid)
@@ -1552,7 +1622,7 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoLoja>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, EnderecoLoja>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1577,17 +1647,17 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
                 longitude
             )
             VALUES (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                $9,
+                $10,
+                $11
             )
         ")
         .bind(uuid)
@@ -1613,17 +1683,17 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
         let result = sqlx::query("
             UPDATE enderecos_loja
                 SET
-                    loja_uuid = ?,
-                    cep = ?,
-                    logradouro = ?,
-                    numero = ?, 
-                    complemento = ?,
-                    bairro = ?,
-                    cidade = ?,
-                    estado = ?,
-                    latitude = ?,
-                    longitude = ? 
-             WHERE uuid = ?
+                    loja_uuid = $1,
+                    cep = $2,
+                    logradouro = $3,
+                    numero = $4, 
+                    complemento = $5,
+                    bairro = $6,
+                    cidade = $7,
+                    estado = $8,
+                    latitude = $9,
+                    longitude = $10 
+             WHERE uuid = $11
         ")
         .bind(item.loja_uuid)
         .bind(&item.cep)
@@ -1648,7 +1718,7 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM enderecos_loja WHERE uuid = ?")
+        let result = sqlx::query("DELETE FROM enderecos_loja WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await
@@ -1671,7 +1741,7 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
         sqlx::query_as::<_, EnderecoLoja>("
                 SELECT * FROM enderecos_loja
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1681,13 +1751,13 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
 }
 
 // ==================== REPOSITÓRIO DE ENTREGADORES ====================
-pub struct EntregadorRepository { pool: Arc<SqlitePool> }
+pub struct EntregadorRepository { pool: Arc<PgPool> }
 impl<'a> EntregadorRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores WHERE loja_uuid = ?
+            SELECT * FROM entregadores WHERE loja_uuid = $1
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1698,7 +1768,7 @@ impl<'a> EntregadorRepository {
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("
             SELECT * FROM entregadores
-            WHERE loja_uuid = ? AND disponivel = true;
+            WHERE loja_uuid = $1 AND disponivel = true;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1708,7 +1778,7 @@ impl<'a> EntregadorRepository {
 
     pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores WHERE telefone = ?;
+            SELECT * FROM entregadores WHERE telefone = $1;
         ")
         .bind(telefone)
         .fetch_optional(&*self.pool)
@@ -1723,7 +1793,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Entregador>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Entregador>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1743,7 +1813,16 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
                 disponivel,
                 criado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8
+            )
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -1765,13 +1844,13 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
         let result = sqlx::query("
             UPDATE entregadores
             SET
-                loja_uuid = ?,
-                nome = ?,
-                telefone = ?,
-                veiculo = ?, 
-                placa = ?,
-                disponivel = ?
-            WHERE uuid = ?
+                loja_uuid = $1,
+                nome = $2,
+                telefone = $3,
+                veiculo = $4, 
+                placa = $5,
+                disponivel = $6
+            WHERE uuid = $7
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1793,7 +1872,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM entregadores WHERE uuid = ?;
+            DELETE FROM entregadores WHERE uuid = $1;
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1817,7 +1896,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("
                 SELECT * FROM entregadores
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1828,13 +1907,13 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
 }
 
 // ==================== REPOSITÓRIO DE FUNCIONÁRIOS ====================
-pub struct FuncionarioRepository { pool: Arc<SqlitePool> }
+pub struct FuncionarioRepository { pool: Arc<PgPool> }
 impl<'a> FuncionarioRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("
-            SELECT * FROM funcionarios WHERE loja_uuid = ?;
+            SELECT * FROM funcionarios WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1845,7 +1924,7 @@ impl<'a> FuncionarioRepository {
     pub async fn buscar_por_cargo(&self, cargo: &str, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("
             SELECT * FROM funcionarios
-            WHERE loja_uuid = ? AND cargo = ?
+            WHERE loja_uuid = $1 AND cargo = $2
         ")
         .bind(loja_uuid)
         .bind(cargo)
@@ -1857,7 +1936,7 @@ impl<'a> FuncionarioRepository {
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("
             SELECT * FROM funcionarios
-            WHERE email = ?;
+            WHERE email = $1;
         ")
         .bind(email)
         .fetch_optional(&*self.pool)
@@ -1872,7 +1951,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Funcionario>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Funcionario>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -1892,7 +1971,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
                 data_admissao,
                 criado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -1900,6 +1979,9 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
         .bind(&item.email)
         .bind(&item.cargo)
         .bind(item.salario)
+        // TODO: Funciona, mas não é ideal
+        // Melhor: Use Option<chrono::NaiveDate>
+        // ou Option<chrono::DateTime<Utc>> no model e deixe o SQLx converter.
         .bind(&item.data_admissao.to_string())
         .bind(&item.criado_em)
         .execute(&*self.pool)
@@ -1914,13 +1996,13 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
         let result = sqlx::query("
             UPDATE funcionarios
             SET
-                loja_uuid = ?,
-                nome = ?,
-                email = ?,
-                cargo = ?, 
-                salario = ?,
-                data_admissao = ?
-            WHERE uuid = ?;
+                loja_uuid = $1,
+                nome = $2,
+                email = $3,
+                cargo = $4, 
+                salario = $5,
+                data_admissao = $6
+            WHERE uuid = $7
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -1942,7 +2024,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM funcionarios WHERE uuid = ?;
+            DELETE FROM funcionarios WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -1966,7 +2048,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("
                 SELECT * FROM funcionarios
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -1976,13 +2058,13 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
 }
 
 // ==================== REPOSITÓRIO DE AVALIAÇÕES DE LOJA ====================
-pub struct AvaliacaoDeLojaRepository { pool: Arc<SqlitePool> }
+pub struct AvaliacaoDeLojaRepository { pool: Arc<PgPool> }
 impl<'a> AvaliacaoDeLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("
-            SELECT * FROM avaliacoes_loja WHERE loja_uuid = ?;
+            SELECT * FROM avaliacoes_loja WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -1992,7 +2074,7 @@ impl<'a> AvaliacaoDeLojaRepository {
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("
-            SELECT * FROM avaliacoes_loja WHERE usuario_uuid = ?;
+            SELECT * FROM avaliacoes_loja WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -2003,7 +2085,7 @@ impl<'a> AvaliacaoDeLojaRepository {
     pub async fn calcular_media(&self, loja_uuid: Uuid) -> Result<f64, String> {
         let result = sqlx::query("
             SELECT AVG(nota) as media FROM avaliacoes_loja
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_one(&*self.pool)
@@ -2021,7 +2103,7 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeLoja>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, AvaliacaoDeLoja>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2039,7 +2121,7 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
                 comentario,
                 criado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -2059,11 +2141,11 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
         let result = sqlx::query("
             UPDATE avaliacoes_loja
             SET 
-                loja_uuid = ?,
-                usuario_uuid = ?,
-                nota = ?, 
-                comentario = ?
-            WHERE uuid = ?;
+                loja_uuid = $1,
+                usuario_uuid = $2,
+                nota = $3, 
+                comentario = $4
+            WHERE uuid = $5
         ")
         .bind(item.loja_uuid)
         .bind(item.usuario_uuid)
@@ -2083,7 +2165,7 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM avaliacoes_loja WHERE uuid = ?;
+            DELETE FROM avaliacoes_loja WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2107,7 +2189,7 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("
                 SELECT * FROM avaliacoes_loja
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -2117,14 +2199,14 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
 }
 
 // ==================== REPOSITÓRIO DE AVALIAÇÕES DE PRODUTO ====================
-pub struct AvaliacaoDeProdutoRepository { pool: Arc<SqlitePool> }
+pub struct AvaliacaoDeProdutoRepository { pool: Arc<PgPool> }
 impl<'a> AvaliacaoDeProdutoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_produto(&self, produto_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
         sqlx::query_as::<_, AvaliacaoDeProduto>("
             SELECT * FROM avaliacoes_produto
-            WHERE produto_uuid = ?;
+            WHERE produto_uuid = $1;
         ")
         .bind(produto_uuid)
         .fetch_all(&*self.pool)
@@ -2135,7 +2217,7 @@ impl<'a> AvaliacaoDeProdutoRepository {
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
         sqlx::query_as::<_, AvaliacaoDeProduto>("
             SELECT * FROM avaliacoes_produto
-            WHERE usuario_uuid = ?;
+            WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -2146,7 +2228,7 @@ impl<'a> AvaliacaoDeProdutoRepository {
     pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
         sqlx::query_as::<_, AvaliacaoDeProduto>("
             SELECT * FROM avaliacoes_produto
-            WHERE pedido_uuid = ?;
+            WHERE pedido_uuid = $1;
         ")
         .bind(pedido_uuid)
         .fetch_all(&*self.pool)
@@ -2157,7 +2239,7 @@ impl<'a> AvaliacaoDeProdutoRepository {
     pub async fn calcular_media(&self, produto_uuid: Uuid) -> Result<f64, String> {
         let result = sqlx::query("
             SELECT AVG(nota) as media FROM avaliacoes_produto
-            WHERE produto_uuid = ?;
+            WHERE produto_uuid = $1;
         ")
         .bind(produto_uuid)
         .fetch_one(&*self.pool)
@@ -2174,7 +2256,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeProduto>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, AvaliacaoDeProduto>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2194,7 +2276,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
                 comentario,
                 criado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
         ")
         .bind(item.uuid)
         .bind(item.usuario_uuid)
@@ -2216,11 +2298,11 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
         let result = sqlx::query("
             UPDATE avaliacoes_produto
             SET
-                produto_uuid = ?,
-                usuario_uuid = ?, 
-                nota = ?,
-                comentario = ?
-            WHERE uuid = ?;
+                produto_uuid = $1,
+                usuario_uuid = $2, 
+                nota = $3,
+                comentario = $4
+            WHERE uuid = $5
         ")
         .bind(item.usuario_uuid)
         .bind(item.produto_uuid)
@@ -2241,7 +2323,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
             DELETE FROM avaliacoes_produto
-            WHERE uuid = ?;
+            WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2267,7 +2349,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
         sqlx::query_as::<_, AvaliacaoDeProduto>("
                 SELECT * FROM avaliacoes_produto
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -2277,14 +2359,14 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
 }
 
 // ==================== REPOSITÓRIO DE CUPONS ====================
-pub struct CupomRepository { pool: Arc<SqlitePool> }
+pub struct CupomRepository { pool: Arc<PgPool> }
 impl<'a> CupomRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Option<Cupom>, String> {
         sqlx::query_as::<_, Cupom>("
             SELECT * FROM cupons
-            WHERE UPPER(codigo) = UPPER(?);
+            WHERE UPPER(codigo) = UPPER($1);
         ")
         .bind(codigo)
         .fetch_optional(&*self.pool)
@@ -2294,7 +2376,7 @@ impl<'a> CupomRepository {
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
         sqlx::query_as::<_, Cupom>("
-            SELECT * FROM cupons WHERE loja_uuid = ?;
+            SELECT * FROM cupons WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -2305,7 +2387,7 @@ impl<'a> CupomRepository {
     pub async fn buscar_ativos(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
         sqlx::query_as::<_, Cupom>("
             SELECT * FROM cupons
-            WHERE loja_uuid = ? AND status = ?;
+            WHERE loja_uuid = $1 AND status = $2;
         ")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
@@ -2321,7 +2403,7 @@ impl<'a> Repository<Cupom> for CupomRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cupom>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Cupom>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2344,7 +2426,7 @@ impl<'a> Repository<Cupom> for CupomRepository {
                 status,
                 criado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -2369,16 +2451,16 @@ impl<'a> Repository<Cupom> for CupomRepository {
         let result = sqlx::query("
             UPDATE cupons
             SET 
-                loja_uuid = ?,
-                codigo = ?,
-                descricao = ?,
-                tipo_desconto = ?, 
-                valor_desconto = ?,
-                valor_minimo = ?,
-                data_validade = ?,
-                limite_uso = ?, 
-                status = ?
-            WHERE uuid = ?;
+                loja_uuid = $1,
+                codigo = $2,
+                descricao = $3,
+                tipo_desconto = $4, 
+                valor_desconto = $5,
+                valor_minimo = $6,
+                data_validade = $7,
+                limite_uso = $8, 
+                status = $9
+            WHERE uuid = $10
         ")
         .bind(item.loja_uuid)
         .bind(&item.codigo)
@@ -2403,7 +2485,7 @@ impl<'a> Repository<Cupom> for CupomRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM cupons WHERE uuid = ?;
+            DELETE FROM cupons WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2427,7 +2509,7 @@ impl<'a> Repository<Cupom> for CupomRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
         sqlx::query_as::<_, Cupom>("
                 SELECT * FROM cupons
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -2437,14 +2519,14 @@ impl<'a> Repository<Cupom> for CupomRepository {
 }
 
 // ==================== REPOSITÓRIO DE USO DE CUPONS ====================
-pub struct UsoCupomRepository { pool: Arc<SqlitePool> }
+pub struct UsoCupomRepository { pool: Arc<PgPool> }
 impl<'a> UsoCupomRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("
             SELECT * FROM uso_cupons
-            WHERE usuario_uuid = ?;
+            WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -2455,7 +2537,7 @@ impl<'a> UsoCupomRepository {
     pub async fn buscar_por_cupom(&self, cupom_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("
             SELECT * FROM uso_cupons
-            WHERE cupom_uuid = ?;
+            WHERE cupom_uuid = $1;
         ")
         .bind(cupom_uuid)
         .fetch_all(&*self.pool)
@@ -2466,7 +2548,7 @@ impl<'a> UsoCupomRepository {
     pub async fn contar_usos_usuario(&self, usuario_uuid: Uuid, cupom_uuid: Uuid) -> Result<u32, String> {
         let result = sqlx::query("
             SELECT COUNT(*) as count FROM uso_cupons
-            WHERE usuario_uuid = ? AND cupom_uuid = ?;
+            WHERE usuario_uuid = $1 AND cupom_uuid = $2;
         ")
         .bind(usuario_uuid)
         .bind(cupom_uuid)
@@ -2484,7 +2566,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<UsoCupom>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, UsoCupom>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2501,7 +2583,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
                 pedido_uuid,
                 usado_em
             ) 
-            VALUES (?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5);
         ")
         .bind(item.uuid)
         .bind(item.cupom_uuid)
@@ -2520,11 +2602,11 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
         let result = sqlx::query("
             UPDATE uso_cupons
             SET
-                cupom_uuid = ?,
-                usuario_uuid = ?,
-                pedido_uuid = ?, 
-                usado_em = ?
-            WHERE uuid = ?;
+                cupom_uuid = $1,
+                usuario_uuid = $2,
+                pedido_uuid = $3, 
+                usado_em = $4
+            WHERE uuid = $5
         ")
         .bind(item.cupom_uuid)
         .bind(item.usuario_uuid)
@@ -2545,7 +2627,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
             DELETE FROM uso_cupons
-            WHERE uuid = ?;
+            WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2569,7 +2651,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("
                 SELECT * FROM uso_cupons
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -2579,14 +2661,14 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
 }
 
 // ==================== REPOSITÓRIO DE PROMOÇÕES ====================
-pub struct PromocaoRepository { pool: Arc<SqlitePool> }
+pub struct PromocaoRepository { pool: Arc<PgPool> }
 impl<'a> PromocaoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("
             SELECT * FROM promocoes
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -2597,7 +2679,7 @@ impl<'a> PromocaoRepository {
     pub async fn buscar_ativas(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("
             SELECT * FROM promocoes
-            WHERE loja_uuid = ? AND status = ?;
+            WHERE loja_uuid = $1 AND status = $2;
         ")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
@@ -2609,7 +2691,7 @@ impl<'a> PromocaoRepository {
     pub async fn buscar_por_prioridade(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("
             SELECT * FROM promocoes
-            WHERE loja_uuid = ? AND status = ?
+            WHERE loja_uuid = $1 AND status = $2
             ORDER BY prioridade DESC;
         ")
         .bind(loja_uuid)
@@ -2626,7 +2708,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Promocao>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, Promocao>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2649,7 +2731,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
                 status,
                 criado_em
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         ")
         .bind(&item.uuid)
         .bind(&item.loja_uuid)
@@ -2674,16 +2756,16 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
         let result = sqlx::query("
             UPDATE promocoes
             SET
-                loja_uuid = ?,
-                nome = ?,
-                descricao = ?,
-                tipo_desconto = ?, 
-                valor_desconto = ?,
-                data_inicio = ?,
-                data_fim = ?,
-                prioridade = ?,
-                status = ? 
-             WHERE uuid = ?;
+                loja_uuid = $1,
+                nome = $2,
+                descricao = $3,
+                tipo_desconto = $4, 
+                valor_desconto = $5,
+                data_inicio = $6,
+                data_fim = $7,
+                prioridade = $8,
+                status = $9
+             WHERE uuid = $10
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -2709,7 +2791,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
             DELETE FROM promocoes
-            WHERE uuid = ?;
+            WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2733,7 +2815,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("
                 SELECT * FROM promocoes
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -2744,15 +2826,15 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
 
 
 // ==================== REPOSITÓRIO DE HORÁRIOS DE FUNCIONAMENTO ====================
-pub struct HorarioFuncionamentoRepository { pool: Arc<SqlitePool> }
+pub struct HorarioFuncionamentoRepository { pool: Arc<PgPool> }
 impl<'a> HorarioFuncionamentoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     /// Busca todos os horários de uma loja, ordenados pelo dia da semana
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("
             SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = ?
+            WHERE loja_uuid = $1
             ORDER BY dia_semana ASC;
         ")
         .bind(loja_uuid)
@@ -2769,7 +2851,7 @@ impl<'a> HorarioFuncionamentoRepository {
     ) -> Result<Option<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("
             SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = ? AND dia_semana = ?;
+            WHERE loja_uuid = $1 AND dia_semana = $2;
         ")
         .bind(loja_uuid)
         .bind(dia_semana)
@@ -2782,7 +2864,7 @@ impl<'a> HorarioFuncionamentoRepository {
     pub async fn buscar_ativos(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("
             SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = ? AND ativo = TRUE
+            WHERE loja_uuid = $1 AND ativo = TRUE
             ORDER BY dia_semana ASC;
         ")
         .bind(loja_uuid)
@@ -2807,7 +2889,7 @@ impl<'a> HorarioFuncionamentoRepository {
                 ativo,
                 criado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             ON CONFLICT (loja_uuid, dia_semana)
             DO UPDATE SET
                 abertura   = excluded.abertura,
@@ -2855,7 +2937,7 @@ impl<'a> HorarioFuncionamentoRepository {
                 ativo,
                 criado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7);
         ")
         .bind(&horario.uuid)
         .bind(&horario.loja_uuid)
@@ -2880,8 +2962,8 @@ impl<'a> HorarioFuncionamentoRepository {
     ) -> Result<(), String> {
         let result = sqlx::query("
             UPDATE horarios_funcionamento
-            SET ativo = ?
-            WHERE loja_uuid = ? AND dia_semana = ?;
+            SET ativo = $1
+            WHERE loja_uuid = $2 AND dia_semana = $3;
         ")
         .bind(ativo)
         .bind(loja_uuid)
@@ -2904,7 +2986,7 @@ impl<'a> HorarioFuncionamentoRepository {
     ) -> Result<(), String> {
         let result = sqlx::query("
             DELETE FROM horarios_funcionamento
-            WHERE loja_uuid = ? AND dia_semana = ?;
+            WHERE loja_uuid = $1 AND dia_semana = $2;
         ")
         .bind(loja_uuid)
         .bind(dia_semana)
@@ -2926,7 +3008,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<HorarioFuncionamento>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, HorarioFuncionamento>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -2944,10 +3026,10 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
         let result = sqlx::query("
             UPDATE horarios_funcionamento
             SET
-                abertura = ?,
-                fechamento = ?,
-                ativo = ?
-            WHERE uuid = ?;
+                abertura = $1,
+                fechamento = $2,
+                ativo = $3
+            WHERE uuid = $4
         ")
         .bind(&item.abertura)
         .bind(&item.fechamento)
@@ -2966,7 +3048,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM horarios_funcionamento WHERE uuid = ?;
+            DELETE FROM horarios_funcionamento WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -2992,7 +3074,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("
                 SELECT * FROM horarios_funcionamento
-                WHERE loja_uuid = ?;
+                WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
@@ -3003,10 +3085,10 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
 
 
 // ==================== REPOSITÓRIO DE CONFIGURAÇÃO DE PARTES ====================
-pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<SqlitePool> }
+pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<PgPool> }
 
 impl<'a> ConfiguracaoPedidosLojaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     /// Busca a configuração de pedidos da loja (única por loja)
     pub async fn buscar_por_loja(
@@ -3015,7 +3097,7 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
     ) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
         sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("
             SELECT * FROM configuracoes_pedidos_loja
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_optional(&*self.pool)
@@ -3045,7 +3127,7 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(config.uuid)
         .bind(config.loja_uuid)
@@ -3074,7 +3156,7 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (loja_uuid) DO UPDATE SET
                 max_partes   = excluded.max_partes,
                 tipo_calculo  = excluded.tipo_calculo,
@@ -3101,8 +3183,8 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
     ) -> Result<(), String> {
         let result = sqlx::query("
             UPDATE configuracoes_pedidos_loja
-            SET tipo_calculo = ?, atualizado_em = ?
-            WHERE loja_uuid = ?;
+            SET tipo_calculo = $1, atualizado_em = $2
+            WHERE loja_uuid = $3;
         ")
         .bind(novo_tipo.to_string())
         .bind(agora())
@@ -3131,9 +3213,9 @@ impl<'a> ConfiguracaoPedidosLojaRepository {
         let result = sqlx::query("
             UPDATE configuracoes_pedidos_loja
             SET
-                max_partes = ?,
-                atualizado_em = ?
-            WHERE loja_uuid = ?;
+                max_partes = $1,
+                atualizado_em = $2
+            WHERE loja_uuid = $3;
         ")
         .bind(novo_max)
         .bind(agora())
@@ -3156,7 +3238,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);        
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);        
         sqlx::query_as::<_, ConfiguracaoDePedidosLoja>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -3174,7 +3256,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
                 criado_em,
                 atualizado_em
             )
-            VALUES (?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -3194,11 +3276,11 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
         let result = sqlx::query("
             UPDATE configuracoes_pedidos_loja
             SET
-                loja_uuid = ?,
-                max_partes = ?,
-                tipo_calculo = ?,
-                atualizado_em = ?
-            WHERE uuid = ?;
+                loja_uuid = $1,
+                max_partes = $2,
+                tipo_calculo = $3,
+                atualizado_em = $4
+            WHERE uuid = $1
         ")
         .bind(item.loja_uuid)
         .bind(item.max_partes)
@@ -3218,7 +3300,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
         let result = sqlx::query("
-            DELETE FROM configuracoes_pedidos_loja WHERE uuid = ?;
+            DELETE FROM configuracoes_pedidos_loja WHERE uuid = $1
         ")
         .bind(uuid)
         .execute(&*self.pool)
@@ -3248,7 +3330,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
         // Como há apenas 1 configuração por loja, retorna Vec com 0 ou 1 elemento
         sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("
             SELECT * FROM configuracoes_pedidos_loja
-            WHERE loja_uuid = ?;
+            WHERE loja_uuid = $1;
         ")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
@@ -3257,9 +3339,9 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
     }
 }
 // ==================== REPOSITÓRIO DE PARTES DE ITEM ====================
-pub struct ParteDeItemPedidoRepository { pool: Arc<SqlitePool> }
+pub struct ParteDeItemPedidoRepository { pool: Arc<PgPool> }
 impl<'a> ParteDeItemPedidoRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { Self { pool } }
+    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_item(
         &self,
@@ -3267,7 +3349,7 @@ impl<'a> ParteDeItemPedidoRepository {
     ) -> Result<Vec<ParteDeItemPedido>, String> {
         sqlx::query_as::<_, ParteDeItemPedido>("
             SELECT * FROM partes_item_pedido
-            WHERE item_uuid = ?
+            WHERE item_uuid = $1
             ORDER BY posicao ASC;
         ")
         .bind(item_uuid)
@@ -3310,7 +3392,7 @@ impl<'a> ParteDeItemPedidoRepository {
                     preco_unitario,
                     posicao
                 )
-                VALUES (?, ?, ?, ?, ?);
+                VALUES ($1, $2, $3, $4, $5);
             ")
             .bind(&parte.uuid)
             .bind(&parte.item_uuid)
@@ -3330,7 +3412,7 @@ impl<'a> ParteDeItemPedidoRepository {
     }
 
     pub async fn deletar_por_item(&self, item_uuid: Uuid) -> Result<(), String> {
-        sqlx::query("DELETE FROM partes_item_pedido WHERE item_uuid = ?;")
+        sqlx::query("DELETE FROM partes_item_pedido WHERE item_uuid = $1;")
             .bind(item_uuid)
             .execute(&*self.pool)
             .await
@@ -3342,10 +3424,10 @@ impl<'a> ParteDeItemPedidoRepository {
 
 
 // ==================== REPOSITÓRIO DE ENDEREÇOS DE USUÁRIO ====================
-pub struct EnderecoUsuarioRepository { pool: Arc<SqlitePool> }
+pub struct EnderecoUsuarioRepository { pool: Arc<PgPool> }
 
 impl<'a> EnderecoUsuarioRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { 
+    pub fn new(pool: Arc<PgPool>) -> Self { 
         Self { pool } 
     }
 
@@ -3353,7 +3435,7 @@ impl<'a> EnderecoUsuarioRepository {
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
         sqlx::query_as::<_, EnderecoUsuario>("
             SELECT * FROM enderecos_usuario 
-            WHERE usuario_uuid = ?;
+            WHERE usuario_uuid = $1;
         ")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
@@ -3369,7 +3451,7 @@ impl<'a> EnderecoUsuarioRepository {
     ) -> Result<Option<EnderecoUsuario>, String> {
         sqlx::query_as::<_, EnderecoUsuario>("
             SELECT * FROM enderecos_usuario 
-            WHERE uuid = ? AND usuario_uuid = ?;
+            WHERE uuid = $1 AND usuario_uuid = $2;
         ")
         .bind(uuid)
         .bind(usuario_uuid)
@@ -3385,7 +3467,7 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoUsuario>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, EnderecoUsuario>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -3399,7 +3481,7 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
                 uuid, usuario_uuid, cep, logradouro, numero, 
                 complemento, bairro, cidade, estado, latitude, longitude
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         ")
         .bind(item.uuid)
         .bind(item.usuario_uuid)
@@ -3423,10 +3505,10 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
         let result = sqlx::query("
             UPDATE enderecos_usuario
             SET 
-                usuario_uuid = ?, cep = ?, logradouro = ?, numero = ?,
-                complemento = ?, bairro = ?, cidade = ?, estado = ?,
-                latitude = ?, longitude = ?
-            WHERE uuid = ?;
+                usuario_uuid = $1, cep = $2, logradouro = $3, numero = $4,
+                complemento = $5, bairro = $6, cidade = $7, estado = $8,
+                latitude = $9, longitude = $10
+            WHERE uuid = $11
         ")
         .bind(item.usuario_uuid)
         .bind(&item.cep)
@@ -3451,7 +3533,7 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM enderecos_usuario WHERE uuid = ?;")
+        let result = sqlx::query("DELETE FROM enderecos_usuario WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await
@@ -3478,10 +3560,10 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
 
 
 // ==================== REPOSITÓRIO DE ENDEREÇOS DE ENTREGA ====================
-pub struct EnderecoEntregaRepository { pool: Arc<SqlitePool> }
+pub struct EnderecoEntregaRepository { pool: Arc<PgPool> }
 
 impl<'a> EnderecoEntregaRepository {
-    pub fn new(pool: Arc<SqlitePool>) -> Self { 
+    pub fn new(pool: Arc<PgPool>) -> Self { 
         Self { pool } 
     }
 
@@ -3489,7 +3571,7 @@ impl<'a> EnderecoEntregaRepository {
     pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
         sqlx::query_as::<_, EnderecoEntrega>("
             SELECT * FROM enderecos_entrega 
-            WHERE pedido_uuid = ?;
+            WHERE pedido_uuid = $1;
         ")
         .bind(pedido_uuid)
         .fetch_optional(&*self.pool)
@@ -3501,7 +3583,7 @@ impl<'a> EnderecoEntregaRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
         sqlx::query_as::<_, EnderecoEntrega>("
             SELECT * FROM enderecos_entrega 
-            WHERE loja_uuid = ?
+            WHERE loja_uuid = $1
             ORDER BY criado_em DESC;
         ")
         .bind(loja_uuid)
@@ -3522,7 +3604,7 @@ impl<'a> EnderecoEntregaRepository {
                 uuid, loja_uuid, pedido_uuid, cep, logradouro, 
                 numero, complemento, bairro, cidade, estado, latitude, longitude
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
         ")
         .bind(endereco.uuid)
         .bind(loja_uuid)
@@ -3549,7 +3631,7 @@ impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
         let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = ?;", t);
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
         sqlx::query_as::<_, EnderecoEntrega>(&query)
             .bind(uuid)
             .fetch_optional(&*self.pool)
@@ -3565,7 +3647,7 @@ impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
                 uuid, loja_uuid, pedido_uuid, cep, logradouro, 
                 numero, complemento, bairro, cidade, estado, latitude, longitude
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -3590,10 +3672,10 @@ impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
         let result = sqlx::query("
             UPDATE enderecos_entrega
             SET 
-                loja_uuid = ?, pedido_uuid = ?, cep = ?, logradouro = ?, 
-                numero = ?, complemento = ?, bairro = ?, cidade = ?, 
-                estado = ?, latitude = ?, longitude = ?
-            WHERE uuid = ?;
+                loja_uuid = $1, pedido_uuid = $2, cep = $3, logradouro = $4, 
+                numero = $5, complemento = $6, bairro = $7, cidade = $8, 
+                estado = $9, latitude = $10, longitude = $11
+            WHERE uuid = $12
         ")
         .bind(item.loja_uuid)
         .bind(item.pedido_uuid)
@@ -3619,7 +3701,7 @@ impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM enderecos_entrega WHERE uuid = ?;")
+        let result = sqlx::query("DELETE FROM enderecos_entrega WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await

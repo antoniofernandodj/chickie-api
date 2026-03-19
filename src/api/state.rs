@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 
-use sqlx::SqlitePool;
+use sqlx::PgPool;
+
 
 use crate::{
     repositories::{
@@ -47,7 +48,7 @@ pub struct AppState {
 
 
 impl AppState {
-    pub fn new(pool: Arc<SqlitePool>) -> Arc<Self> {
+    pub fn new(pool: Arc<PgPool>) -> Arc<Self> {
         // 2. Inicialização dos Repositórios
         // Nota: Usamos 'static life hack aqui para simplificar, assumindo que o pool vive toda a execução.
         // Em produção, o pool geralmente é envolvido em Arc.

@@ -41,25 +41,36 @@ impl std::fmt::Display for StatusCupom {
     }
 }
 
-impl<'r> sqlx::Decode<'r, sqlx::Sqlite> for StatusCupom {
-    fn decode(value: sqlx::sqlite::SqliteValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
-        let s = <String as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
-        Self::from_str(&s).map_err(|e| e.into())
+// ✅ IMPLEMENTAÇÕES PARA POSTGRESQL
+
+impl<'r> sqlx::Decode<'r, sqlx::Postgres> for StatusCupom {
+    fn decode(
+        value: sqlx::postgres::PgValueRef<'r>
+    ) -> Result<Self, sqlx::error::BoxDynError> {
+        // PostgreSQL retorna &str para tipo TEXT
+        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
+        Self::from_str(s).map_err(|e| e.into())
     }
 }
 
-impl sqlx::Type<sqlx::Sqlite> for StatusCupom {
-    fn type_info() -> sqlx::sqlite::SqliteTypeInfo {
-        <String as sqlx::Type<sqlx::Sqlite>>::type_info()
+impl sqlx::Type<sqlx::Postgres> for StatusCupom {
+    fn type_info() -> sqlx::postgres::PgTypeInfo {
+        // Mapeia para TEXT no PostgreSQL
+        sqlx::postgres::PgTypeInfo::with_name("TEXT")
     }
 }
 
-impl sqlx::Encode<'_, sqlx::Sqlite> for StatusCupom {
-    fn encode_by_ref(&self, args: &mut Vec<sqlx::sqlite::SqliteArgumentValue<'_>>) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        args.push(sqlx::sqlite::SqliteArgumentValue::Text(
-            self.as_str().to_string().into()
-        ));
-        Ok(sqlx::encode::IsNull::No)
+impl<'q> sqlx::Encode<'q, sqlx::Postgres> for StatusCupom {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        // Encode como TEXT usando o encoder nativo de &str
+        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
+    }
+
+    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
+        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
     }
 }
 

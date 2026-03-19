@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 use crate::{models::{Adicional, AdicionalDeItemDePedido, Model, Produto}, utils::agora};
+use sqlx::PgPool;
 
 // ---------------------------------------------------------------------------
 // TipoCalculoPedido — como o preço é calculado quando há múltiplos sabores
@@ -36,28 +37,30 @@ impl std::fmt::Display for TipoCalculoPedido {
     }
 }
 
-impl<'r> sqlx::Decode<'r, sqlx::Sqlite> for TipoCalculoPedido {
-    fn decode(value: sqlx::sqlite::SqliteValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
-        let s = <String as sqlx::Decode<sqlx::Sqlite>>::decode(value)?;
+impl<'r> sqlx::Decode<'r, sqlx::Postgres> for TipoCalculoPedido {
+    fn decode(value: sqlx::postgres::PgValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
+        let s = <String as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
         Self::from_str(&s).map_err(|e| e.into())
     }
 }
 
-impl sqlx::Type<sqlx::Sqlite> for TipoCalculoPedido {
-    fn type_info() -> sqlx::sqlite::SqliteTypeInfo {
-        <String as sqlx::Type<sqlx::Sqlite>>::type_info()
+impl sqlx::Type<sqlx::Postgres> for TipoCalculoPedido {
+    fn type_info() -> sqlx::postgres::PgTypeInfo {
+        <String as sqlx::Type<sqlx::Postgres>>::type_info()
     }
 }
 
-impl sqlx::Encode<'_, sqlx::Sqlite> for TipoCalculoPedido {
+impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
     fn encode_by_ref(
         &self,
-        args: &mut Vec<sqlx::sqlite::SqliteArgumentValue<'_>>,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
     ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        args.push(sqlx::sqlite::SqliteArgumentValue::Text(
-            self.as_str().to_string().into(),
-        ));
-        Ok(sqlx::encode::IsNull::No)
+        // ✅ Encode como TEXT (string) no PostgreSQL
+        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
+    }
+
+    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
+        Some(sqlx::postgres::PgTypeInfo::with_name("TEXT"))
     }
 }
 

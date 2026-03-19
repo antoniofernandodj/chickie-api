@@ -1,6 +1,7 @@
 use std::sync::Arc;
-
-use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put}};
+use axum::{Json};
+use axum::{Router, middleware::from_fn_with_state, response::IntoResponse, routing::{get, post, put}};
+use serde_json::json;
 
 use crate::api::{AppState, auth_middleware};
 use crate::api::{
@@ -72,4 +73,10 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/cupons", marketing_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())
+        .route("/ok", get(ok_handler))
+}
+
+
+pub async fn ok_handler() -> impl IntoResponse {
+    Json(json!({"msg": "ok"}))
 }
