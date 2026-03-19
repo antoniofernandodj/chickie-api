@@ -46,7 +46,7 @@ RUN useradd -r -u 1000 appuser
 # Copiar apenas o binário e migrations
 COPY --from=builder /app/target/release/chickie /app/chickie
 COPY --from=builder /app/migrations /app/migrations
-COPY --from=builder /app/database.secrets.env /app/database.secrets.env
+# COPY --from=builder /app/database.secrets.env /app/database.secrets.env
 
 # Permissões
 RUN chown -R appuser:appuser /app
