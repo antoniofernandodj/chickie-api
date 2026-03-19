@@ -6,24 +6,28 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
         eprintln!("   Certifique-se de que a variável DATABASE_URL está definida no ambiente.");
     }
 
-    let postgres_user = std::env::var("POSTGRES_USER")
-        .expect("POSTGRES_USER não encontrado");
-    let postgres_password = std::env::var("POSTGRES_PASSWORD")
-        .expect("POSTGRES_PASSWORD não encontrado");
-    let postgres_db = std::env::var("POSTGRES_DB")
-        .expect("POSTGRES_DB não encontrado");
-    let postgres_host = std::env::var("POSTGRES_HOST")
-        .expect("POSTGRES_HOST não encontrado");
-    let postgres_port = std::env::var("POSTGRES_PORT")
-        .expect("POSTGRES_PORT não encontrado");
+    // let postgres_user = std::env::var("POSTGRES_USER")
+    //     .expect("POSTGRES_USER não encontrado");
+    // let postgres_password = std::env::var("POSTGRES_PASSWORD")
+    //     .expect("POSTGRES_PASSWORD não encontrado");
+    // let postgres_db = std::env::var("POSTGRES_DB")
+    //     .expect("POSTGRES_DB não encontrado");
+    // let postgres_host = std::env::var("POSTGRES_HOST")
+    //     .expect("POSTGRES_HOST não encontrado");
+    // let postgres_port = std::env::var("POSTGRES_PORT")
+    //     .expect("POSTGRES_PORT não encontrado");
 
-    let database_url = format!("postgres://{}:{}@{}:{}/{}",
-        postgres_user,
-        postgres_password,
-        postgres_host,
-        postgres_port,
-        postgres_db,
-    );
+
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL não encontrado");
+
+    // let database_url = format!("postgres://{}:{}@{}:{}/{}",
+    //     postgres_user,
+    //     postgres_password,
+    //     postgres_host,
+    //     postgres_port,
+    //     postgres_db,
+    // );
 
     eprintln!("{}", database_url);
 
