@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 # Cache de dependências (só refaz se Cargo.toml mudar)
 COPY Cargo.toml Cargo.lock ./
 COPY migrations ./migrations
-# COPY database.secrets.env ./database.secrets.env
+COPY database.secrets.env ./database.secrets.env
 
 # Build "fake" para baixar deps
 RUN mkdir -p src && echo "fn main() {}" > src/main.rs
@@ -46,7 +46,7 @@ RUN useradd -r -u 1000 appuser
 # Copiar apenas o binário e migrations
 COPY --from=builder /app/target/release/chickie /app/chickie
 COPY --from=builder /app/migrations /app/migrations
-# COPY --from=builder /app/database.secrets.env /app/database.secrets.env
+COPY --from=builder /app/database.secrets.env /app/database.secrets.env
 
 # Permissões
 RUN chown -R appuser:appuser /app
