@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 # Cache de dependências (só refaz se Cargo.toml mudar)
 COPY Cargo.toml Cargo.lock ./
 COPY migrations ./migrations
-COPY database.secrets.env ./database.secrets.env
+# COPY database.secrets.env ./database.secrets.env
 
 # Build "fake" para baixar deps
 RUN mkdir -p src && echo "fn main() {}" > src/main.rs
