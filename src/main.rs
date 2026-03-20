@@ -5,7 +5,7 @@ mod repositories;
 mod services;
 mod api;
 
-use axum::{Router, Json, http::StatusCode, response::IntoResponse};
+use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 
 use std::{sync::Arc, env, net::SocketAddr};
 use tower_http::cors::CorsLayer;
@@ -42,6 +42,7 @@ async fn main() {
     let api_routes = api::api_routes(&s);
 
     let app = Router::new()
+        .route("/", get(handler_ok))
         .nest("/api", api_routes) // Tudo agora começa com /api
         .fallback(handler_404)
         .layer(CorsLayer::permissive())
@@ -66,6 +67,15 @@ async fn main() {
 }
 
 
+pub async fn handler_ok() -> impl IntoResponse {
+    (
+        StatusCode::NOT_FOUND,
+        Json(json!({
+            "message": "🚀 Servidor compilado com sucesso!"
+        })),
+    )
+}
+
 
 pub async fn handler_404() -> impl IntoResponse {
     (
@@ -79,33 +89,12 @@ pub async fn handler_404() -> impl IntoResponse {
 
 
 
-
-
-
 #[tokio::test]
 async fn test_handler_ok() {
 
     assert_eq!("OLA MUNDO", "OLA MUNDO");
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
