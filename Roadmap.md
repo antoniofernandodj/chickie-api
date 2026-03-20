@@ -1,0 +1,14 @@
+Dia 1 — Isolamento e Governança: Configurar o ambiente de forma segura. Isso significa criar o container Docker onde o agente vai operar, configurar as permissões, entender o modelo de segurança da ferramenta que você está usando. Para quem já conhece Docker, isso é rápido. Para quem não conhece, o processo em si é valioso — entender containerização é uma habilidade fundamental de infraestrutura.
+
+Dia 2 — Fundação Arquitetural: Nenhum código. Apenas documentação. Você vai escrever as histórias do projeto (o que o sistema faz, do ponto de vista do usuário), tomar as decisões de stack com justificativas reais, desenhar a estrutura de serviços, mapear as dependências externas e criar a estrutura inicial do CLAUDE.md. O produto desse dia é um documento — não um repositório com código.
+Uma adição importante aqui: esse é o momento de fazer o exercício de domain modeling — identificar as entidades centrais do domínio, seus atributos e os relacionamentos entre elas. Isso pode ser feito com diagramas simples, com um esquema de banco de dados inicial ou com uma descrição em linguagem natural. O importante é que as decisões de domínio sejam explícitas antes de qualquer implementação.
+
+Dia 3 — Cobertura de Testes: O primeiro dia de interação real com o agente — mas apenas para escrever testes. Você descreve cada feature em termos de comportamento esperado, e o agente escreve os testes. As implementações são mocadas. Se o agente sugerir implementar algo além do teste, você recusa. Este dia é um exercício de precisão: você aprende a descrever comportamento de forma inequívoca.
+
+Dia 4 — Implementação: Agora sim, o agente implementa código — mas apenas código que faça os testes do Dia 3 passarem. Se durante a implementação você perceber que esqueceu uma feature, a regra é clara: primeiro escreva o teste, depois peça a implementação. Esse dia pode revelar gaps no design que os testes do Dia 3 não cobriram, e isso é informação valiosa.
+
+Dia 5 — Otimização e Refatoração: Com tudo funcionando, você olha para qualidade. Existem gargalos de performance? Há código duplicado? Alguma abstração está errada? O agente pode ajudar na refatoração, com a segurança de que os testes vão capturar qualquer regressão. Este também é o momento de pensar em jobs assíncronos, caching e outras otimizações que seriam prematuras antes.
+
+Dia 6 — Interface de Saída: Como o sistema se comunica com o mundo externo? Pode ser uma interface web, um bot de Discord (como no projeto do Akita), uma API REST, um CLI. O importante é que este dia é dedicado exclusivamente a essa camada — não misturado com lógica de negócio dos dias anteriores.
+
+Dia 7 — Deploy e Pipeline: Configurar a esteira de CI/CD, incluindo validadores de código (linters, formatters), execução automática dos testes, análise de vulnerabilidades e deploy para o ambiente de produção ou staging. O objetivo não é ter um deploy perfeito — é ter um deploy repetível e verificável.

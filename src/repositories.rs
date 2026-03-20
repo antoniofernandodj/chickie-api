@@ -218,24 +218,8 @@ impl<'a> Repository<Loja> for LojaRepository {
                 atualizado_em
             ) 
             VALUES (
-                $1, 
-                $2, 
-                $3, 
-                $4, 
-                $5, 
-                $6, 
-                $7, 
-                $8, 
-                $9, 
-                $10, 
-                $11, 
-                $12, 
-                $13, 
-                $14, 
-                $15, 
-                $16, 
-                $17, 
-                $18
+                $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10, 
+                $11,  $12,  $13,  $14,  $15,  $16,  $17,  $18
             );
         ")
         .bind(item.uuid)
@@ -401,12 +385,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
                 loja_uuid,
                 criado_em
             )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4
-            );
+            VALUES ($1, $2, $3, $4);
         ")
         .bind(item.uuid)
         .bind(item.usuario_uuid)
@@ -560,20 +539,7 @@ impl<'a> Repository<Produto> for ProdutoRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                $8,
-                $9,
-                $10,
-                $11,
-                $12
-            );
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -724,14 +690,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
                 ordem,
                 criado_em
             ) 
-            VALUES (
-                $1, 
-                $2, 
-                $3, 
-                $4, 
-                $5, 
-                $6
-            )
+            VALUES ($1, $2, $3, $4, $5, $6)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -1091,21 +1050,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
                 criado_em,
                 atualizado_em
             )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                $8,
-                $9,
-                $10,
-                $11,
-                $12,
-                $13
-            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ")
         .bind(&pedido.uuid)
         .bind(&pedido.usuario_uuid)
@@ -3483,19 +3428,10 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         ")
-        .bind(item.uuid)
-        .bind(item.usuario_uuid)
-        .bind(&item.cep)
-        .bind(&item.logradouro)
-        .bind(&item.numero)
-        .bind(&item.complemento)
-        .bind(&item.bairro)
-        .bind(&item.cidade)
-        .bind(&item.estado)
-        .bind(item.latitude)
-        .bind(item.longitude)
-        .execute(&*self.pool)
-        .await
+        .bind(item.uuid).bind(item.usuario_uuid).bind(&item.cep).bind(&item.logradouro)
+        .bind(&item.numero).bind(&item.complemento).bind(&item.bairro).bind(&item.cidade)
+        .bind(&item.estado).bind(item.latitude).bind(item.longitude)
+        .execute(&*self.pool).await
         .map_err(|e| e.to_string())?;
         Ok(item.uuid)
     }
