@@ -7,8 +7,10 @@ mod api;
 
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 
-use std::{sync::Arc, env, net::SocketAddr};
+use std::{env, io::{Write, stderr, stdout}, net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
+use tracing::{info, debug};
+use tracing_subscriber::fmt;
 use crate::api::AppState;
 use serde_json::json;
 
@@ -16,20 +18,24 @@ use serde_json::json;
 #[tokio::main]
 async fn main() {
 
-    // ✅ FORÇA O RUST A NÃO BUFFERIZAR LOGS (Crucial para Docker)
-    std::io::Write::flush(&mut std::io::stdout())
-        .expect("Failed to flush stdout");
-    std::io::Write::flush(&mut std::io::stderr())
-        .expect("Failed to flush stderr");
+    // // ✅ FORÇA O RUST A NÃO BUFFERIZAR LOGS (Crucial para Docker)
+    // Write::flush(&mut stdout()).expect("Failed to flush stdout");
+    // Write::flush(&mut stderr()).expect("Failed to flush stderr");
+
+    // Inicializa o subscriber antes de qualquer log
+    fmt()
+        .with_target(false)
+        .with_level(true)
+        .init();
 
     // 🚀 LOG 1: Início absoluto
-    eprintln!("🚀 [MAIN] Chickie starting...");
-    eprintln!("🚀 [MAIN] PID: {}", std::process::id());
+    info!("🚀 [MAIN] Chickie starting...");
+    info!("🚀 [MAIN] PID: {}", std::process::id());
 
     let port = env::var("APP_PORT")
         .unwrap_or_else(|_| String::from("3000"));
 
-    eprintln!("[MAIN] Starting on port {}...", port);
+    info!("[MAIN] Starting on port {}...", port);
 
     let pool = Arc::new(
         database::criar_pool()
@@ -61,7 +67,7 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("🚀 Servidor rodando em http://0.0.0.0:{}", port_num);
+    debug!("🚀 Servidor rodando em http://0.0.0.0:{}", port_num);
     axum::serve(listener, app).await.unwrap();
 
 }
