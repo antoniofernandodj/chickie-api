@@ -75,7 +75,7 @@ async fn main() {
 
 pub async fn handler_ok() -> impl IntoResponse {
     (
-        StatusCode::NOT_FOUND,
+        StatusCode::OK,
         Json(json!({
             "message": "🚀 Servidor compilado com sucesso!"
         })),
