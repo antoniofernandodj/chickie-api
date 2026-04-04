@@ -90,7 +90,7 @@ pub fn loja_routes() -> Router<Arc<AppState>> {
 
 pub fn loja_admin_routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/", post(criar_loja))
+        .route("/lojas", post(criar_loja))
         .route("/listar", get(listar_lojas_admin))
         .route("/{loja_uuid}/funcionarios", post(adicionar_funcionario))
         .route("/{loja_uuid}/entregadores", post(adicionar_entregador))
