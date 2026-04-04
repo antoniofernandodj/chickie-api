@@ -9,8 +9,7 @@
 | # | Tarefa | Detalhe | Arquivo(s) |
 |---|--------|---------|------------|
 | 1 | **Remover `/api/wipe` antes de produção** | Endpoint apaga todo o banco sem autenticação. | `src/api/routers.rs` |
-| 2 | **`criar_pedido` recebe `loja_uuid` no body E no path** | O path tem `{loja_uuid}` mas o handler extrai do body. Inconsistente — deveria vir só do path. | `src/api/pedido/criar_pedido.rs`, `src/api/routers.rs` |
-| 3 | **`validar_cupom` sem autenticação** | Expõe dados de cupons sem auth. | `src/api/cupom/validar_cupom.rs` |
+| 2 | **`validar_cupom` sem autenticação** | Expõe dados de cupons sem auth. | `src/api/cupom/validar_cupom.rs` |
 
 ## 🟡 Bugs Conhecidos
 
@@ -61,10 +60,10 @@
 
 | Prioridade | Count | Itens |
 |------------|-------|-------|
-| 🔴 Crítico | 3 | 1, 2, 3 |
-| 🟡 Bugs | 2 | 4, 5 |
-| 🟢 Melhorias | 4 | 6, 7, 8, 9 |
-| 📋 Features | 14 | 10–23 |
-| 📝 Docs | 3 | 24, 25, 26 |
+| 🔴 Crítico | 2 | 1, 2 |
+| 🟡 Bugs | 2 | 3, 4 |
+| 🟢 Melhorias | 4 | 5, 6, 7, 8 |
+| 📋 Features | 14 | 9–22 |
+| 📝 Docs | 3 | 23, 24, 25 |
 
-**Total: 26 pendências**
+**Total: 25 pendências**
