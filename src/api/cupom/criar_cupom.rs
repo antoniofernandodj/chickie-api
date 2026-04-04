@@ -1,10 +1,10 @@
 use axum::{
-    Json, extract::{Path, State}, response::IntoResponse
+    Extension, Json, extract::{Path, State}, response::IntoResponse
 };
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::api::{AppState, dto::AppError};
+use crate::{api::{AppState, dto::AppError}, models::Usuario};
 
 
 #[derive(Deserialize)]
@@ -23,6 +23,7 @@ pub async fn criar_cupom(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Json(p): Json<CriarCupomRequest>,
+    Extension(_): Extension<Usuario>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let cupom = state.marketing_service.criar_cupom(

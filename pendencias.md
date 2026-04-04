@@ -9,9 +9,8 @@
 | # | Tarefa | Detalhe | Arquivo(s) |
 |---|--------|---------|------------|
 | 1 | **Remover `/api/wipe` antes de produção** | Endpoint apaga todo o banco sem autenticação. | `src/api/wipe.rs`, `src/api/routers.rs` |
-| 2 | **`criar_pedido` permite spoofing de `usuario_uuid`** | Handler recebe `usuario_uuid` no body em vez de extrair do JWT. Qualquer usuário pode criar pedido em nome de outro. | `src/api/pedido/criar_pedido.rs` |
-| 3 | **`criar_cupom` sem autenticação** | Qualquer pessoa pode criar cupons sem estar logado. | `src/api/cupom/criar_cupom.rs` |
-| 4 | **`validar_cupom` sem autenticação** | Expõe dados de cupons sem auth. | `src/api/cupom/validar_cupom.rs` |
+| 2 | **`criar_cupom` sem autenticação** | Qualquer pessoa pode criar cupons sem estar logado. | `src/api/cupom/criar_cupom.rs` |
+| 3 | **`validar_cupom` sem autenticação** | Expõe dados de cupons sem auth. | `src/api/cupom/validar_cupom.rs` |
 
 ## 🟡 Bugs Conhecidos
 

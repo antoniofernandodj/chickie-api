@@ -127,11 +127,12 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
 }
 
 // Rotas de Marketing / Cupons / Avaliações
-pub fn marketing_routes() -> Router<Arc<AppState>> {
+pub fn marketing_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .route("/", post(criar_cupom))
-        .route("/", get(listar_cupons))
-        .route("/{codigo}", get(validar_cupom))
+        .route("/{loja_uuid}/cupons", post(criar_cupom))
+            .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .route("/cupons", get(listar_cupons))
+        .route("/cupons/{codigo}", get(validar_cupom))
         .route("/{loja_uuid}/avaliar-loja", post(avaliar_loja))
         .route("/{loja_uuid}/avaliar-produto", post(avaliar_produto))
         .route("/{loja_uuid}/promocoes", post(criar_promocao))
@@ -144,7 +145,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/usuarios", usuario_routes())
         .nest("/lojas", loja_routes())
         .nest("/produtos", produto_routes())
-        .nest("/cupons", marketing_routes())
+        .nest("/marketing", marketing_routes(&s))
         .nest("/catalogo", catalogo_routes())
         .nest("/enderecos-entrega", endereco_entrega_routes())
         .nest("/enderecos-usuario", endereco_usuario_routes())
