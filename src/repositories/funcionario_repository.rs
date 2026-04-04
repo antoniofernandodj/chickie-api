@@ -26,9 +26,9 @@ impl FuncionarioRepository {
         .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE email = $1")
-        .bind(email)
+    pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Option<Funcionario>, String> {
+        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE usuario_uuid = $1")
+        .bind(usuario_uuid)
         .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
@@ -43,13 +43,12 @@ impl Repository<Funcionario> for FuncionarioRepository {
 
     async fn criar(&self, item: &Funcionario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO funcionarios (uuid, loja_uuid, nome, email, cargo, salario, data_admissao, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO funcionarios (uuid, loja_uuid, usuario_uuid, cargo, salario, data_admissao, criado_em)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.email)
+        .bind(item.usuario_uuid)
         .bind(&item.cargo)
         .bind(item.salario)
         .bind(&item.data_admissao.to_string())
@@ -64,12 +63,11 @@ impl Repository<Funcionario> for FuncionarioRepository {
     async fn atualizar(&self, item: Funcionario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE funcionarios SET loja_uuid = $1, nome = $2, email = $3, cargo = $4, salario = $5, data_admissao = $6
-            WHERE uuid = $7
+            UPDATE funcionarios SET loja_uuid = $1, usuario_uuid = $2, cargo = $3, salario = $4, data_admissao = $5
+            WHERE uuid = $6
         ")
         .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.email)
+        .bind(item.usuario_uuid)
         .bind(&item.cargo)
         .bind(item.salario)
         .bind(item.data_admissao)

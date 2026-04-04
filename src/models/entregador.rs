@@ -7,8 +7,7 @@ use crate::{models::Model, utils::agora};
 pub struct Entregador {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
-    pub nome: String,
-    pub telefone: Option<String>,
+    pub usuario_uuid: Uuid,
     pub veiculo: Option<String>,
     pub placa: Option<String>,
     pub disponivel: bool,
@@ -17,17 +16,15 @@ pub struct Entregador {
 
 impl Entregador {
     pub fn new(
-        nome: String,
         loja_uuid: Uuid,
-        telefone: Option<String>,
+        usuario_uuid: Uuid,
         veiculo: Option<String>,
         placa: Option<String>,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
             loja_uuid,
-            nome,
-            telefone,
+            usuario_uuid,
             veiculo,
             placa,
             disponivel: false,

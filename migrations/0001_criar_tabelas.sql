@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefone TEXT,
     celular TEXT NOT NULL,
     modo_de_cadastro TEXT NOT NULL DEFAULT 'email',
-    classe TEXT NOT NULL DEFAULT 'cliente' CHECK (classe IN ('cliente', 'administrador')),
+    classe TEXT NOT NULL DEFAULT 'cliente' CHECK (classe IN ('cliente', 'administrador', 'funcionario', 'entregador')),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     passou_pelo_primeiro_acesso BOOLEAN NOT NULL DEFAULT FALSE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -222,13 +222,13 @@ CREATE INDEX IF NOT EXISTS idx_enderecos_usuario_usuario ON enderecos_usuario(us
 CREATE TABLE IF NOT EXISTS entregadores (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     loja_uuid UUID NOT NULL,
-    nome TEXT NOT NULL,
-    telefone TEXT,
+    usuario_uuid UUID NOT NULL,
     veiculo TEXT,
     placa TEXT,
     disponivel BOOLEAN NOT NULL DEFAULT FALSE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE
+    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_entregadores_loja ON entregadores(loja_uuid);
@@ -240,17 +240,17 @@ CREATE INDEX IF NOT EXISTS idx_entregadores_disponivel ON entregadores(disponive
 CREATE TABLE IF NOT EXISTS funcionarios (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     loja_uuid UUID NOT NULL,
-    nome TEXT NOT NULL,
-    email TEXT,
+    usuario_uuid UUID NOT NULL,
     cargo TEXT,
     salario NUMERIC(10,2),
     data_admissao DATE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE
+    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_funcionarios_loja ON funcionarios(loja_uuid);
-CREATE INDEX IF NOT EXISTS idx_funcionarios_email ON funcionarios(email);
+CREATE INDEX IF NOT EXISTS idx_funcionarios_usuario ON funcionarios(usuario_uuid);
 
 -- ============================================================================
 -- TABELA: horarios_funcionamento

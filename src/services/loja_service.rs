@@ -132,16 +132,35 @@ impl LojaService {
         &self,
         loja_uuid: Uuid,
         nome: String,
-        email: Option<String>,
+        username: String,
+        email: String,
+        senha: String,
+        celular: String,
         cargo: Option<String>,
         salario: Option<f64>,
         data_admissao: String,
     ) -> Result<Funcionario, String> {
 
-        let funcionario: Funcionario = Funcionario::new(
-            loja_uuid,
+        // 1. Cria o usuário com classe "funcionario"
+        let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
+
+        let usuario = Usuario::new(
             nome,
+            username,
             email,
+            senha_hash,
+            celular,
+            "email".to_string(),
+            ClasseUsuario::Funcionario,
+        );
+
+        self.usuario_repo.criar(&usuario).await?;
+
+        // 2. Vincula o funcionário à loja
+        let funcionario = Funcionario::new(
+            loja_uuid,
+            usuario.uuid,
             cargo,
             salario,
             data_admissao,
@@ -188,17 +207,36 @@ impl LojaService {
 
     pub async fn adicionar_entregador(
         &self,
-        nome: String,
         loja_uuid: Uuid,
-        telefone: Option<String>,
+        nome: String,
+        username: String,
+        email: String,
+        senha: String,
+        celular: String,
         veiculo: Option<String>,
         placa: Option<String>,
     ) -> Result<Entregador, String> {
 
-        let entregador: Entregador = Entregador::new(
+        // 1. Cria o usuário com classe "entregador"
+        let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
+
+        let usuario = Usuario::new(
             nome,
+            username,
+            email,
+            senha_hash,
+            celular,
+            "email".to_string(),
+            ClasseUsuario::Entregador,
+        );
+
+        self.usuario_repo.criar(&usuario).await?;
+
+        // 2. Vincula o entregador à loja
+        let entregador = Entregador::new(
             loja_uuid,
-            telefone,
+            usuario.uuid,
             veiculo,
             placa,
         );

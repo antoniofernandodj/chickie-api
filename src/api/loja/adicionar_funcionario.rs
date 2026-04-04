@@ -11,7 +11,10 @@ use crate::{
 #[derive(Deserialize)]
 pub struct AdicionarFuncionarioRequest {
     pub nome: String,
-    pub email: Option<String>,
+    pub username: String,
+    pub email: String,
+    pub senha: String,
+    pub celular: String,
     pub cargo: Option<String>,
     pub salario: Option<f64>,
     pub data_admissao: String,
@@ -33,7 +36,10 @@ pub async fn adicionar_funcionario(
     let funcionario = state.loja_service.adicionar_funcionario(
         loja_uuid,
         p.nome,
+        p.username,
         p.email,
+        p.senha,
+        p.celular,
         p.cargo,
         p.salario,
         p.data_admissao

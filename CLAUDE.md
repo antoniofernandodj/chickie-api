@@ -366,8 +366,8 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 
 | Entidade         | Descrição                                                                                         |
 |------------------|---------------------------------------------------------------------------------------------------|
-| `Usuario`        | Usuário do sistema. Possui campo `classe`: **`cliente`** ou **`administrador`**.                  |
-| `ClasseUsuario`  | Enum com duas variantes: `Cliente` (padrão) e `Administrador`. Apenas admins podem criar lojas.   |
+| `Usuario`        | Usuário do sistema. Possui campo `classe`: **`cliente`**, **`administrador`**, **`funcionario`**, ou **`entregador`**. |
+| `ClasseUsuario`  | Enum com quatro variantes: `Cliente` (padrão), `Administrador`, `Funcionario`, `Entregador`. Apenas admins podem criar lojas.   |
 
 #### Lojas & Catálogo
 
@@ -405,8 +405,8 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 |-------------------------------|------------------------------------------------------|
 | `Cliente`                     | Usuário que é favorito de uma loja (usuário favorito da loja). |
 | `LojaFavorita`                | Loja que é favorita de um usuário (loja favorita do usuário). |
-| `Entregador`                  | Entregador vinculado a uma loja.                     |
-| `Funcionario`                 | Funcionário vinculado a uma loja.                    |
+| `Entregador`                  | Entregador vinculado a uma loja. Referencia `Usuario` via FK (`usuario_uuid`). |
+| `Funcionario`                 | Funcionário vinculado a uma loja. Referencia `Usuario` via FK (`usuario_uuid`). |
 | `HorarioFuncionamento`        | Horário de funcionamento por dia da semana.          |
 | `ConfiguracaoDePedidosLoja`   | Configurações de pedido da loja (max partes, tipo de cálculo). |
 | `EnderecoLoja`                | Endereço físico de uma loja.                         |
@@ -488,7 +488,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Regra | Detalhe |
 |-------|---------|
-| Classe de usuário | `cliente` (padrão) ou `administrador`. Definida no signup via campo `classe`. |
+| Classe de usuário | `cliente` (padrão), `administrador`, `funcionario` ou `entregador`. Definida no signup via campo `classe`. |
 | Criar loja | Apenas usuários com `classe = "administrador"` podem criar lojas (`POST /api/admin/lojas`). |
 | Produtos/Adicionais inativos | Não são exibidos no catálogo |
 | Avaliação de produto | Só via pedido autenticado (evite avaliação fraudulenta) |
@@ -513,6 +513,8 @@ Entregador entrega → pedido status → ENTREGUE
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
 | 2026-04-03  | Tabela `lojas_favoritas` e endpoints de favoritos criados |
+| 2026-04-04  | `Funcionario` e `Entregador` agora referenciam `Usuario` via FK (`usuario_uuid`) |
+| 2026-04-04  | `ClasseUsuario` expandido com `Funcionario` e `Entregador` |
 | 2026-04-03  | `LojaService::adicionar_cliente` agora cria usuário cliente automaticamente |
 | 2026-04-03  | `EnderecoEntregaService` e `EnderecoUsuarioService` injetados no AppState |
 | 2026-04-03  | `ClasseUsuario` adicionada ao `Usuario` (cliente/admin) |

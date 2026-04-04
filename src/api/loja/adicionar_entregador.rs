@@ -11,7 +11,10 @@ use crate::{
 #[derive(Deserialize)]
 pub struct AdicionarEntregadorRequest {
     pub nome: String,
-    pub telefone: Option<String>,
+    pub username: String,
+    pub email: String,
+    pub senha: String,
+    pub celular: String,
     pub veiculo: Option<String>,
     pub placa: Option<String>,
 }
@@ -30,9 +33,12 @@ pub async fn adicionar_entregador(
     }
 
     let entregador = state.loja_service.adicionar_entregador(
-        p.nome,
         loja_uuid,
-        p.telefone,
+        p.nome,
+        p.username,
+        p.email,
+        p.senha,
+        p.celular,
         p.veiculo,
         p.placa
     ).await?;

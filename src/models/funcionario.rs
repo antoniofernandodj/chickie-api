@@ -8,8 +8,7 @@ use crate::{models::Model, utils::agora};
 pub struct Funcionario {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
-    pub nome: String,
-    pub email: Option<String>,
+    pub usuario_uuid: Uuid,
     pub cargo: Option<String>,
     pub salario: Option<f64>,
     pub data_admissao: String,
@@ -19,8 +18,7 @@ pub struct Funcionario {
 impl Funcionario {
     pub fn new(
         loja_uuid: Uuid,
-        nome: String,
-        email: Option<String>,
+        usuario_uuid: Uuid,
         cargo: Option<String>,
         salario: Option<f64>,
         data_admissao: String,
@@ -29,8 +27,7 @@ impl Funcionario {
         Self {
             uuid: Uuid::new_v4(),
             loja_uuid,
-            nome,
-            email,
+            usuario_uuid,
             cargo,
             salario,
             data_admissao,

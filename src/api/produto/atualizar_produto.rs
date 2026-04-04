@@ -2,10 +2,10 @@ use axum::extract::Path;
 use axum::{Extension, Json, extract::State, response::IntoResponse};
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::usecases::AtualizarProdutoRequest;
+use crate::usecases::{AtualizarProdutoRequest, CatalogoUsecase};
 use crate::models::Usuario;
 use crate::api::dto::AppError;
-use crate::api::{AppState, CatalogoUsecase};
+use crate::api::AppState;
 
 
 

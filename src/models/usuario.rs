@@ -12,6 +12,8 @@ use crate::{models::Model, utils::agora};
 pub enum ClasseUsuario {
     Cliente,
     Administrador,
+    Funcionario,
+    Entregador,
 }
 
 impl ClasseUsuario {
@@ -19,6 +21,8 @@ impl ClasseUsuario {
         match self {
             Self::Cliente => "cliente",
             Self::Administrador => "administrador",
+            Self::Funcionario => "funcionario",
+            Self::Entregador => "entregador",
         }
     }
 
@@ -26,6 +30,8 @@ impl ClasseUsuario {
         match s {
             "cliente" => Ok(Self::Cliente),
             "administrador" => Ok(Self::Administrador),
+            "funcionario" => Ok(Self::Funcionario),
+            "entregador" => Ok(Self::Entregador),
             other => Err(format!("ClasseUsuario inválida: '{}'", other)),
         }
     }

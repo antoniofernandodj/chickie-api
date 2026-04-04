@@ -1,7 +1,7 @@
 use axum::{Extension, Json, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::{api::{CatalogoUsecase, dto::AppError}, models::{self, Usuario}};
+use crate::{api::dto::AppError, models::{self, Usuario}, usecases::CatalogoUsecase};
 use crate::api::AppState;
 
 

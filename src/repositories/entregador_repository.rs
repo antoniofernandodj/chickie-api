@@ -25,9 +25,9 @@ impl EntregadorRepository {
         .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE telefone = $1")
-        .bind(telefone)
+    pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Option<Entregador>, String> {
+        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE usuario_uuid = $1")
+        .bind(usuario_uuid)
         .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
@@ -42,13 +42,12 @@ impl Repository<Entregador> for EntregadorRepository {
 
     async fn criar(&self, item: &Entregador) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO entregadores (uuid, loja_uuid, nome, telefone, veiculo, placa, disponivel, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO entregadores (uuid, loja_uuid, usuario_uuid, veiculo, placa, disponivel, criado_em)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.telefone)
+        .bind(item.usuario_uuid)
         .bind(&item.veiculo)
         .bind(&item.placa)
         .bind(item.disponivel)
@@ -63,12 +62,11 @@ impl Repository<Entregador> for EntregadorRepository {
     async fn atualizar(&self, item: Entregador) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE entregadores SET loja_uuid = $1, nome = $2, telefone = $3, veiculo = $4, placa = $5, disponivel = $6
-            WHERE uuid = $7
+            UPDATE entregadores SET loja_uuid = $1, usuario_uuid = $2, veiculo = $3, placa = $4, disponivel = $5
+            WHERE uuid = $6
         ")
         .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.telefone)
+        .bind(item.usuario_uuid)
         .bind(&item.veiculo)
         .bind(&item.placa)
         .bind(item.disponivel)

@@ -15,10 +15,10 @@ mod endereco_usuario;
 mod loja_favorita;
 
 // Re-export usecases from the top-level module
-pub use crate::usecases::{
-    CatalogoUsecase,
-    MarketingUsecase
-};
+// pub use crate::usecases::{
+//     CatalogoUsecase,
+//     MarketingUsecase
+// };
 
 pub use routers::api_routes;
 

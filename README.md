@@ -239,12 +239,14 @@ src/
 
 A API usa **JWT (JSON Web Token)** para autenticação e **classe de usuário** para autorização.
 
-### Classes de Usuário
+### Classes de Usuario
 
 | Classe | Descrição |
 |--------|-----------|
 | `cliente` | Padrão. Pode navegar lojas, fazer pedidos e avaliar. |
 | `administrador` | Pode criar lojas, gerenciar catálogos, funcionários e entregadores. |
+| `funcionario` | Funcionário de uma loja. Possui conta de usuário com credenciais. |
+| `entregador` | Entregador de uma loja. Possui conta de usuário com credenciais. |
 
 ### Fluxo
 
