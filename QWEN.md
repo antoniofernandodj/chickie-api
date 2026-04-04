@@ -62,6 +62,12 @@ src/
 │   ├── catalogo_service.rs
 │   └── marketing_service.rs
 │
+├── usecases/               # Casos de uso (orquestram services + usuário)
+│   ├── mod.rs
+│   ├── catalogo.rs         # CatalogoUsecase, CreateProdutoRequest
+│   ├── pedido.rs
+│   └── marketing.rs        # MarketingUsecase
+│
 └── api/                    # Handlers Axum, rotas, AppState
     ├── mod.rs              # Declaração de módulos e re-exports
     ├── routers.rs          # Definição de todas as rotas
@@ -75,11 +81,7 @@ src/
     ├── pedido/             # Handlers de pedido
     ├── produto/            # Handlers de produto
     ├── cupom/              # Handlers de cupom
-    ├── marketing/          # Handlers de avaliação (loja/produto)
-    └── usecases/           # Casos de uso (orquestram services + usuário)
-        ├── catalogo.rs
-        ├── pedido.rs
-        └── marketing.rs
+    └── marketing/          # Handlers de avaliação (loja/produto)
 ```
 
 ---

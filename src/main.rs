@@ -3,6 +3,7 @@ mod database;
 mod utils;
 mod repositories;
 mod services;
+mod usecases;
 mod api;
 
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};

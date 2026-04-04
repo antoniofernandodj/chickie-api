@@ -8,10 +8,10 @@ use uuid::Uuid;
 use crate::{
     api::{
         dto::{AppError, AvaliarProdutoRequest},
-        usecases::MarketingUsecase,
         AppState
     },
-    models::Usuario
+    models::Usuario,
+    usecases::MarketingUsecase
 };
 
 pub async fn avaliar_produto(

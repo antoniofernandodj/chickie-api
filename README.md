@@ -154,6 +154,7 @@ src/
 ├── models/                 # Entidades de domínio
 ├── repositories/           # Queries SQL (trait Repository<T>)
 ├── services/               # Regras de negócio
+├── usecases/               # Casos de uso (orquestram services + usuário)
 │
 └── api/
     ├── routers.rs          # Definição de rotas
@@ -166,8 +167,7 @@ src/
     ├── pedido/             # Handlers de pedido
     ├── produto/            # Handlers de produto
     ├── cupom/              # Handlers de cupom
-    ├── marketing/          # Handlers de avaliação
-    └── usecases/           # Casos de uso
+    └── marketing/          # Handlers de avaliação
 ```
 
 ### Stack

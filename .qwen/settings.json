@@ -3,7 +3,8 @@
     "allow": [
       "Bash(cargo check)",
       "Bash(rm *)",
-      "Bash(cp *)"
+      "Bash(cp *)",
+      "Bash(mv *)"
     ]
   },
   "$version": 3

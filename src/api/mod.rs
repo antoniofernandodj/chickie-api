@@ -7,9 +7,14 @@ mod produto;
 mod cupom;
 mod routers;
 mod auth;
-mod usecases;
 mod wipe;
 mod marketing;
+
+// Re-export usecases from the top-level module
+pub use crate::usecases::{
+    CatalogoUsecase,
+    MarketingUsecase
+};
 
 pub use routers::api_routes;
 
@@ -25,11 +30,6 @@ pub use dto::{
     CreateLojaRequest,
     CreatePedidoRequest,
     Claims
-};
-
-pub use usecases::{
-    CatalogoUsecase,
-    MarketingUsecase
 };
 
 pub use pedido::{

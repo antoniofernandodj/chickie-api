@@ -158,7 +158,7 @@ impl LojaService {
 
         println!("cliente: {:?}", cliente);
 
-        self.cliente_repo.criar(&cliente).await;
+        let _ = self.cliente_repo.criar(&cliente).await;
 
         Ok(())
     }
