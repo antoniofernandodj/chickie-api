@@ -16,7 +16,7 @@
 
 ### Autenticação
 
-Endpoints marcados com 🔒 exigem header:
+Endpoints marcados com 🔒 exigem:
 ```
 Authorization: Bearer <JWT_TOKEN>
 ```
@@ -48,10 +48,33 @@ Todos os endpoints retornam erros no formato:
 | `403` | Forbidden — sem permissão (admin necessário) |
 | `404` | Not Found — recurso não encontrado |
 | `500` | Internal Server Error — erro interno |
+| `201` | Created — recurso criado com sucesso |
+| `204` | No Content — operação bem-sucedida sem body |
 
 ---
 
-## 1. Health Check (sem auth)
+## Prefixos de Rota
+
+Todos os endpoints são agrupados em namespaces:
+
+| Prefixo | Rota Real |
+|---------|-----------|
+| `/api/auth/` | `POST /api/auth/signup`, `POST /api/auth/login` |
+| `/api/usuarios/` | `GET /api/usuarios/` |
+| `/api/lojas/` | `GET /api/lojas/` |
+| `/api/admin/` | Rotas administrativas (criar loja, funcionários, etc.) |
+| `/api/pedidos/` | Rotas de pedido |
+| `/api/marketing/` | Cupons, avaliações, promoções |
+| `/api/catalogo/` | Adicionais, categorias |
+| `/api/enderecos-entrega/` | Endereços de entrega |
+| `/api/enderecos-usuario/` | Endereços de usuário |
+| `/api/favoritos/` | Lojas favoritas |
+| `/api/produtos/` | Produtos |
+| `/` | Health check |
+
+---
+
+## 1. Health Check
 
 ### 1.1 OK
 
@@ -68,7 +91,7 @@ GET /
 
 ---
 
-## 2. Autenticação (sem auth)
+## 2. Autenticação (público)
 
 ### 2.1 Cadastrar Usuário
 
@@ -214,6 +237,8 @@ Content-Type: application/json
 
 **Response `200`:** `Funcionario`
 
+> Cria um `Usuario` com `classe = "funcionario"` e vincula à loja.
+
 ---
 
 ### 5.4 Adicionar Entregador
@@ -239,6 +264,8 @@ Content-Type: application/json
 
 **Response `200`:** `Entregador`
 
+> Cria um `Usuario` com `classe = "entregador"` e vincula à loja.
+
 ---
 
 ### 5.5 Adicionar Cliente
@@ -261,6 +288,8 @@ Content-Type: application/json
 ```
 
 **Response `200`:** `Cliente`
+
+> Cria um `Usuario` com `classe = "cliente"` e vincula à loja.
 
 ---
 
@@ -307,7 +336,7 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:**
+**Response `201`:**
 ```json
 {
   "uuid": "uuid"
@@ -381,6 +410,8 @@ Authorization: Bearer <token>
 ```
 GET /api/marketing/cupons/{codigo}
 ```
+
+> Endpoint público — não requer autenticação.
 
 **Response `200`:** `Cupom`
 
@@ -457,6 +488,55 @@ Content-Type: application/json
 ```
 
 **Response `200`:** `Promocao`
+
+---
+
+### 7.7 Listar Promoções
+
+```
+GET /api/marketing/{loja_uuid}/promocoes
+Authorization: Bearer <token>
+```
+
+**Response `200`:** `Vec<Promocao>`
+
+---
+
+### 7.8 Atualizar Promoção
+
+```
+PUT /api/marketing/{loja_uuid}/promocoes/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "nome": "Black Friday Update",
+  "descricao": "string",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 60.0,
+  "valor_minimo": 100.0,
+  "data_inicio": "2026-11-25T00:00:00Z",
+  "data_fim": "2026-11-25T23:59:59Z",
+  "dias_semana_validos": [5],
+  "prioridade": 1
+}
+```
+
+**Response `204`:** No Content
+
+---
+
+### 7.9 Deletar Promoção
+
+```
+DELETE /api/marketing/{loja_uuid}/promocoes/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
 
 ---
 
@@ -802,13 +882,28 @@ Content-Type: application/json
 
 ## 13. Utilitários
 
-### 13.1 Wipe Database (⚠️ Dev Only)
+### 13.1 OK
+
+```
+GET /api/ok
+```
+
+**Response `200`:**
+```json
+{
+  "msg": "ok"
+}
+```
+
+---
+
+### 13.2 Wipe Database (⚠️ Dev Only)
 
 ```
 DELETE /api/wipe
 ```
 
-> ⚠️ **Apenas para desenvolvimento.** Requer `MODE=development`. Apaga todas as tabelas e reaplica migrações.
+> ⚠️ **Apenas para desenvolvimento.** Disponível apenas quando `MODE=development`. Apaga todas as tabelas e reaplica migrações.
 
 **Response `200`:**
 ```json
@@ -834,7 +929,7 @@ DELETE /api/wipe
 | 8 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | 🔒 | 👑 | `AdicionarFuncionarioRequest` |
 | 9 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | 🔒 | 👑 | `AdicionarEntregadorRequest` |
 | 10 | `POST` | `/api/admin/lojas/{loja_uuid}/clientes` | 🔒 | 👑 | `AdicionarClienteRequest` |
-| 11 | `POST` | `/api/pedidos/{loja_uuid}` | 🔒 | — | `CreatePedidoRequest` |
+| 11 | `POST` | `/api/pedidos/{loja_uuid}` | 🔒 | — | `CriarPedidoRequest` |
 | 12 | `GET` | `/api/pedidos/` | 🔒 | — | — |
 | 13 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — | — |
 | 14 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — | `CriarCupomRequest` |
@@ -843,26 +938,30 @@ DELETE /api/wipe
 | 17 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — | `AvaliarLojaRequest` |
 | 18 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — | `AvaliarProdutoRequest` |
 | 19 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — | `CriarPromocaoRequest` |
-| 20 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — | `CreateAdicionalRequest` |
-| 21 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — | — |
-| 22 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — | — |
-| 23 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — | — |
-| 24 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — | `CreateCategoriaRequest` |
-| 25 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — | `CreateEnderecoEntregaRequest` |
-| 26 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — | — |
-| 27 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — | — |
-| 28 | `POST` | `/api/enderecos-usuario/` | 🔒 | — | `CreateEnderecoUsuarioRequest` |
-| 29 | `GET` | `/api/enderecos-usuario/` | 🔒 | — | — |
-| 30 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | — |
-| 31 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | `UpdateEnderecoUsuarioRequest` |
-| 32 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | — |
-| 33 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — | — |
-| 34 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — | — |
-| 35 | `GET` | `/api/favoritos/minhas` | 🔒 | — | — |
-| 36 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — | — |
-| 37 | `POST` | `/api/produtos/` | 🔒 | — | `CreateProdutoRequest` |
-| 38 | `GET` | `/api/produtos/` | 🔒 | — | — |
-| 39 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — | `AtualizarProdutoRequest` |
-| 40 | `DELETE` | `/api/wipe` ⚠️ | — | — | — |
+| 20 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — | — |
+| 21 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — | `AtualizarPromocaoRequest` |
+| 22 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — | — |
+| 23 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — | `CreateAdicionalRequest` |
+| 24 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — | — |
+| 25 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — | — |
+| 26 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — | — |
+| 27 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — | `CreateCategoriaRequest` |
+| 28 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — | `CreateEnderecoEntregaRequest` |
+| 29 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — | — |
+| 30 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — | — |
+| 31 | `POST` | `/api/enderecos-usuario/` | 🔒 | — | `CreateEnderecoUsuarioRequest` |
+| 32 | `GET` | `/api/enderecos-usuario/` | 🔒 | — | — |
+| 33 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | — |
+| 34 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | `UpdateEnderecoUsuarioRequest` |
+| 35 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — | — |
+| 36 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — | — |
+| 37 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — | — |
+| 38 | `GET` | `/api/favoritos/minhas` | 🔒 | — | — |
+| 39 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — | — |
+| 40 | `POST` | `/api/produtos/` | 🔒 | — | `CreateProdutoRequest` |
+| 41 | `GET` | `/api/produtos/` | 🔒 | — | — |
+| 42 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — | `AtualizarProdutoRequest` |
+| 43 | `GET` | `/api/ok` | — | — | — |
+| 44 | `DELETE` | `/api/wipe` ⚠️ | — | — | — |
 
-**Total: 40 endpoints**
+**Total: 44 endpoints**

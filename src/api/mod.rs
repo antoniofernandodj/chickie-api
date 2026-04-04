@@ -39,6 +39,9 @@ pub use pedido::{
     criar_pedido,
     listar_pedidos,
     buscar_pedido, // buscar_pedido_por_usuario, buscar_pedido_por_loja
+    // processar_e_exibir_precos,
+    listar_por_loja,
+    buscar_pedido_com_entrega
 };
 
 pub use usuario::{
@@ -72,7 +75,10 @@ pub use wipe::wipe_database;
 
 pub use marketing::{
     avaliar_loja,
-    avaliar_produto
+    avaliar_produto,
+    listar_promocoes,
+    atualizar_promocao,
+    deletar_promocao
 };
 
 pub use catalogo::{
@@ -86,7 +92,7 @@ pub use catalogo::{
 pub use endereco_entrega::{
     criar_para_pedido,
     buscar_por_pedido,
-    listar_por_loja
+    listar_por_loja as listar_enderecos_por_loja
 };
 
 pub use endereco_usuario::{

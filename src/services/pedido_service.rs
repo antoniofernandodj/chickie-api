@@ -75,142 +75,49 @@ impl PedidoService {
         self.pedido_repo.criar(pedido).await
     }
 
+    // TODO: Depois verificar como integrara logica de descontos e cupons
+    // com o tipo de calculo de pedido
+
     /// Calcula e exibe os preços baseado na configuração da loja
-    pub async fn processar_e_exibir_precos(
-        &self,
-        pedido: &mut Pedido,
-        loja_uuid: uuid::Uuid
-    ) -> Result<(), String> {
-        let config_loja = self
-            .config_repo
-            .buscar_por_loja(loja_uuid)
-            .await?
-            .unwrap();
+    // pub async fn processar_e_exibir_precos(
+    //     &self,
+    //     pedido: &mut Pedido,
+    //     loja_uuid: uuid::Uuid
+    // ) -> Result<(), String> {
+    //     let config_loja = self
+    //         .config_repo
+    //         .buscar_por_loja(loja_uuid)
+    //         .await?
+    //         .unwrap();
 
-        println!("--- Processando Pedido {} ---", pedido.uuid);
-        for item in &pedido.itens {
-            let preco_media = calcular_preco_por_partes(
-                &item.partes, &TipoCalculoPedido::MediaPonderada
-            );
-            let preco_caro = calcular_preco_por_partes(
-                &item.partes, &TipoCalculoPedido::MaisCaro
-            );
-            let preco_loja = calcular_preco_por_partes(
-                &item.partes, &config_loja.tipo_calculo
-            );
+    //     tracing::info!("--- Processando Pedido {} ---", pedido.uuid);
+    //     for item in &pedido.itens {
+    //         let preco_media = calcular_preco_por_partes(
+    //             &item.partes, &TipoCalculoPedido::MediaPonderada
+    //         );
+    //         let preco_caro = calcular_preco_por_partes(
+    //             &item.partes, &TipoCalculoPedido::MaisCaro
+    //         );
+    //         let preco_loja = calcular_preco_por_partes(
+    //             &item.partes, &config_loja.tipo_calculo
+    //         );
 
-            println!(
-                "Item: Média: {:.2} | Mais caro: {:.2} | Loja Config: {:.2}",
-                preco_media,
-                preco_caro,
-                preco_loja
-            );
-        }
-        Ok(())
+    //         tracing::info!(
+    //             "Item: Média: {:.2} | Mais caro: {:.2} | Loja Config: {:.2}",
+    //             preco_media,
+    //             preco_caro,
+    //             preco_loja
+    //         );
+    //     }
+    //     Ok(())
+    // }
+
+    pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
+        self.pedido_repo.buscar_completos_por_loja(loja_uuid).await
     }
-
-    pub async fn buscar_completo(
-        &self,
-        pedido_uuid: uuid::Uuid,
-        loja_uuid: uuid::Uuid,
-    ) -> Result<Option<Pedido>, String> {
-        self.pedido_repo.buscar_completo(pedido_uuid, loja_uuid).await
-    }
-
-    pub async fn listar(&self) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.listar_todos().await
-    }
-
-    /// Método principal que orquestra o cálculo de preço, promoções e cupons
-    pub async fn processar_e_finalizar_pedido(
-        &self,
-        pedido: &mut Pedido,
-        codigo_cupom: Option<String>,
-    ) -> Result<(), String> {
-        
-        // 1. Buscar configuração da loja (como calcular preço dos sabores)
-        let config_loja = self.config_repo
-            .buscar_por_loja(pedido.loja_uuid)
-            .await?
-            .ok_or("Configuração da loja não encontrada")?;
-
-        // 2. Calcular Subtotal dos Itens
-        // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
-        // Aqui usamos os preços que já vieram no objeto Pedido (snapshots).
-        let mut subtotal_calculado = 0.0;
-        
-        for item in &pedido.itens {
-            // Soma o preço base do item (calculado pela regra de sabores)
-            let preco_item = calcular_preco_por_partes(
-                &item.partes,
-                &config_loja.tipo_calculo
-            );
-
-            // Soma adicionais
-            let total_adicionais: f64 = item.partes.iter()
-                .flat_map(|p| &p.adicionais)
-                .map(|a| a.preco)
-                .sum();
-
-            subtotal_calculado += (preco_item + total_adicionais) * item.quantidade as f64;
-        }
-
-        pedido.subtotal = subtotal_calculado;
-        
-        // 3. Calcular descontos
-        let (desconto_promocao, descricao_promo) =
-            self.calcular_melhor_promocao(pedido).await?;
-
-        let (desconto_cupom, descricao_cupom) = self.validar_cupom(
-            pedido,
-            codigo_cupom
-        ).await?;
-
-        // 4. Decisão de negócio: Escolher o maior desconto (não acumulativo)
-        // Ou aplicar lógica de prioridade. Ex: Cupom tem prioridade, senão usa promoção.
-        
-        let desconto_final;
-        let observacao_desconto;
-
-        if desconto_cupom > 0.0 {
-            desconto_final = desconto_cupom;
-            observacao_desconto = format!("Cupom aplicado: {}", descricao_cupom);
-            // Aqui você poderia marcar o cupom como usado no banco
-        } else if desconto_promocao > 0.0 {
-            desconto_final = desconto_promocao;
-            observacao_desconto = format!("Promoção aplicada: {}", descricao_promo);
-        } else {
-            desconto_final = 0.0;
-            observacao_desconto = "Nenhum desconto aplicado".to_string();
-        }
-
-        pedido.desconto = Some(desconto_final);
-        pedido.total = pedido.subtotal + pedido.taxa_entrega - desconto_final;
-
-        // Atualiza observações do pedido com info do desconto
-        if let Some(mut obs) = pedido.observacoes.clone() {
-            obs.push_str(&format!(" | {}", observacao_desconto));
-            pedido.observacoes = Some(obs);
-        } else {
-            pedido.observacoes = Some(observacao_desconto);
-        }
-
-        println!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}", 
-            pedido.subtotal,
-            desconto_final,
-            pedido.total
-        );
-
-        self.salvar(pedido).await?;
-
-        Ok(())
-    }
-
-
-
 
     /// Lógica para verificar promoções ativas da loja
-    async fn calcular_melhor_promocao(
+    async fn __calcular_melhor_promocao(
         &self,
         pedido: &Pedido
     ) -> Result<(f64, String), String> {
@@ -253,7 +160,6 @@ impl PedidoService {
 
         Ok((melhor_desconto, melhor_descricao))
     }
-
 
     /// Lógica para validar e calcular cupom
     async fn validar_cupom(
@@ -307,7 +213,7 @@ impl PedidoService {
     ) -> Result<Uuid, String> {
         
         // 1. Processar preços e descontos (lógica existente)
-        self.processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
+        self.__processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
 
         // 2. Salvar o pedido no banco (retorna UUID)
         let pedido_uuid = self.pedido_repo.criar(pedido).await?;
@@ -345,6 +251,94 @@ impl PedidoService {
             endereco_entrega,
         })
     }
+
+
+
+    /// Método principal que orquestra o cálculo de preço, promoções e cupons
+    async fn __processar_e_finalizar_pedido(
+        &self,
+        pedido: &mut Pedido,
+        codigo_cupom: Option<String>,
+    ) -> Result<(), String> {
+        
+        // 1. Buscar configuração da loja (como calcular preço dos sabores)
+        let config_loja = self.config_repo
+            .buscar_por_loja(pedido.loja_uuid)
+            .await?
+            .ok_or("Configuração da loja não encontrada")?;
+
+        // 2. Calcular Subtotal dos Itens
+        // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
+        // Aqui usamos os preços que já vieram no objeto Pedido (snapshots).
+        let mut subtotal_calculado = 0.0;
+        
+        for item in &pedido.itens {
+            // Soma o preço base do item (calculado pela regra de sabores)
+            let preco_item = calcular_preco_por_partes(
+                &item.partes,
+                &config_loja.tipo_calculo
+            );
+
+            // Soma adicionais
+            let total_adicionais: f64 = item.partes.iter()
+                .flat_map(|p| &p.adicionais)
+                .map(|a| a.preco)
+                .sum();
+
+            subtotal_calculado += (preco_item + total_adicionais) * item.quantidade as f64;
+        }
+
+        pedido.subtotal = subtotal_calculado;
+        
+        // 3. Calcular descontos
+        let (desconto_promocao, descricao_promo) =
+            self.__calcular_melhor_promocao(pedido).await?;
+
+        let (desconto_cupom, descricao_cupom) = self.validar_cupom(
+            pedido,
+            codigo_cupom
+        ).await?;
+
+        // 4. Decisão de negócio: Escolher o maior desconto (não acumulativo)
+        // Ou aplicar lógica de prioridade. Ex: Cupom tem prioridade, senão usa promoção.
+        
+        let desconto_final;
+        let observacao_desconto;
+
+        if desconto_cupom > 0.0 {
+            desconto_final = desconto_cupom;
+            observacao_desconto = format!("Cupom aplicado: {}", descricao_cupom);
+            // Aqui você poderia marcar o cupom como usado no banco
+        } else if desconto_promocao > 0.0 {
+            desconto_final = desconto_promocao;
+            observacao_desconto = format!("Promoção aplicada: {}", descricao_promo);
+        } else {
+            desconto_final = 0.0;
+            observacao_desconto = "Nenhum desconto aplicado".to_string();
+        }
+
+        pedido.desconto = Some(desconto_final);
+        pedido.total = pedido.subtotal + pedido.taxa_entrega - desconto_final;
+
+        // Atualiza observações do pedido com info do desconto
+        if let Some(mut obs) = pedido.observacoes.clone() {
+            obs.push_str(&format!(" | {}", observacao_desconto));
+            pedido.observacoes = Some(obs);
+        } else {
+            pedido.observacoes = Some(observacao_desconto);
+        }
+
+        tracing::info!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}", 
+            pedido.subtotal,
+            desconto_final,
+            pedido.total
+        );
+
+        self.salvar(pedido).await?;
+
+        Ok(())
+    }
+
 
 
 }

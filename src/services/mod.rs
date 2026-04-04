@@ -10,7 +10,7 @@ mod loja_favorita_service;
 pub use usuario_service::UsuarioService;
 pub use loja_service::LojaService;
 pub use catalogo_service::CatalogoService;
-pub use pedido_service::PedidoService;
+pub use pedido_service::{PedidoService, PedidoComEntrega};
 pub use marketing_service::MarketingService;
 pub use endereco_usuario_service::EnderecoUsuarioService;
 pub use endereco_entrega_service::EnderecoEntregaService;

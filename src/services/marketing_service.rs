@@ -136,4 +136,43 @@ impl MarketingService {
     pub async fn listar_cupons(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
         self.cupom_repo.listar_todos_por_loja(loja_uuid).await
     }
+
+    pub async fn listar_promocoes(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
+        self.promocao_repo.listar_todos_por_loja(loja_uuid).await
+    }
+
+    pub async fn atualizar_promocao(
+        &self,
+        uuid: Uuid,
+        loja_uuid: Uuid,
+        nome: String,
+        descricao: String,
+        tipo_desconto: String,
+        valor_desconto: Option<f64>,
+        valor_minimo: Option<f64>,
+        data_inicio: String,
+        data_fim: String,
+        dias_semana_validos: Option<Vec<u8>>,
+        prioridade: i32,
+    ) -> Result<(), String> {
+        let mut promocao = Promocao::new(
+            loja_uuid,
+            nome,
+            descricao,
+            tipo_desconto,
+            valor_desconto,
+            valor_minimo,
+            data_inicio,
+            data_fim,
+            dias_semana_validos,
+            prioridade
+        );
+        promocao.uuid = uuid;
+
+        self.promocao_repo.atualizar(promocao).await
+    }
+
+    pub async fn deletar_promocao(&self, uuid: Uuid) -> Result<(), String> {
+        self.promocao_repo.deletar(uuid).await
+    }
 }

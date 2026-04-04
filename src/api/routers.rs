@@ -14,6 +14,9 @@ use crate::api::{
     criar_usuario,
     listar_lojas,
     listar_pedidos,
+    // processar_e_exibir_precos,
+    listar_por_loja,
+    buscar_pedido_com_entrega,
     listar_usuarios,
     criar_produto,
     listar_produtos,
@@ -25,6 +28,9 @@ use crate::api::{
     wipe_database,
     avaliar_loja,
     avaliar_produto,
+    listar_promocoes,
+    atualizar_promocao,
+    deletar_promocao,
     adicionar_funcionario,
     adicionar_entregador,
     adicionar_cliente,
@@ -36,7 +42,7 @@ use crate::api::{
     marcar_indisponivel,
     criar_para_pedido,
     buscar_por_pedido,
-    listar_por_loja,
+    listar_enderecos_por_loja,
     criar_endereco,
     listar_enderecos,
     buscar_endereco,
@@ -77,9 +83,12 @@ pub fn loja_admin_routes() -> Router<Arc<AppState>> {
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/{loja_uuid}", post(criar_pedido))
-            .layer(from_fn_with_state(s.clone(), auth_middleware))
         .route("/", get(listar_pedidos))
         .route("/{uuid}", get(buscar_pedido))
+        .route("/{loja_uuid}", get(listar_por_loja))
+        // .route("/{loja_uuid}/precos", post(processar_e_exibir_precos))
+        .route("/{loja_uuid}/{pedido_uuid}/com-entrega", get(buscar_pedido_com_entrega))
+        .layer(from_fn_with_state(s.clone(), auth_middleware))
 }
 
 
@@ -98,7 +107,7 @@ pub fn endereco_entrega_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{pedido_uuid}/{loja_uuid}", post(criar_para_pedido))
         .route("/{pedido_uuid}", get(buscar_por_pedido))
-        .route("/{loja_uuid}/loja", get(listar_por_loja))
+        .route("/{loja_uuid}/loja", get(listar_enderecos_por_loja))
 }
 
 // Rotas de Endereço de Usuário
@@ -136,6 +145,9 @@ pub fn marketing_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{loja_uuid}/avaliar-loja", post(avaliar_loja))
         .route("/{loja_uuid}/avaliar-produto", post(avaliar_produto))
         .route("/{loja_uuid}/promocoes", post(criar_promocao))
+        .route("/{loja_uuid}/promocoes", get(listar_promocoes))
+        .route("/{loja_uuid}/promocoes/{uuid}", put(atualizar_promocao))
+        .route("/{loja_uuid}/promocoes/{uuid}", delete(deletar_promocao))
 }
 
 

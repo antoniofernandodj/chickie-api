@@ -122,7 +122,7 @@ async fn main() -> Result<(), String> {
     );
 
     // --- Usuário ---
-    println!("--- Criando Usuário ---");
+    tracing::info!("--- Criando Usuário ---");
     let usuario = usuario_service.registrar(
         "Antonio Silva".into(),
         "antonio".into(), 
@@ -134,7 +134,7 @@ async fn main() -> Result<(), String> {
 
     // Buscar usuário por email
     if let Some(u) = usuario_repo.buscar_por_email("antonio@email.com").await.unwrap() {
-        println!("Usuário Corretamente cadastrado: {:?}", u);
+        tracing::info!("Usuário Corretamente cadastrado: {:?}", u);
     }
 
     // Service orquestra criação da loja + config + horários iniciais
@@ -155,7 +155,7 @@ async fn main() -> Result<(), String> {
         TipoCalculoPedido::MaisCaro
     ).await?;
 
-    println!("loja: {:?}", loja);
+    tracing::info!("loja: {:?}", loja);
 
     // Desativar domingo sem deletar
     horario_repo.definir_ativo(loja.uuid, 0, false).await.ok();
@@ -163,7 +163,7 @@ async fn main() -> Result<(), String> {
     loja_service.adicionar_cliente(&usuario, &loja).await?;
 
     // --- Catálogo (Produtos/Categorias/Adicionais) ---
-    println!("\n--- Populando Catálogo ---");
+    tracing::info!("\n--- Populando Catálogo ---");
     let adicional_bacon = catalogo_service.criar_adicional(
         "Bacon".into(),
         loja.uuid,
@@ -177,7 +177,7 @@ async fn main() -> Result<(), String> {
         3.0
     ).await?;
 
-    println!("adicional: {:?}, {:?}", adicional_bacon, adicional_cheddar);
+    tracing::info!("adicional: {:?}, {:?}", adicional_bacon, adicional_cheddar);
 
     let categoria_pizzas = catalogo_service.criar_categoria(
         String::from("Pizzas"),
@@ -254,8 +254,8 @@ async fn main() -> Result<(), String> {
         Some(30)
     ).await?;
 
-    println!("categoria: {:?}", categoria_bebidas);
-    println!("categoria: {:?}", categoria_pizzas);
+    tracing::info!("categoria: {:?}", categoria_bebidas);
+    tracing::info!("categoria: {:?}", categoria_pizzas);
 
     let mut pedido_1: Pedido = Pedido::new(
         usuario.uuid,
@@ -274,7 +274,7 @@ async fn main() -> Result<(), String> {
         ]
     );
 
-    println!("pedido: {:?}", pedido_1);
+    tracing::info!("pedido: {:?}", pedido_1);
 
     let ingrediente: Ingrediente = Ingrediente::new(
         String::from("Tomate"),
@@ -283,7 +283,7 @@ async fn main() -> Result<(), String> {
         12.5,
     );
 
-    println!("ingrediente: {:?}", ingrediente);
+    tracing::info!("ingrediente: {:?}", ingrediente);
 
     let endereco_loja: EnderecoLoja = EnderecoLoja::new(
         loja.uuid,
@@ -298,7 +298,7 @@ async fn main() -> Result<(), String> {
         None
     );
 
-    println!("endereco_loja: {:?}", endereco_loja);
+    tracing::info!("endereco_loja: {:?}", endereco_loja);
 
     let entregador = loja_service.adicionar_entregador(
         String::from("Carlos Lima"),
@@ -308,7 +308,7 @@ async fn main() -> Result<(), String> {
         Some(String::from("ABC1D23")),
     ).await?;
 
-    println!("entregador: {:?}", entregador);
+    tracing::info!("entregador: {:?}", entregador);
 
     let funcionario = loja_service.adicionar_funcionario(
         loja.uuid,
@@ -319,7 +319,7 @@ async fn main() -> Result<(), String> {
         None,
     ).await?;
 
-    println!("funcionario: {:?}", funcionario);
+    tracing::info!("funcionario: {:?}", funcionario);
 
     let mut pedido_2: Pedido = Pedido::new(
         usuario.uuid,
@@ -330,7 +330,7 @@ async fn main() -> Result<(), String> {
         Some(String::from("Entregar na portaria por favor")),
     );
 
-    println!("{:?}", pedido_2);
+    tracing::info!("{:?}", pedido_2);
 
     let pedido_2_uuid = pedido_2.adicionar_item(
         1,
@@ -342,7 +342,7 @@ async fn main() -> Result<(), String> {
 
     for item in pedido_2.itens.iter_mut() {
 
-        println!("item criado: {:?}", item);
+        tracing::info!("item criado: {:?}", item);
 
         if item.uuid == pedido_2_uuid {
 
@@ -353,7 +353,7 @@ async fn main() -> Result<(), String> {
                         .adicionar_adicional(&adicional_bacon)
                         .expect("Não foi possível adicionar");
 
-                    println!("UUID adicional 1: {:?}", adicional_1_uuid);
+                    tracing::info!("UUID adicional 1: {:?}", adicional_1_uuid);
                 }
 
                 if parte.produto_uuid == produto_pizza_catupiry.uuid {
@@ -361,7 +361,7 @@ async fn main() -> Result<(), String> {
                         .adicionar_adicional(&adicional_cheddar)
                         .expect("Não foi possível adicionar");
 
-                    println!("UUID adicional 2: {:?}", adicional_2_uuid);
+                    tracing::info!("UUID adicional 2: {:?}", adicional_2_uuid);
                 }
             }
         }
@@ -387,8 +387,8 @@ async fn main() -> Result<(), String> {
         Some(String::from("Loja muito boa")),
     ).await?;
 
-    println!("avaliacoes_de_loja: {:?}", avaliacao_loja);
-    println!("avaliacoes_de_produto: {:?}", avaliacao_produto);
+    tracing::info!("avaliacoes_de_loja: {:?}", avaliacao_loja);
+    tracing::info!("avaliacoes_de_produto: {:?}", avaliacao_produto);
 
     let cupom = marketing_service.criar_cupom(
         loja.uuid,
@@ -415,8 +415,8 @@ async fn main() -> Result<(), String> {
         1,
     ).await?;
 
-    println!("{:?}", promo_happy_hour);
-    println!("{:?}", cupom);
+    tracing::info!("{:?}", promo_happy_hour);
+    tracing::info!("{:?}", cupom);
 
     // Montar um pedido de pizza com 3 partes
     let mut pedido_pizza = Pedido::new(
@@ -461,8 +461,8 @@ async fn main() -> Result<(), String> {
             &config_loja.tipo_calculo
         );
 
-        println!("Média: {:.2} | Mais caro: {:.2}", preco_media, preco_caro);
-        println!("Loja: {:.2}", preco_loja);
+        tracing::info!("Média: {:.2} | Mais caro: {:.2}", preco_media, preco_caro);
+        tracing::info!("Loja: {:.2}", preco_loja);
     }
 
     let mut pedido_com_cupom = Pedido::new(
@@ -488,34 +488,34 @@ async fn main() -> Result<(), String> {
 
     match result {
         Ok(_) => {
-            println!("Pedido processado com sucesso!");
-            println!("Pedido Final Salvo: Total R$ {:.2}", pedido_com_cupom.total);
+            tracing::info!("Pedido processado com sucesso!");
+            tracing::info!("Pedido Final Salvo: Total R$ {:.2}", pedido_com_cupom.total);
         },
-        Err(e) => println!("Erro ao processar: {}", e),
+        Err(e) => tracing::info!("Erro ao processar: {}", e),
     }
 
     // Pedido único completo
     if let Some(pedido) = pedido_repo.buscar_completo(pedido_pizza.uuid).await.unwrap() {
-        println!("Pedido: {}", pedido.uuid);
+        tracing::info!("Pedido: {}", pedido.uuid);
         for item in &pedido.itens {
             for a in &item.adicionais {
-                println!("    + Adicional: {} R${:.2}", a.nome, a.preco);
+                tracing::info!("    + Adicional: {} R${:.2}", a.nome, a.preco);
             }
             for s in &item.partes {
-                println!("    ~ Parte {}: {} R${:.2}", s.posicao, s.produto_nome, s.preco_unitario);
+                tracing::info!("    ~ Parte {}: {} R${:.2}", s.posicao, s.produto_nome, s.preco_unitario);
             }
         }
     }
 
     // Pedido único completo
     if let Some(pedido) = pedido_repo.buscar_completo(pedido_com_cupom.uuid).await.unwrap() {
-        println!("Pedido: {}", pedido.uuid);
+        tracing::info!("Pedido: {}", pedido.uuid);
         for item in &pedido.itens {
             for a in &item.adicionais {
-                println!("    + Adicional: {} R${:.2}", a.nome, a.preco);
+                tracing::info!("    + Adicional: {} R${:.2}", a.nome, a.preco);
             }
             for s in &item.partes {
-                println!("    ~ Parte {}: {} R${:.2}", s.posicao, s.produto_nome, s.preco_unitario);
+                tracing::info!("    ~ Parte {}: {} R${:.2}", s.posicao, s.produto_nome, s.preco_unitario);
             }
         }
     }
@@ -525,35 +525,35 @@ async fn main() -> Result<(), String> {
         .buscar_completos_por_loja(loja.uuid)
         .await.unwrap();
 
-    println!("Pedidos: {:?}", pedidos);
+    tracing::info!("Pedidos: {:?}", pedidos);
 
     // Buscar cupom por código
     if let Some(c) = cupom_repo.buscar_por_codigo("BEMVINDO").await.unwrap() {
-        println!("Cupom: {} - {}", c.codigo, c.descricao);
+        tracing::info!("Cupom: {} - {}", c.codigo, c.descricao);
     }
 
     // // Listar todos os cupons ativos da loja
     let cupons_ativos = cupom_repo.buscar_ativos(loja.uuid).await.unwrap();
-    println!("Cupons ativos: {}", cupons_ativos.len());
+    tracing::info!("Cupons ativos: {}", cupons_ativos.len());
 
     for (n, i) in usuario_repo.listar_todos().await.unwrap().iter().enumerate() {
-        println!("\n{}:{:?}", n, i);
+        tracing::info!("\n{}:{:?}", n, i);
     };
 
     for (n, i) in loja_repo.listar_todos().await.unwrap().iter().enumerate() {
-        println!("\n{}:{:?}", n, i);
+        tracing::info!("\n{}:{:?}", n, i);
     };
 
     for (n, i) in produto_repo.listar_todos().await.unwrap().iter().enumerate() {
-        println!("\n{}:{:?}", n, i);
+        tracing::info!("\n{}:{:?}", n, i);
     };
 
     for (n, i) in pedido_repo.listar_todos().await.unwrap().iter().enumerate() {
-        println!("\n{}:{:?}", n, i);
+        tracing::info!("\n{}:{:?}", n, i);
     };
 
     for (n, i) in cupom_repo.listar_todos().await.unwrap().iter().enumerate() {
-        println!("\n{}:{:?}", n, i);
+        tracing::info!("\n{}:{:?}", n, i);
     };
 
     Ok(())

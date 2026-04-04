@@ -93,6 +93,15 @@ src/
 
 ---
 
+## Observações importantes
+
+Todo endpoint que por pedido para ser feito nunca vai conter logica alguma.
+vai usar na verdade algum usecase, que vai usar algum service, que vai usar
+os repositórios. então sempre que for pedido um endpoint, deve-se observar
+esta pilha. E logo após ser editados documentos de projeto, toda a
+documentação deve ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md,
+@pendencias.md e @API.md
+
 ## Microserviços (Visão Futura)
 
 | Microserviço              | Responsabilidade                        |
@@ -181,8 +190,8 @@ Cada repositório implementa também:
 | Todas sob `/api`                | `POST /api/pedidos`                        |
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
-| Auth via middleware             | Aplicado em `/pedidos`, `/usuarios`, `/produtos`, `/cupons`, `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/admin` |
-| Sem auth                        | `/auth/*`, `/wipe`, `/ok`, `GET /api/lojas/`                  |
+| Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/produtos`, `/marketing` (parcial), `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin` |
+| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `/wipe` (dev only) |
 
 ### Referência Completa de Endpoints
 
@@ -236,7 +245,7 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/pedidos/` | Criar pedido |
+| `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido |
 | `GET` | `/api/pedidos/` | Listar pedidos |
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido |
 
@@ -244,12 +253,15 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/cupons/` | Criar cupom |
-| `GET` | `/api/cupons/` | Listar cupons da loja |
-| `GET` | `/api/cupons/{codigo}` | Validar cupom |
-| `POST` | `/api/cupons/{loja_uuid}/avaliar-loja` | Avaliar loja |
-| `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto |
-| `POST` | `/api/cupons/{loja_uuid}/promocoes` | Criar promoção |
+| `POST` | `/api/marketing/{loja_uuid}/cupons` | Criar cupom |
+| `GET` | `/api/marketing/cupons` | Listar cupons da loja |
+| `GET` | `/api/marketing/cupons/{codigo}` | Validar cupom |
+| `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | Avaliar loja |
+| `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | Avaliar produto |
+| `POST` | `/api/marketing/{loja_uuid}/promocoes` | Criar promoção |
+| `GET` | `/api/marketing/{loja_uuid}/promocoes` | Listar promoções |
+| `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Atualizar promoção |
+| `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Deletar promoção |
 
 #### Endereços de Entrega (auth required)
 
@@ -526,6 +538,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-04  | CRUD completo de promoções (listar, atualizar, deletar) |
 | 2026-04-04  | Endpoint `GET /api/cupons/` para listar cupons por loja |
 | 2026-04-04  | `ClasseUsuario.Owner` adicionado (dono da plataforma) |
 | 2026-04-04  | Endpoint `POST /api/cupons/{loja_uuid}/promocoes` criado via MarketingUsecase |
@@ -544,3 +557,6 @@ Entregador entrega → pedido status → ENTREGUE
 | 2026-04-03  | Endpoints de avaliação de loja e produto criados   |
 | 2026-04-03  | `MarketingUsecase` implementado                    |
 | 2026-04-03  | `MarketingService` agora deriva `Clone`            |
+
+## Qwen Added Memories
+- Regra arquitetural obrigatória: TODO endpoint deve seguir a pilha Handler → Usecase → Service → Repository → Database. Handlers NUNCA podem conter lógica de negócio, queries SQL, ou chamadas diretas a repositories. Handlers apenas extraem dados da request, instanciam o usecase, chamam seu método e retornam a response. Isso vale para qualquer novo endpoint criado no projeto Chickie API.

@@ -229,7 +229,7 @@ impl Repository<Pedido> for PedidoRepository {
             .await
             .map_err(|e| e.to_string())?;
 
-        println!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
+        tracing::info!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
 
         sqlx::query("
             INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min, criado_em, atualizado_em)
@@ -251,11 +251,11 @@ impl Repository<Pedido> for PedidoRepository {
         .execute(&mut *tx)
         .await
         .map_err(|e| {
-            println!("[PEDIDO] Erro ao inserir pedido: {}", e);
+            tracing::info!("[PEDIDO] Erro ao inserir pedido: {}", e);
             e.to_string()
         })?;
 
-        println!("[PEDIDO] Pedido inserido, processando {} itens", pedido.itens.len());
+        tracing::info!("[PEDIDO] Pedido inserido, processando {} itens", pedido.itens.len());
 
         for i in pedido.itens.iter() {
             // 1. Inserir o Item
@@ -271,7 +271,7 @@ impl Repository<Pedido> for PedidoRepository {
             .execute(&mut *tx) // Usa a transacao existente
             .await
             .map_err(|e| {
-                println!("[ERRO FK] Falha ao inserir item de pedido: {:?}. Erro: {}", i, e);
+                tracing::error!("[ERRO FK] Falha ao inserir item de pedido: {:?}. Erro: {}", i, e);
                 e.to_string()
             })?;
 
@@ -291,8 +291,8 @@ impl Repository<Pedido> for PedidoRepository {
                     .execute(&mut *tx) // MUITO IMPORTANTE: &mut *tx aqui
                     .await
                     .map_err(|e| {
-                        println!("[ERRO FK] Falha ao inserir parte de item: {:?}. Erro: {}", i, e);
-                        println!("p: {:?}, i: {:?}", parte.posicao, parte.item_uuid);
+                        tracing::error!("[ERRO FK] Falha ao inserir parte de item: {:?}. Erro: {}", i, e);
+                        tracing::error!("p: {:?}, i: {:?}", parte.posicao, parte.item_uuid);
                         e.to_string()
                     })?;
                 }
@@ -313,19 +313,19 @@ impl Repository<Pedido> for PedidoRepository {
                 .execute(&mut *tx)
                 .await
                 .map_err(|e| {
-                    println!("[ERRO FK] Falha ao inserir adicional de item: {:?}. Erro: {}", i, e);
+                    tracing::error!("[ERRO FK] Falha ao inserir adicional de item: {:?}. Erro: {}", i, e);
                     e.to_string()
                 })?;
             }
         }
 
-        println!("[PEDIDO] Commitando transacao");
+        tracing::info!("[PEDIDO] Commitando transacao");
         tx.commit().await.map_err(|e| {
-            println!("[PEDIDO] Erro no commit: {}", e);
+            tracing::info!("[PEDIDO] Erro no commit: {}", e);
             e.to_string()
         })?;
 
-        println!("[PEDIDO] Transacao commitada com sucesso uuid={}", pedido.uuid);
+        tracing::info!("[PEDIDO] Transacao commitada com sucesso uuid={}", pedido.uuid);
         Ok(pedido.uuid)
     }
 

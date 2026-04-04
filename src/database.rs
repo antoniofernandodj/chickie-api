@@ -2,8 +2,8 @@ use sqlx::postgres::{PgPool, PgPoolOptions};
 
 pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
     if let Err(e) = dotenvy::from_filename("database.secrets.env") {
-        eprintln!("⚠️ Aviso: Não foi possível carregar database.secrets.env: {}", e);
-        eprintln!("   Certifique-se de que a variável DATABASE_URL está definida no ambiente.");
+        tracing::error!("⚠️ Aviso: Não foi possível carregar database.secrets.env: {}", e);
+        tracing::error!("   Certifique-se de que a variável DATABASE_URL está definida no ambiente.");
     }
 
     let database_url = std::env::var("DATABASE_URL")

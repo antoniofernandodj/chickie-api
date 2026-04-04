@@ -1,8 +1,6 @@
 
 
 use std::sync::Arc;
-
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
@@ -37,6 +35,7 @@ impl MarketingUsecase {
         nota: f64,
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeLoja, String> {
+
         self.marketing_service.avaliar_loja(
             self.loja_uuid,
             self.usuario.uuid,
@@ -52,6 +51,7 @@ impl MarketingUsecase {
         descricao: String,
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeProduto, String> {
+
         self.marketing_service.avaliar_produto(
             self.usuario.uuid,
             self.loja_uuid,
@@ -74,6 +74,7 @@ impl MarketingUsecase {
         dias_semana_validos: Option<Vec<u8>>,
         prioridade: i32,
     ) -> Result<Promocao, String> {
+
         self.marketing_service.criar_promocao(
             self.loja_uuid,
             nome,
@@ -90,5 +91,42 @@ impl MarketingUsecase {
 
     pub async fn listar_cupons(&self) -> Result<Vec<Cupom>, String> {
         self.marketing_service.listar_cupons(self.loja_uuid).await
+    }
+
+    pub async fn listar_promocoes(&self) -> Result<Vec<Promocao>, String> {
+        self.marketing_service.listar_promocoes(self.loja_uuid).await
+    }
+
+    pub async fn atualizar_promocao(
+        &self,
+        uuid: Uuid,
+        nome: String,
+        descricao: String,
+        tipo_desconto: String,
+        valor_desconto: Option<f64>,
+        valor_minimo: Option<f64>,
+        data_inicio: String,
+        data_fim: String,
+        dias_semana_validos: Option<Vec<u8>>,
+        prioridade: i32,
+    ) -> Result<(), String> {
+
+        self.marketing_service.atualizar_promocao(
+            uuid,
+            self.loja_uuid,
+            nome,
+            descricao,
+            tipo_desconto,
+            valor_desconto,
+            valor_minimo,
+            data_inicio,
+            data_fim,
+            dias_semana_validos,
+            prioridade
+        ).await
+    }
+
+    pub async fn deletar_promocao(&self, uuid: Uuid) -> Result<(), String> {
+        self.marketing_service.deletar_promocao(uuid).await
     }
 }

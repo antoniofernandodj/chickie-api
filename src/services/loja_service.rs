@@ -92,7 +92,7 @@ impl LojaService {
         );
 
         self.loja_repo.criar(&loja).await?;
-        println!("Loja criada: {:?}", loja.nome);
+        tracing::info!("Loja criada: {:?}", loja.nome);
 
         // 2. Configura partes do pedido
         let config = ConfiguracaoDePedidosLoja::new(

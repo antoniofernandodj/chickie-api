@@ -1,18 +1,9 @@
-
-
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{models::{Adicional, Produto, Usuario}, services::CatalogoService};
-
-pub struct CatalogoUsecase {
-    pub catalogo_service: Arc<CatalogoService>,
-    pub loja_uuid: Uuid,
-    pub usuario: Usuario,
-}
-
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AtualizarProdutoRequest {
@@ -22,7 +13,6 @@ pub struct AtualizarProdutoRequest {
     categoria_uuid: Uuid,
     tempo_preparo_min: Option<i32>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateProdutoRequest {
@@ -37,6 +27,13 @@ pub struct CreateProdutoRequest {
     pub destaque: bool,
     pub criado_em: String,
     pub atualizado_em: String,
+}
+
+
+pub struct CatalogoUsecase {
+    pub catalogo_service: Arc<CatalogoService>,
+    pub loja_uuid: Uuid,
+    pub usuario: Usuario,
 }
 
 

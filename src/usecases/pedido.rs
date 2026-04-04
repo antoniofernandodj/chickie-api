@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     models::{ParteDeItemPedido, Pedido, EnderecoEntrega, Produto, Usuario},
-    services::PedidoService,
+    services::{PedidoService, PedidoComEntrega},
     repositories::{ProdutoRepository, Repository as _}
 };
 
@@ -100,6 +100,24 @@ impl PedidoUsecase {
         self.pedido_service
             .criar_pedido_com_entrega(&mut pedido, endereco, codigo_cupom)
             .await
+    }
+
+    // pub async fn processar_e_exibir_precos(
+    //     &self,
+    //     pedido: &mut Pedido,
+    // ) -> Result<(), String> {
+    //     self.pedido_service.processar_e_exibir_precos(pedido, self.loja_uuid).await
+    // }
+
+    pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {
+        self.pedido_service.listar_por_loja(self.loja_uuid).await
+    }
+
+    pub async fn buscar_pedido_com_entrega(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<PedidoComEntrega, String> {
+        self.pedido_service.buscar_pedido_com_entrega(pedido_uuid, self.loja_uuid).await
     }
 }
 

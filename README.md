@@ -126,7 +126,7 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
-| `POST` | `/api/pedidos/`     | Criar pedido        | ✅   |
+| `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido | ✅ |
 | `GET`  | `/api/pedidos/`     | Listar pedidos      | ✅   |
 | `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
 
@@ -134,12 +134,15 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                                    | Descrição              | Auth |
 |--------|-----------------------------------------|------------------------|------|
-| `POST` | `/api/cupons/`                          | Criar cupom            | ✅   |
-| `GET`  | `/api/cupons/`                          | Listar cupons da loja  | ✅   |
-| `GET`  | `/api/cupons/{codigo}`                  | Validar cupom          | ❌   |
-| `POST` | `/api/cupons/{loja_uuid}/avaliar-loja`  | Avaliar loja           | ✅   |
-| `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto      | ✅   |
-| `POST` | `/api/cupons/{loja_uuid}/promocoes` | Criar promoção       | ✅   |
+| `POST` | `/api/marketing/{loja_uuid}/cupons`     | Criar cupom            | ✅   |
+| `GET`  | `/api/marketing/cupons`                 | Listar cupons da loja  | ✅   |
+| `GET`  | `/api/marketing/cupons/{codigo}`        | Validar cupom          | ❌   |
+| `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | Avaliar loja         | ✅   |
+| `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | Avaliar produto   | ✅   |
+| `POST` | `/api/marketing/{loja_uuid}/promocoes`  | Criar promoção       | ✅   |
+| `GET`  | `/api/marketing/{loja_uuid}/promocoes`  | Listar promoções     | ✅   |
+| `PUT`  | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Atualizar promoção | ✅ |
+| `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Deletar promoção | ✅ |
 
 ### Endereços de Entrega (auth required)
 
@@ -250,11 +253,9 @@ A API usa **JWT (JSON Web Token)** para autenticação e **classe de usuário** 
 |--------|-----------|
 | `cliente` | Padrão. Pode navegar lojas, fazer pedidos e avaliar. |
 | `administrador` | Pode criar lojas e gerenciar catálogos, funcionários e entregadores. |
-| `funcionario` | Funcionário de uma loja (cargo, salário). |
-| `entregador` | Entregador de uma loja (veículo, placa). |
-| `owner` | Dono da plataforma. Acesso total. |
 | `funcionario` | Funcionário de uma loja. Possui conta de usuário com credenciais. |
 | `entregador` | Entregador de uma loja. Possui conta de usuário com credenciais. |
+| `owner` | Dono da plataforma. Acesso total. |
 
 ### Fluxo
 
