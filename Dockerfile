@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 RUN useradd -r -u 1000 appuser
 
-COPY --from=builder /app/target/release/chickie /app/chickie
+COPY --from=builder /app/target/release/chickie /app/chickie-api
 COPY --from=builder /app/migrations /app/migrations
 COPY --from=builder /app/database.secrets.env /app/database.secrets.env
 

@@ -22,28 +22,28 @@ services:
       api1:
         environment:
           - APP_PORT=3001
-        command: bash -c "/app/chickie"
+        command: bash -c "/app/chickie-api"
         remotecheck:
           port: 3001
 
       api2:
         environment:
           - APP_PORT=3002
-        command: bash -c "/app/chickie"
+        command: bash -c "/app/chickie-api"
         remotecheck:
           port: 3002
 
       api3:
         environment:
           - APP_PORT=3003
-        command: bash -c "/app/chickie"
+        command: bash -c "/app/chickie-api"
         remotecheck:
           port: 3003
 
       api4:
         environment:
           - APP_PORT=3004
-        command: bash -c "/app/chickie"
+        command: bash -c "/app/chickie-api"
         remotecheck:
           port: 3004
 
