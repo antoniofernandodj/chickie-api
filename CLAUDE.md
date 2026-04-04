@@ -270,12 +270,12 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido |
-| `GET` | `/api/pedidos/` | Listar pedidos |
-| `GET` | `/api/pedidos/{uuid}` | Buscar pedido |
-| `GET` | `/api/pedidos/{loja_uuid}` | Listar pedidos por loja |
-| `GET` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Buscar pedido com endereço |
-| `PUT` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | Atualizar status (máquina de estados) |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) |
+| `GET` | `/api/pedidos/listar` | Listar todos pedidos |
+| `GET` | `/api/pedidos/por-loja/{loja_uuid}` | Listar pedidos por loja |
+| `GET` | `/api/pedidos/{uuid}` | Buscar pedido por UUID |
+| `GET` | `/api/pedidos/{uuid}/com-entrega` | Buscar pedido com endereço de entrega |
+| `PUT` | `/api/pedidos/{uuid}/status` | Atualizar status (máquina de estados) |
 
 #### Cupons & Avaliações (auth required, exceto validar cupom)
 

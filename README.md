@@ -149,12 +149,12 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
-| `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido | ✅ |
-| `GET`  | `/api/pedidos/`     | Listar pedidos      | ✅   |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) | ✅ |
+| `GET`  | `/api/pedidos/listar` | Listar todos pedidos | ✅   |
+| `GET`  | `/api/pedidos/por-loja/{loja_uuid}` | Listar por loja | ✅ |
 | `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
-| `GET`  | `/api/pedidos/{loja_uuid}` | Listar por loja | ✅ |
-| `GET`  | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Pedido com endereço | ✅ |
-| `PUT`  | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | Avançar status | ✅ |
+| `GET`  | `/api/pedidos/{uuid}/com-entrega` | Pedido com endereço | ✅ |
+| `PUT`  | `/api/pedidos/{uuid}/status` | Avançar status | ✅ |
 
 ### Cupons & Avaliações
 

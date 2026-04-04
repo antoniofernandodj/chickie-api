@@ -91,12 +91,12 @@ pub fn loja_admin_routes() -> Router<Arc<AppState>> {
 
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .route("/{loja_uuid}", post(criar_pedido))
-        .route("/", get(listar_pedidos))
+        .route("/criar", post(criar_pedido))
+        .route("/listar", get(listar_pedidos))
+        .route("/por-loja/{loja_uuid}", get(listar_por_loja))
         .route("/{uuid}", get(buscar_pedido))
-        .route("/{loja_uuid}", get(listar_por_loja))
-        .route("/{loja_uuid}/{pedido_uuid}/com-entrega", get(buscar_pedido_com_entrega))
-        .route("/{loja_uuid}/{pedido_uuid}/status", put(atualizar_status))
+        .route("/{uuid}/com-entrega", get(buscar_pedido_com_entrega))
+        .route("/{uuid}/status", put(atualizar_status))
         .layer(from_fn_with_state(s.clone(), auth_middleware))
 }
 

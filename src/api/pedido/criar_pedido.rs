@@ -1,5 +1,5 @@
 use axum::{
-    Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode
+    Extension, Json, extract::State, response::IntoResponse, http::StatusCode
 };
 use serde::Deserialize;
 use uuid::Uuid;
@@ -18,6 +18,7 @@ use crate::{
 
 #[derive(Deserialize)]
 pub struct CriarPedidoRequest {
+    pub loja_uuid: Uuid,
     pub taxa_entrega: f64,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
@@ -52,7 +53,6 @@ pub struct EnderecoEntregaRequest {
 
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
-    Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Json(p): Json<CriarPedidoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -61,7 +61,7 @@ pub async fn criar_pedido(
         state.pedido_service.clone(),
         Arc::clone(&state.produto_repo),
         usuario,
-        loja_uuid,
+        p.loja_uuid,
     );
 
     let itens: Vec<ItemPedidoInput> = p.itens.into_iter().map(|i| ItemPedidoInput {

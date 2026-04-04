@@ -331,7 +331,7 @@ Content-Type: application/json
 ### 6.1 Criar Pedido
 
 ```
-POST /api/pedidos/{loja_uuid}
+POST /api/pedidos/criar
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
@@ -399,7 +399,7 @@ Authorization: Bearer <token>
 ### 6.4 Listar Pedidos por Loja
 
 ```
-GET /api/pedidos/{loja_uuid}
+GET /api/pedidos/criar
 Authorization: Bearer <token>
 ```
 
@@ -410,7 +410,7 @@ Authorization: Bearer <token>
 ### 6.5 Buscar Pedido com Endereço de Entrega
 
 ```
-GET /api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega
+GET /api/pedidos/criar/{pedido_uuid}/com-entrega
 Authorization: Bearer <token>
 ```
 
@@ -427,7 +427,7 @@ Authorization: Bearer <token>
 ### 6.6 Atualizar Status do Pedido
 
 ```
-PUT /api/pedidos/{loja_uuid}/{pedido_uuid}/status
+PUT /api/pedidos/criar/{pedido_uuid}/status
 Authorization: Bearer <token>
 Content-Type: application/json
 ```
@@ -999,12 +999,12 @@ DELETE /api/wipe
 | 8 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | 🔒 | 👑 |
 | 9 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | 🔒 | 👑 |
 | 10 | `POST` | `/api/admin/lojas/{loja_uuid}/clientes` | 🔒 | 👑 |
-| 11 | `POST` | `/api/pedidos/{loja_uuid}` | 🔒 | — |
+| 11 | `POST` | `/api/pedidos/criar` | 🔒 | — |
 | 12 | `GET` | `/api/pedidos/` | 🔒 | — |
 | 13 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — |
-| 14 | `GET` | `/api/pedidos/{loja_uuid}` | 🔒 | — |
-| 15 | `GET` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | 🔒 | — |
-| 16 | `PUT` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | 🔒 | — |
+| 14 | `GET` | `/api/pedidos/criar` | 🔒 | — |
+| 15 | `GET` | `/api/pedidos/criar/{pedido_uuid}/com-entrega` | 🔒 | — |
+| 16 | `PUT` | `/api/pedidos/criar/{pedido_uuid}/status` | 🔒 | — |
 | 17 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
 | 18 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
 | 19 | `GET` | `/api/marketing/cupons` | 🔒 | — |
