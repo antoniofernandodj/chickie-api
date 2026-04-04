@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
-use crate::{models::Loja, repositories::Repository};
+use crate::{models::{Loja, Model}, repositories::Repository};
 
 pub struct LojaRepository { pool: Arc<PgPool> }
 
