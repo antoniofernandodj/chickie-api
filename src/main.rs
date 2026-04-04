@@ -8,7 +8,7 @@ mod api;
 
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
 
-use std::{env, io::{Write, stderr, stdout}, net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 use tracing::{info, debug};
 use tracing_subscriber::fmt;

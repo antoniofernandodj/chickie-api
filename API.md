@@ -44,12 +44,56 @@ Todos os endpoints retornam erros no formato:
 
 | Status | Significado |
 |--------|-------------|
-| `400` | Bad Request — dados inválidos |
+| `400` | Bad Request — dados inválidos ou transição de estado inválida |
 | `403` | Forbidden — sem permissão (admin necessário) |
 | `404` | Not Found — recurso não encontrado |
 | `500` | Internal Server Error — erro interno |
 | `201` | Created — recurso criado com sucesso |
 | `204` | No Content — operação bem-sucedida sem body |
+
+---
+
+## Máquina de Estados do Pedido
+
+Um pedido passa por uma máquina de estados com transições válidas definidas:
+
+```
+Criado
+  ↓
+AguardandoConfirmacaoDeLoja ←────┐
+  ↓                               │
+ConfirmadoPelaLoja ───────────────┘
+  ↓
+EmPreparo ────────────────────────┐
+  ↓                               │
+ProntoParaRetirada ←──────────────┘
+  ↓
+SaiuParaEntrega ──────────────────┐
+  ↓                               │
+Entregue (terminal) ←─────────────┘
+```
+
+### Estados e Transições
+
+| Estado Atual | Próximo Válido |
+|--------------|----------------|
+| `criado` | `aguardando_confirmacao_de_loja` |
+| `aguardando_confirmacao_de_loja` | `confirmado_pela_loja` ou voltar para `criado` |
+| `confirmado_pela_loja` | `em_preparo` ou voltar para `aguardando_confirmacao_de_loja` |
+| `em_preparo` | `pronto_para_retirada` ou voltar para `confirmado_pela_loja` |
+| `pronto_para_retirada` | `saiu_para_entrega` ou voltar para `em_preparo` |
+| `saiu_para_entrega` | `entregue` ou voltar para `pronto_para_retirada` |
+| `entregue` | **(estado terminal — sem transições)** |
+
+### Response ao Avançar Estado
+
+```json
+{
+  "uuid": "pedido-uuid",
+  "status": "em_preparo",
+  "transicoes_permitidas": ["pronto_para_retirada", "confirmado_pela_loja"]
+}
+```
 
 ---
 
@@ -72,8 +116,6 @@ Todos os endpoints retornam erros no formato:
 ---
 
 ## 1. Health Check
-
-### 1.1 OK
 
 ```
 GET /
@@ -327,9 +369,7 @@ Content-Type: application/json
 
 **Response `201`:**
 ```json
-{
-  "uuid": "uuid"
-}
+{ "uuid": "uuid" }
 ```
 
 ---
@@ -384,6 +424,50 @@ Authorization: Bearer <token>
 
 ---
 
+### 6.6 Atualizar Status do Pedido
+
+```
+PUT /api/pedidos/{loja_uuid}/{pedido_uuid}/status
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "novo_status": "em_preparo"
+}
+```
+
+**Valores válidos para `novo_status`:**
+- `criado`
+- `aguardando_confirmacao_de_loja`
+- `confirmado_pela_loja`
+- `em_preparo`
+- `pronto_para_retirada`
+- `saiu_para_entrega`
+- `entregue`
+
+> A transição deve ser válida conforme a máquina de estados. Transições inválidas retornam `400 Bad Request`.
+
+**Response `200`:**
+```json
+{
+  "uuid": "pedido-uuid",
+  "status": "em_preparo",
+  "transicoes_permitidas": ["pronto_para_retirada", "confirmado_pela_loja"]
+}
+```
+
+**Response `400` (transição inválida):**
+```json
+{
+  "error": "Transição inválida: Criado -> Entregue. Transições permitidas: [AguardandoConfirmacaoDeLoja]"
+}
+```
+
+---
+
 ## 7. Marketing: Cupons, Avaliações e Promoções
 
 ### 7.1 Criar Cupom
@@ -427,8 +511,6 @@ Authorization: Bearer <token>
 ```
 GET /api/marketing/cupons/{codigo}
 ```
-
-> Endpoint público.
 
 **Response `200`:** `Cupom`
 
@@ -487,14 +569,17 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "nome": "Black Friday",
+  "nome": "Promoção Pizza",
   "descricao": "string",
   "tipo_desconto": "percentual",
-  "valor_desconto": 50.0,
-  "valor_minimo": 100.0,
-  "data_inicio": "2026-11-25T00:00:00Z",
-  "data_fim": "2026-11-25T23:59:59Z",
+  "valor_desconto": 20.0,
+  "valor_minimo": null,
+  "data_inicio": "2026-04-04T00:00:00Z",
+  "data_fim": "2026-04-04T23:59:59Z",
   "dias_semana_validos": [5],
+  "tipo_escopo": "produto",
+  "produto_uuid": "uuid-do-produto",
+  "categoria_uuid": null,
   "prioridade": 1
 }
 ```
@@ -522,20 +607,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Request Body:**
-```json
-{
-  "nome": "Black Friday Update",
-  "descricao": "string",
-  "tipo_desconto": "percentual",
-  "valor_desconto": 60.0,
-  "valor_minimo": 100.0,
-  "data_inicio": "2026-11-25T00:00:00Z",
-  "data_fim": "2026-11-25T23:59:59Z",
-  "dias_semana_validos": [5],
-  "prioridade": 1
-}
-```
+**Request Body:** (mesmo schema de criar)
 
 **Response `204`:** No Content
 
@@ -785,9 +857,7 @@ Authorization: Bearer <token>
 
 **Response `200`:**
 ```json
-{
-  "message": "Loja removida das favoritas"
-}
+{ "message": "Loja removida das favoritas" }
 ```
 
 ---
@@ -812,9 +882,7 @@ Authorization: Bearer <token>
 
 **Response `200`:**
 ```json
-{
-  "favorita": true
-}
+{ "favorita": true }
 ```
 
 ---
@@ -936,36 +1004,37 @@ DELETE /api/wipe
 | 13 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — |
 | 14 | `GET` | `/api/pedidos/{loja_uuid}` | 🔒 | — |
 | 15 | `GET` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | 🔒 | — |
-| 16 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
-| 17 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
-| 18 | `GET` | `/api/marketing/cupons` | 🔒 | — |
-| 19 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
-| 20 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
-| 21 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 22 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 23 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 24 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 25 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 26 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 27 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
-| 28 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
-| 29 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 30 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 31 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 32 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 33 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 34 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 35 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 36 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 37 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 38 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 39 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 40 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 41 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 42 | `POST` | `/api/produtos/` | 🔒 | — |
-| 43 | `GET` | `/api/produtos/` | 🔒 | — |
-| 44 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 45 | `GET` | `/api/ok` | — | — |
-| 46 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 16 | `PUT` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | 🔒 | — |
+| 17 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
+| 18 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
+| 19 | `GET` | `/api/marketing/cupons` | 🔒 | — |
+| 20 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
+| 21 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
+| 22 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 23 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 24 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 25 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 26 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 27 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 28 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
+| 29 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
+| 30 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 31 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 32 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 33 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 34 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 35 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 36 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 37 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 38 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 39 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 40 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 41 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 42 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 43 | `POST` | `/api/produtos/` | 🔒 | — |
+| 44 | `GET` | `/api/produtos/` | 🔒 | — |
+| 45 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 46 | `GET` | `/api/ok` | — | — |
+| 47 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 46 endpoints**
+**Total: 47 endpoints**

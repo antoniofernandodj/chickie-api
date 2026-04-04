@@ -131,6 +131,7 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
 | `GET`  | `/api/pedidos/{loja_uuid}` | Listar por loja | ✅ |
 | `GET`  | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Pedido com endereço | ✅ |
+| `PUT`  | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | Avançar status | ✅ |
 
 ### Cupons & Avaliações
 
@@ -141,7 +142,7 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/marketing/cupons/{codigo}`        | Validar cupom          | ❌   |
 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | Avaliar loja         | ✅   |
 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | Avaliar produto   | ✅   |
-| `POST` | `/api/marketing/{loja_uuid}/promocoes`  | Criar promoção       | ✅   |
+| `POST` | `/api/marketing/{loja_uuid}/promocoes`  | Criar promoção (escopo: loja, produto ou categoria) | ✅   |
 | `GET`  | `/api/marketing/{loja_uuid}/promocoes`  | Listar promoções     | ✅   |
 | `PUT`  | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Atualizar promoção | ✅ |
 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Deletar promoção | ✅ |
@@ -382,7 +383,9 @@ sqlx migrate run
 sqlx migrate revert
 ```
 
-Migrações existentes estão em `migrations/0001_criar_tabelas.sql`.
+Migrações existentes estão em:
+- `migrations/0001_criar_tabelas.sql` — schema base
+- `migrations/0002_add_promocao_escopo.sql` — escopo de promoção
 
 ---
 

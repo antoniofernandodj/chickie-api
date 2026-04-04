@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    models::{ParteDeItemPedido, Pedido, EnderecoEntrega, Produto, Usuario},
+    models::{ParteDeItemPedido, Pedido, EstadoDePedido, EnderecoEntrega, Produto, Usuario},
     services::{PedidoService, PedidoComEntrega},
     repositories::{ProdutoRepository, Repository as _}
 };
@@ -118,6 +118,14 @@ impl PedidoUsecase {
         pedido_uuid: Uuid,
     ) -> Result<PedidoComEntrega, String> {
         self.pedido_service.buscar_pedido_com_entrega(pedido_uuid, self.loja_uuid).await
+    }
+
+    pub async fn atualizar_status_pedido(
+        &self,
+        pedido_uuid: Uuid,
+        novo_status: EstadoDePedido,
+    ) -> Result<Pedido, String> {
+        self.pedido_service.atualizar_status(pedido_uuid, novo_status).await
     }
 }
 

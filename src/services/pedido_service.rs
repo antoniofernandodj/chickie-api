@@ -3,7 +3,7 @@ use std::sync::Arc;
 use chrono::Datelike;
 use uuid::Uuid;
 
-use crate::models::{Pedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
+use crate::models::{Pedido, EstadoDePedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
 use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
 use crate::utils::agora;
 
@@ -339,6 +339,32 @@ impl PedidoService {
         Ok(())
     }
 
+    /// Atualiza o status de um pedido para um novo estado válido
+    pub async fn atualizar_status(
+        &self,
+        pedido_uuid: Uuid,
+        novo_status: EstadoDePedido,
+    ) -> Result<Pedido, String> {
+        let mut pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid).await?
+            .ok_or("Pedido não encontrado")?;
 
+        let status_atual = pedido.status.clone();
 
+        if !status_atual.pode_transicionar_para(&novo_status) {
+            return Err(format!(
+                "Transição inválida: {:?} -> {:?}. Transições permitidas: {:?}",
+                status_atual, novo_status, status_atual.transicoes_permitidas()
+            ));
+        }
+
+        pedido.status = novo_status.clone();
+        self.pedido_repo.atualizar(pedido.clone()).await?;
+
+        tracing::info!(
+            "Pedido {} atualizado: {:?} -> {:?}",
+            pedido_uuid, status_atual, novo_status
+        );
+
+        Ok(pedido)
+    }
 }

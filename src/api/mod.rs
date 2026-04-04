@@ -38,10 +38,10 @@ pub use dto::{
 pub use pedido::{
     criar_pedido,
     listar_pedidos,
-    buscar_pedido, // buscar_pedido_por_usuario, buscar_pedido_por_loja
-    // processar_e_exibir_precos,
+    buscar_pedido,
     listar_por_loja,
-    buscar_pedido_com_entrega
+    buscar_pedido_com_entrega,
+    atualizar_status
 };
 
 pub use usuario::{

@@ -17,6 +17,7 @@ use crate::api::{
     // processar_e_exibir_precos,
     listar_por_loja,
     buscar_pedido_com_entrega,
+    atualizar_status,
     listar_usuarios,
     criar_produto,
     listar_produtos,
@@ -86,8 +87,8 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/", get(listar_pedidos))
         .route("/{uuid}", get(buscar_pedido))
         .route("/{loja_uuid}", get(listar_por_loja))
-        // .route("/{loja_uuid}/precos", post(processar_e_exibir_precos))
         .route("/{loja_uuid}/{pedido_uuid}/com-entrega", get(buscar_pedido_com_entrega))
+        .route("/{loja_uuid}/{pedido_uuid}/status", put(atualizar_status))
         .layer(from_fn_with_state(s.clone(), auth_middleware))
 }
 

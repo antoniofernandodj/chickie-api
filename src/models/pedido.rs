@@ -113,6 +113,42 @@ impl EstadoDePedido {
             other => Err(format!("Estado inválido: {}", other)),
         }
     }
+
+    /// Retorna o próximo estado válido a partir do estado atual.
+    /// Retorna `Err` se o estado já for terminal ou se não houver transição.
+    pub fn avancar(&self) -> Result<Self, String> {
+        match self {
+            Self::Criado => Ok(Self::AguardandoConfirmacaoDeLoja),
+            Self::AguardandoConfirmacaoDeLoja => Ok(Self::ConfirmadoPelaLoja),
+            Self::ConfirmadoPelaLoja => Ok(Self::EmPreparo),
+            Self::EmPreparo => Ok(Self::ProntoParaRetirada),
+            Self::ProntoParaRetirada => Ok(Self::SaiuParaEntrega),
+            Self::SaiuParaEntrega => Ok(Self::Entregue),
+            Self::Entregue => Err("Pedido já foi entregue — estado terminal".to_string()),
+        }
+    }
+
+    /// Transições permitidas para um estado (incluindo avançar e retrocesso controlado)
+    pub fn transicoes_permitidas(&self) -> Vec<Self> {
+        match self {
+            Self::Criado => vec![Self::AguardandoConfirmacaoDeLoja],
+            Self::AguardandoConfirmacaoDeLoja => vec![Self::ConfirmadoPelaLoja, Self::Criado],
+            Self::ConfirmadoPelaLoja => vec![Self::EmPreparo, Self::AguardandoConfirmacaoDeLoja],
+            Self::EmPreparo => vec![Self::ProntoParaRetirada, Self::ConfirmadoPelaLoja],
+            Self::ProntoParaRetirada => vec![Self::SaiuParaEntrega, Self::EmPreparo],
+            Self::SaiuParaEntrega => vec![Self::Entregue, Self::ProntoParaRetirada],
+            Self::Entregue => vec![],
+        }
+    }
+
+    pub fn is_terminal(&self) -> bool {
+        matches!(self, Self::Entregue)
+    }
+
+    /// Verifica se a transição para `proximo` é válida
+    pub fn pode_transicionar_para(&self, proximo: &Self) -> bool {
+        self.transicoes_permitidas().contains(proximo)
+    }
 }
 
 impl<'r> sqlx::Decode<'r, sqlx::Postgres> for EstadoDePedido {

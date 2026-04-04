@@ -252,6 +252,7 @@ Cada repositório implementa também:
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido |
 | `GET` | `/api/pedidos/{loja_uuid}` | Listar pedidos por loja |
 | `GET` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Buscar pedido com endereço |
+| `PUT` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/status` | Atualizar status (máquina de estados) |
 
 #### Cupons & Avaliações (auth required, exceto validar cupom)
 
@@ -262,7 +263,7 @@ Cada repositório implementa também:
 | `GET` | `/api/marketing/cupons/{codigo}` | Validar cupom |
 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | Avaliar loja |
 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | Avaliar produto |
-| `POST` | `/api/marketing/{loja_uuid}/promocoes` | Criar promoção |
+| `POST` | `/api/marketing/{loja_uuid}/promocoes` | Criar promoção (escopo: loja, produto ou categoria) |
 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | Listar promoções |
 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Atualizar promoção |
 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | Deletar promoção |
@@ -425,7 +426,7 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 |-----------------------|--------------------------------------------------------|
 | `Cupom`               | Cupom de desconto aplicável a pedidos.                 |
 | `UsoCupom`            | Registro de uso de um cupom em um pedido.              |
-| `Promocao`            | Promoção aplicável à loja (corrigir: atualmente aplica para toda a loja, não por produto/categoria). |
+| `Promocao`            | Promoção aplicável à loja, produto ou categoria (escopo via `tipo_escopo`). |
 | `AvaliacaoDeLoja`     | Avaliação de loja feita por usuário (nota 0-5 + comentário). |
 | `AvaliacaoDeProduto`  | Avaliação de produto feita por usuário (só via pedido autenticado). |
 
@@ -532,8 +533,6 @@ Entregador entrega → pedido status → ENTREGUE
 
 ### A Corrigir / Melhorar
 
-- [ ] `Promocao`: modelo atual aplica para toda a loja; deveria ser por produto/categoria
-- [ ] `ClienteRepository::listar_todos_por_loja`: retorna `Vec<Produto>` ao invés de `Vec<Cliente>` (bug)
 - [ ] Endpoint `/wipe`: remover antes de deploy em produção
 
 ---
@@ -542,6 +541,10 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-05  | Máquina de estados do pedido + endpoint `PUT /status` |
+| 2026-04-05  | `Promocao` suporta escopo por loja, produto ou categoria |
+| 2026-04-05  | Bug fix: `dias_semana_validos` agora usa `Vec<i32>` (era `String` com bug de serialização) |
+| 2026-04-05  | Migration `0002` aplicada no boot |
 | 2026-04-04  | Endpoints de pedidos: listar_por_loja, buscar_pedido_com_entrega |
 | 2026-04-04  | CRUD completo de promoções (listar, atualizar, deletar) |
 | 2026-04-04  | Endpoint `GET /api/cupons/` para listar cupons por loja |
