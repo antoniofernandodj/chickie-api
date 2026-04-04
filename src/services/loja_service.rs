@@ -74,7 +74,16 @@ impl LojaService {
         max_partes: i32,
         tipo_calculo: TipoCalculoPedido
     ) -> Result<Loja, String> {
-        // 1. Cria a loja
+        // 1. Cria a loja — converte String para NaiveTime
+        let hora_abertura = horario_abertura
+            .map(|h| chrono::NaiveTime::parse_from_str(&h, "%H:%M")
+                .map_err(|e| format!("horario_abertura inválido '{}': {}", h, e)))
+            .transpose()?;
+
+        let hora_fechamento = horario_fechamento
+            .map(|h| chrono::NaiveTime::parse_from_str(&h, "%H:%M")
+                .map_err(|e| format!("horario_fechamento inválido '{}': {}", h, e)))
+            .transpose()?;
 
         let loja = Loja::new(
             nome,
@@ -82,8 +91,8 @@ impl LojaService {
             email,
             descricao,
             telefone,
-            horario_abertura,
-            horario_fechamento,
+            hora_abertura,
+            hora_fechamento,
             dias_funcionamento,
             tempo_preparo_min,
             taxa_entrega,

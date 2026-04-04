@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::Utc;
+use chrono::{Utc, NaiveTime};
 
 use crate::models::Model;
 
@@ -16,8 +16,8 @@ pub struct Loja {
     pub ativa: bool,
     pub logo_url: Option<String>,
     pub banner_url: Option<String>,
-    pub horario_abertura: Option<String>,
-    pub horario_fechamento: Option<String>,
+    pub horario_abertura: Option<NaiveTime>,
+    pub horario_fechamento: Option<NaiveTime>,
     pub dias_funcionamento: Option<String>,
     pub tempo_preparo_min: Option<i32>,
     pub taxa_entrega: Option<f64>,
@@ -34,8 +34,8 @@ impl Loja {
         email: String,
         descricao: Option<String>,
         telefone: Option<String>,
-        horario_abertura: Option<String>,
-        horario_fechamento: Option<String>,
+        horario_abertura: Option<NaiveTime>,
+        horario_fechamento: Option<NaiveTime>,
         dias_funcionamento: Option<String>,
         tempo_preparo_min: Option<i32>,
         taxa_entrega: Option<f64>,

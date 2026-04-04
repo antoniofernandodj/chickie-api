@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
-use chrono::Utc;
+use chrono::{Utc, NaiveTime};
 
 use crate::models::Model;
 
@@ -10,8 +10,8 @@ pub struct HorarioFuncionamento {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub dia_semana: i32,      // 0=Domingo, 1=Segunda, ..., 6=Sábado
-    pub abertura: String,     // "HH:MM"
-    pub fechamento: String,   // "HH:MM"
+    pub abertura: NaiveTime,  // "HH:MM"
+    pub fechamento: NaiveTime, // "HH:MM"
     pub ativo: bool,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -26,22 +26,12 @@ impl HorarioFuncionamento {
         if !(0..=6).contains(&dia_semana) {
             return Err("dia_semana deve ser entre 0 (Domingo) e 6 (Sábado)".into());
         }
-        
-        fn valida_hora(h: &str) -> bool {
-            let partes: Vec<&str> = h.split(':').collect();
-            if partes.len() != 2 { return false; }
-            let (hh, mm) = (
-                partes[0].parse::<u8>(), partes[1].parse::<u8>()
-            );
-            matches!((hh, mm), (Ok(h), Ok(m)) if h < 24 && m < 60)
-        }
 
-        if !valida_hora(&abertura) {
-            return Err(format!("Horário de abertura inválido: {}", abertura));
-        }
-        if !valida_hora(&fechamento) {
-            return Err(format!("Horário de fechamento inválido: {}", fechamento));
-        }
+        let abertura = NaiveTime::parse_from_str(&abertura, "%H:%M")
+            .map_err(|e| format!("Horário de abertura inválido '{}': {}", abertura, e))?;
+
+        let fechamento = NaiveTime::parse_from_str(&fechamento, "%H:%M")
+            .map_err(|e| format!("Horário de fechamento inválido '{}': {}", fechamento, e))?;
 
         Ok(Self {
             uuid: Uuid::new_v4(),
