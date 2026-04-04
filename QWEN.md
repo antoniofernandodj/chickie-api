@@ -26,6 +26,7 @@ API REST em Rust (Axum + Tokio) para o sistema de pedidos e entregas **Chickie**
 | Logging             | tracing + tracing-subscriber |     |
 | Serialização        | serde / serde_json      |          |
 | JWT                 | jsonwebtoken            |          |
+| Timestamps          | chrono::DateTime<Utc>   |          |
 
 ---
 
@@ -587,6 +588,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-05  | **Timestamps corrigidos**: Models migrados de `String` para `chrono::DateTime<Utc>`. Repositórios agora omitem `criado_em`/`atualizado_em` em INSERTs/UPDATEs (usam DEFAULT/TRIGGER do PostgreSQL). |
 | 2026-04-05  | Máquina de estados do pedido + endpoint `PUT /status` |
 | 2026-04-05  | `Promocao` suporta escopo por loja, produto ou categoria |
 | 2026-04-05  | Bug fix: `dias_semana_validos` agora usa `Vec<i32>` (era `String` com bug de serialização) |

@@ -289,6 +289,7 @@ src/
 | Logging      | tracing + tracing-subscriber  |
 | Auth         | JWT (jsonwebtoken)            |
 | Serialização | serde / serde_json            |
+| Timestamps   | chrono::DateTime<Utc>         |
 
 ---
 

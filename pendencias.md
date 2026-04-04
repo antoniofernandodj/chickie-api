@@ -22,6 +22,12 @@ _(nenhum bug conhecido)_
 | 3 | **`listar_usuarios` sem paginação** | Retorna todos os usuários de uma vez. | `src/api/usuario/listar_usuarios.rs` |
 | 4 | **Unused imports** | Vários warnings de imports não usados. | Diversos |
 
+### ✅ Melhorias Concluídas
+
+| # | Tarefa | Detalhe | Data |
+|---|--------|---------|------|
+| 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
+
 ## 📋 Funcionalidades Pendentes
 
 | # | Feature | Detalhe | Prioridade |
@@ -50,7 +56,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
+| ✅ Concluídas | 1 | 14 |
 | 📋 Features | 7 | 5–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 13 pendências**
+**Total: 13 pendências ativas, 1 concluída recentemente**
