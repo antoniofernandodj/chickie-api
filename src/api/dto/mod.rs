@@ -13,7 +13,7 @@ pub struct CreateUsuarioRequest {
     pub classe: Option<String>,  // "cliente" (default) | "administrador"
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct CreateLojaRequest {
     pub nome: String,
     pub slug: String,

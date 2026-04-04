@@ -16,8 +16,11 @@ pub async fn criar_loja(
     Json(p): Json<CreateLojaRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
+    tracing::info!("usuario {:?} criando loja: {:?}", usuario, p);
+
     // Apenas administradores podem criar lojas
     if !usuario.is_administrador() {
+        tracing::warn!("Usuário não é administrador");
         return Err(AppError::Unauthorized(
             "Apenas administradores podem criar lojas".to_string()
         ));
