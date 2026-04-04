@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use axum::{
-    Extension, Json, extract::{FromRequest, Request, State}, http::{StatusCode, header}, middleware::Next, response::Response
+    Extension, Json, extract::{FromRequest, FromRequestParts, Request, State}, http::{StatusCode, header, request::Parts}, middleware::Next, response::Response
 };
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde_json::json;
@@ -102,30 +102,28 @@ pub fn create_jwt(usuario: Usuario) -> Result<String, jsonwebtoken::errors::Erro
 
 
 
-// #[derive(Debug)]
-// pub struct AdminPermission(pub Usuario);
 
-// #[async_trait]
-// impl<B> FromRequest<B> for AdminPermission
-// where
-//     B: Send,
-// {
-//     type Rejection = AppError;
+#[derive(Debug)]
+pub struct AdminPermission(pub Usuario);
 
-//     async fn from_request(req: &mut Request<B>) -> Result<Self, Self::Rejection> {
-//         // Extraímos o usuário da requisição usando o Extension
-//         let usuario: Extension<Usuario> = Extension::<Usuario>::from_request(req)
-//             .await
-//             .map_err(|_| AppError::Unauthorized("Usuário não autenticado".to_string()))?;
+impl<S> FromRequestParts<S> for AdminPermission
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
 
-//         // Verificamos se o usuário é um administrador
-//         if !usuario.is_administrador() {
-//             return Err(AppError::Unauthorized(
-//                 "Apenas administradores podem realizar essa ação.".to_string(),
-//             ));
-//         }
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let Extension(usuario): Extension<Usuario> =
+            Extension::<Usuario>::from_request_parts(parts, state)
+                .await
+                .map_err(|_| AppError::Unauthorized("Usuário não autenticado".to_string()))?;
 
-//         // Retornamos o administrador com sucesso
-//         Ok(AdminPermission(usuario))
-//     }
-// }
+        if !usuario.is_administrador() {
+            return Err(AppError::Unauthorized(
+                "Apenas administradores podem realizar essa ação.".to_string(),
+            ));
+        }
+
+        Ok(AdminPermission(usuario))
+    }
+}
