@@ -133,6 +133,7 @@ aplica para toda a loja
 - adicionais podem ser removidos ou inativados por um administrador de uma loja. adicionais inativos não são exibidos para o usuario.
 - Um usuario se cadastra como cliente para uma certa loja para fazer tracking de lojas preferidas, e pode acessar as lojas cadastradas, e fazer pedidos.
 - Um usuario acessa a página da loja e pode acessar catálogos e fazer pedidos
+- O pedido, no ato da sua criação, pode ser fornececido um cupom, que, caso válido, computará um desconto numérico.
 - Um pedido assim que criado é disponibilizado para a cozinha, de modo a poder ser preparado. Neste momento, o mesmo entra em estado EM_PREPARO
 - Assim que o preparo for finalizado, o entregador será atribuído ao pedido, e o mesmo entra em estado A_CAMINHO
 - O entregador chega ao local de entrega e o pedido entra em estado ENTREGUE
