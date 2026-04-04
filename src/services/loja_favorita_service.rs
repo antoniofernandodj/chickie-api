@@ -49,10 +49,10 @@ impl LojaFavoritaService {
         self.repo.buscar_por_usuario(usuario_uuid).await
     }
 
-    /// Lista todos os usuários que favoritaram uma loja
-    pub async fn listar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
-        self.repo.buscar_por_loja(loja_uuid).await
-    }
+    // /// Lista todos os usuários que favoritaram uma loja
+    // pub async fn listar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
+    //     self.repo.buscar_por_loja(loja_uuid).await
+    // }
 
     /// Verifica se uma loja é favorita para um usuário
     pub async fn eh_favorita(&self, usuario_uuid: Uuid, loja_uuid: Uuid) -> Result<bool, String> {

@@ -51,14 +51,6 @@ impl DadosEnderecoEntrega {
     }
 }
 
-
-
-
-
-
-
-
-
 pub struct PedidoService {
     pedido_repo: Arc<PedidoRepository>,
     config_repo: Arc<ConfiguracaoPedidosLojaRepository>,

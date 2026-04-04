@@ -135,6 +135,7 @@ Todos os endpoints vivem sob `/api`.
 | Método | Rota                                    | Descrição              | Auth |
 |--------|-----------------------------------------|------------------------|------|
 | `POST` | `/api/cupons/`                          | Criar cupom            | ✅   |
+| `GET`  | `/api/cupons/`                          | Listar cupons da loja  | ✅   |
 | `GET`  | `/api/cupons/{codigo}`                  | Validar cupom          | ❌   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-loja`  | Avaliar loja           | ✅   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto      | ✅   |

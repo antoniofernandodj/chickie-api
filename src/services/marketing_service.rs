@@ -133,7 +133,7 @@ impl MarketingService {
         Ok(avaliacao)
     }
     
-    pub async fn listar_cupons(&self) -> Result<Vec<Cupom>, String> {
-        self.cupom_repo.listar_todos().await
+    pub async fn listar_cupons(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
+        self.cupom_repo.listar_todos_por_loja(loja_uuid).await
     }
 }

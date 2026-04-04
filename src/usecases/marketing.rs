@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, UsoCupom, Promocao, Usuario},
+    models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
     services::MarketingService
 };
 
@@ -86,5 +86,9 @@ impl MarketingUsecase {
             dias_semana_validos,
             prioridade
         ).await
+    }
+
+    pub async fn listar_cupons(&self) -> Result<Vec<Cupom>, String> {
+        self.marketing_service.listar_cupons(self.loja_uuid).await
     }
 }

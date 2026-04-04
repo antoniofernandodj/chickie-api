@@ -245,6 +245,7 @@ Cada repositório implementa também:
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `POST` | `/api/cupons/` | Criar cupom |
+| `GET` | `/api/cupons/` | Listar cupons da loja |
 | `GET` | `/api/cupons/{codigo}` | Validar cupom |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-loja` | Avaliar loja |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto |
@@ -516,6 +517,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-04  | Endpoint `GET /api/cupons/` para listar cupons por loja |
 | 2026-04-04  | `ClasseUsuario.Owner` adicionado (dono da plataforma) |
 | 2026-04-04  | Endpoint `POST /api/cupons/{loja_uuid}/promocoes` criado via MarketingUsecase |
 | 2026-04-04  | Endpoints de adicionais (listar, disponíveis, indisponível) criados |

@@ -65,7 +65,8 @@ pub use produto::{
 pub use cupom::{
     criar_cupom,
     validar_cupom, // listar_cupons, buscar_cupom
-    criar_promocao
+    criar_promocao,
+    listar_cupons
 };
 
 pub use wipe::wipe_database;
