@@ -2,7 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
-use rust_decimal::prelude::*;
+use rust_decimal::Decimal;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
@@ -15,7 +15,7 @@ pub struct AtualizarFuncionarioRequest {
     pub celular: Option<String>,
     pub telefone: Option<String>,
     pub cargo: Option<String>,
-    pub salario: Option<f64>,
+    pub salario: Option<Decimal>,
     pub data_admissao: String,
 }
 
@@ -45,7 +45,7 @@ pub async fn atualizar_funcionario(
         p.celular,
         p.telefone,
         p.cargo,
-        p.salario.map(|v| Decimal::from_f64(v).unwrap_or(Decimal::ZERO)),
+        p.salario,
         p.data_admissao,
     ).await?;
     Ok(StatusCode::NO_CONTENT)
