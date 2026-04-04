@@ -112,6 +112,15 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/produtos/`    | Listar produtos     | ✅   |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |
 
+### Ingredientes (auth required)
+
+| Método | Rota                                     | Descrição          | Auth |
+|--------|------------------------------------------|--------------------|------|
+| `POST` | `/api/ingredientes/{loja_uuid}`          | Criar ingrediente  | ✅   |
+| `GET`  | `/api/ingredientes/{loja_uuid}`          | Listar ingredientes| ✅   |
+| `PUT`  | `/api/ingredientes/{loja_uuid}/{uuid}`   | Atualizar ingrediente | ✅ |
+| `DELETE`| `/api/ingredientes/{loja_uuid}/{uuid}`  | Deletar ingrediente| ✅   |
+
 ### Catálogo (auth required)
 
 | Método | Rota                                     | Descrição              | Auth |

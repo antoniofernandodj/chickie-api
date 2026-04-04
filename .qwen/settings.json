@@ -6,7 +6,8 @@
       "Bash(cp *)",
       "Bash(mv *)",
       "Bash(rmdir *)",
-      "Bash(sed *)"
+      "Bash(sed *)",
+      "Bash(mkdir *)"
     ]
   },
   "$version": 3

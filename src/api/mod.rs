@@ -13,6 +13,7 @@ mod catalogo;
 mod endereco_entrega;
 mod endereco_usuario;
 mod loja_favorita;
+mod ingrediente;
 
 // Re-export usecases from the top-level module
 // pub use crate::usecases::{
@@ -79,6 +80,13 @@ pub use marketing::{
     listar_promocoes,
     atualizar_promocao,
     deletar_promocao
+};
+
+pub use ingrediente::{
+    criar_ingrediente,
+    listar_ingredientes,
+    atualizar_ingrediente,
+    deletar_ingrediente
 };
 
 pub use catalogo::{

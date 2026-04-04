@@ -18,6 +18,7 @@ use crate::{
         EntregadorRepository,
         FuncionarioRepository,
         HorarioFuncionamentoRepository,
+        IngredienteRepository,
         LojaFavoritaRepository,
         LojaRepository,
         PedidoRepository,
@@ -27,8 +28,13 @@ use crate::{
     },
     services::{
         CatalogoService,
+        ConfiguracaoPedidosLojaService,
         EnderecoEntregaService,
         EnderecoUsuarioService,
+        EntregadorService,
+        FuncionarioService,
+        HorarioFuncionamentoService,
+        IngredienteService,
         LojaFavoritaService,
         LojaService,
         MarketingService,
@@ -47,6 +53,11 @@ pub struct AppState {
     pub endereco_entrega_service: Arc<EnderecoEntregaService>,
     pub endereco_usuario_service: Arc<EnderecoUsuarioService>,
     pub loja_favorita_service: Arc<LojaFavoritaService>,
+    pub ingrediente_service: Arc<IngredienteService>,
+    pub horario_funcionamento_service: Arc<HorarioFuncionamentoService>,
+    pub config_pedido_service: Arc<ConfiguracaoPedidosLojaService>,
+    pub funcionario_service: Arc<FuncionarioService>,
+    pub entregador_service: Arc<EntregadorService>,
 
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
@@ -165,6 +176,36 @@ impl AppState {
             )
         );
 
+        let ingrediente_service = Arc::new(
+            IngredienteService::new(
+                Arc::new(IngredienteRepository::new(pool.clone()))
+            )
+        );
+
+        let horario_funcionamento_service = Arc::new(
+            HorarioFuncionamentoService::new(
+                Arc::new(HorarioFuncionamentoRepository::new(pool.clone()))
+            )
+        );
+
+        let config_pedido_service = Arc::new(
+            ConfiguracaoPedidosLojaService::new(
+                Arc::clone(&config_partes_repo)
+            )
+        );
+
+        let funcionario_service = Arc::new(
+            FuncionarioService::new(
+                Arc::new(FuncionarioRepository::new(pool.clone()))
+            )
+        );
+
+        let entregador_service = Arc::new(
+            EntregadorService::new(
+                Arc::new(EntregadorRepository::new(pool.clone()))
+            )
+        );
+
 
         // 4. Estado compartilhado
         let s = Arc::new(
@@ -177,6 +218,11 @@ impl AppState {
                 endereco_entrega_service: Arc::clone(&endereco_entrega_service),
                 endereco_usuario_service: Arc::clone(&endereco_usuario_service),
                 loja_favorita_service: Arc::clone(&loja_favorita_service),
+                ingrediente_service,
+                horario_funcionamento_service,
+                config_pedido_service,
+                funcionario_service,
+                entregador_service,
 
                 pedido_repo: Arc::clone(&pedido_repo),
                 cupom_repo: Arc::clone(&cupom_repo),

@@ -143,6 +143,34 @@ impl MarketingService {
         self.cupom_repo.listar_todos_por_loja(loja_uuid).await
     }
 
+    pub async fn atualizar_cupom(
+        &self,
+        uuid: Uuid,
+        loja_uuid: Uuid,
+        codigo: String,
+        descricao: String,
+        tipo_desconto: String,
+        valor_desconto: Option<f64>,
+        valor_minimo: Option<f64>,
+        data_validade: String,
+        limite_uso: Option<i32>,
+    ) -> Result<(), String> {
+        let mut cupom = self.cupom_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Cupom não encontrado")?;
+        cupom.codigo = codigo.to_uppercase();
+        cupom.descricao = descricao;
+        cupom.tipo_desconto = tipo_desconto;
+        cupom.valor_desconto = valor_desconto;
+        cupom.valor_minimo = valor_minimo;
+        cupom.data_validade = data_validade;
+        cupom.limite_uso = limite_uso;
+        self.cupom_repo.atualizar(cupom).await
+    }
+
+    pub async fn deletar_cupom(&self, uuid: Uuid) -> Result<(), String> {
+        self.cupom_repo.deletar(uuid).await
+    }
+
     pub async fn listar_promocoes(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         self.promocao_repo.listar_todos_por_loja(loja_uuid).await
     }
