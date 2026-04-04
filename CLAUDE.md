@@ -95,12 +95,14 @@ src/
 
 ## Observações importantes
 
-Todo endpoint que por pedido para ser feito nunca vai conter logica alguma.
+- Todo endpoint que por pedido para ser feito nunca vai conter logica alguma.
 vai usar na verdade algum usecase, que vai usar algum service, que vai usar
 os repositórios. então sempre que for pedido um endpoint, deve-se observar
-esta pilha. E logo após ser editados documentos de projeto, toda a
-documentação deve ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md,
-@pendencias.md e @API.md
+esta pilha.
+- Logo após ser editados documentos de projeto, toda a documentação deve
+ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
+- Sempre que eu mencionar documentação completa estou falando de @API.md,
+@QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
 
 ## Microserviços (Visão Futura)
 
@@ -248,6 +250,8 @@ Cada repositório implementa também:
 | `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido |
 | `GET` | `/api/pedidos/` | Listar pedidos |
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido |
+| `GET` | `/api/pedidos/{loja_uuid}` | Listar pedidos por loja |
+| `GET` | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Buscar pedido com endereço |
 
 #### Cupons & Avaliações (auth required, exceto validar cupom)
 
@@ -353,8 +357,8 @@ cargo check                      # Verificar compilação sem gerar binário
 
 | Documento | Descrição |
 |-----------|-----------|
-| [`API.md`](./API.md) | Especificação completa de todos os 38 endpoints (bodies, headers, métodos) |
-| [`pendencias.md`](./pendencias.md) | Lista de 33 pendências (bugs, melhorias, features faltando) |
+| [`API.md`](./API.md) | Especificação completa de todos os 46 endpoints |
+| [`pendencias.md`](./pendencias.md) | Lista de pendências (bugs, melhorias, features faltando) |
 
 ---
 
@@ -538,6 +542,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-04  | Endpoints de pedidos: listar_por_loja, buscar_pedido_com_entrega |
 | 2026-04-04  | CRUD completo de promoções (listar, atualizar, deletar) |
 | 2026-04-04  | Endpoint `GET /api/cupons/` para listar cupons por loja |
 | 2026-04-04  | `ClasseUsuario.Owner` adicionado (dono da plataforma) |

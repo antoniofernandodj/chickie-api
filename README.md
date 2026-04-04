@@ -129,6 +129,8 @@ Todos os endpoints vivem sob `/api`.
 | `POST` | `/api/pedidos/{loja_uuid}` | Criar pedido | ✅ |
 | `GET`  | `/api/pedidos/`     | Listar pedidos      | ✅   |
 | `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
+| `GET`  | `/api/pedidos/{loja_uuid}` | Listar por loja | ✅ |
+| `GET`  | `/api/pedidos/{loja_uuid}/{pedido_uuid}/com-entrega` | Pedido com endereço | ✅ |
 
 ### Cupons & Avaliações
 
