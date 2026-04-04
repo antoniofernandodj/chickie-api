@@ -1,11 +1,11 @@
 use axum::{
-    Json, extract::{Path, State}, response::{IntoResponse, Response}
+    Extension, Json, extract::State, response::{IntoResponse, Response}
 };
 use serde_json::json;
 use uuid::Uuid;
 
 use std::sync::Arc;
-use crate::{api::{CreatePedidoRequest, dto::AppError}, models::{ParteDeItemPedido, Pedido}};
+use crate::{api::{CreatePedidoRequest, dto::AppError}, models::{ParteDeItemPedido, Pedido, Usuario}};
 use crate::repositories::Repository;
 use crate::api::AppState;
 
@@ -13,9 +13,12 @@ use crate::api::AppState;
 
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
-    Path(loja_uuid): Path<Uuid>,
+    Extension(usuario_logado): Extension<Usuario>,
     Json(payload): Json<CreatePedidoRequest>,
 ) -> Response {
+
+    let loja_uuid = payload.loja_uuid;
+    let usuario_uuid = usuario_logado.uuid;
 
     // 2. Buscar produtos e montar as partes do pedido (validação de existência)
     let mut partes_por_item: Vec<Vec<ParteDeItemPedido>> = Vec::new();
@@ -43,7 +46,7 @@ pub async fn criar_pedido(
 
     // 3. Criar struct Pedido base
     let mut pedido = Pedido::new(
-        payload.usuario_uuid,
+        usuario_logado.uuid,
         loja_uuid,
         0.0, // subtotal calculado pelo service
         payload.taxa_entrega,

@@ -337,6 +337,15 @@ cargo check                      # Verificar compilação sem gerar binário
 
 ---
 
+## Documentos de Referência
+
+| Documento | Descrição |
+|-----------|-----------|
+| [`API.md`](./API.md) | Especificação completa de todos os 38 endpoints (bodies, headers, métodos) |
+| [`pendencias.md`](./pendencias.md) | Lista de 33 pendências (bugs, melhorias, features faltando) |
+
+---
+
 ## Regras — O Que Evitar
 
 - ❌ Não adicionar estado mutável global fora do `AppState`

@@ -74,9 +74,10 @@ pub fn loja_admin_routes() -> Router<Arc<AppState>> {
         .route("/{loja_uuid}/clientes", post(adicionar_cliente))
 }
 
-pub fn pedido_routes() -> Router<Arc<AppState>> {
+pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .route("/", post(criar_pedido))
+        .route("/{loja_uuid}", post(criar_pedido))
+            .layer(from_fn_with_state(s.clone(), auth_middleware))
         .route("/", get(listar_pedidos))
         .route("/{uuid}", get(buscar_pedido))
 }
@@ -139,7 +140,7 @@ pub fn marketing_routes() -> Router<Arc<AppState>> {
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     let mut router = Router::new()
-        .nest("/pedidos", pedido_routes())
+        .nest("/pedidos", pedido_routes(&s))
         .nest("/usuarios", usuario_routes())
         .nest("/lojas", loja_routes())
         .nest("/produtos", produto_routes())
