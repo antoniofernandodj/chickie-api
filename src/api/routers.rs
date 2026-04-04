@@ -53,6 +53,7 @@ use crate::api::{
     adicionar_cliente,
     listar_lojas_admin,
     listar_minhas_lojas,
+    pesquisar_lojas,
     criar_adicional,
     criar_categoria,
     listar_adicionais,
@@ -87,6 +88,7 @@ pub fn auth_routes() -> Router<Arc<AppState>> {
 pub fn loja_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(listar_lojas))
+        .route("/pesquisar", get(pesquisar_lojas))
 }
 
 pub fn loja_admin_routes() -> Router<Arc<AppState>> {

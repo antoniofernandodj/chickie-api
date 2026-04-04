@@ -32,6 +32,22 @@ impl LojaRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn pesquisar(&self, termo: &str) -> Result<Vec<Loja>, String> {
+        let pattern = format!("%{}%", termo);
+        sqlx::query_as::<_, Loja>("
+            SELECT * FROM lojas 
+            WHERE nome ILIKE $1 
+               OR slug ILIKE $1 
+               OR descricao ILIKE $1 
+               OR email ILIKE $1
+            ORDER BY nome ASC
+        ")
+        .bind(pattern)
+        .fetch_all(self.pool())
+        .await
+        .map_err(|e| e.to_string())
+    }
 }
 
 #[async_trait::async_trait]

@@ -4,6 +4,7 @@ pub mod marketing;
 pub mod endereco_entrega;
 pub mod loja_favorita;
 pub mod admin;
+pub mod loja;
 
 pub use catalogo::{CatalogoUsecase, AtualizarProdutoRequest, CreateProdutoRequest};
 pub use marketing::MarketingUsecase;
@@ -21,3 +22,4 @@ pub use pedido::{
     EnderecoEntregaInput
 };
 pub use admin::AdminUsecase;
+pub use loja::LojaUsecase;

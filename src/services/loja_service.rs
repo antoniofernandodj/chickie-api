@@ -266,4 +266,8 @@ impl LojaService {
     pub async fn listar_por_criador(&self, admin_uuid: Uuid) -> Result<Vec<Loja>, String> {
         self.loja_repo.buscar_por_criador(admin_uuid).await
     }
+
+    pub async fn pesquisar(&self, termo: &str) -> Result<Vec<Loja>, String> {
+        self.loja_repo.pesquisar(termo).await
+    }
 }

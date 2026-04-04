@@ -91,9 +91,10 @@ Todos os endpoints vivem sob `/api`.
 
 ### Lojas Públicas
 
-| Método  | Rota           | Descrição        | Auth |
-|---------|----------------|------------------|------|
-| `GET`   | `/api/lojas/`  | Listar lojas     | ❌   |
+| Método  | Rota               | Descrição           | Auth |
+|---------|--------------------|---------------------|------|
+| `GET`   | `/api/lojas/`      | Listar lojas        | ❌   |
+| `GET`   | `/api/lojas/pesquisar` | Pesquisar lojas | ❌   |
 
 ### Administração (auth required, apenas admin)
 

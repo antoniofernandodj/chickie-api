@@ -1,4 +1,4 @@
-# Chickie — QWEN.md
+# Chickie
 
 > Documento de referência para desenvolvimento com Qwen Code no projeto Chickie.
 
@@ -619,5 +619,5 @@ Entregador entrega → pedido status → ENTREGUE
 | 2026-04-03  | `MarketingUsecase` implementado                    |
 | 2026-04-03  | `MarketingService` agora deriva `Clone`            |
 
-## Qwen Added Memories
+## AI Added Memories
 - Regra arquitetural obrigatória: TODO endpoint deve seguir a pilha Handler → Usecase → Service → Repository → Database. Handlers NUNCA podem conter lógica de negócio, queries SQL, ou chamadas diretas a repositories. Handlers apenas extraem dados da request, instanciam o usecase, chamam seu método e retornam a response. Isso vale para qualquer novo endpoint criado no projeto Chickie API.

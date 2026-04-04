@@ -61,7 +61,8 @@ pub use loja::{
     adicionar_entregador,
     adicionar_cliente,
     listar_lojas_admin,
-    listar_minhas_lojas
+    listar_minhas_lojas,
+    pesquisar_lojas
 };
 
 pub use produto::{

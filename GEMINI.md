@@ -218,6 +218,7 @@ Cada repositório implementa também:
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `GET` | `/api/lojas/` | Listar lojas |
+| `GET` | `/api/lojas/pesquisar` | Pesquisar lojas |
 
 #### Administração (auth required, apenas admin)
 
