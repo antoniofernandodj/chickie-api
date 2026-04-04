@@ -35,15 +35,13 @@ impl ConfiguracaoPedidosLojaRepository {
         }
 
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
-            VALUES ($1, $2, $3, $4, $5, $6);
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
+            VALUES ($1, $2, $3, $4);
         ")
         .bind(config.uuid)
         .bind(config.loja_uuid)
         .bind(config.max_partes)
         .bind(config.tipo_calculo.to_string())
-        .bind(&config.criado_em)
-        .bind(&config.atualizado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
@@ -57,16 +55,14 @@ impl ConfiguracaoPedidosLojaRepository {
         config: &ConfiguracaoDePedidosLoja,
     ) -> Result<(), String> {
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (loja_uuid) DO UPDATE SET max_partes = excluded.max_partes, tipo_calculo = excluded.tipo_calculo, atualizado_em = excluded.atualizado_em;
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (loja_uuid) DO UPDATE SET max_partes = excluded.max_partes, tipo_calculo = excluded.tipo_calculo;
         ")
         .bind(config.uuid)
         .bind(config.loja_uuid)
         .bind(config.max_partes)
         .bind(config.tipo_calculo.to_string())
-        .bind(&config.criado_em)
-        .bind(&config.atualizado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
@@ -82,11 +78,10 @@ impl ConfiguracaoPedidosLojaRepository {
     ) -> Result<(), String> {
         let result = sqlx::query("
             UPDATE configuracoes_pedidos_loja
-            SET tipo_calculo = $1, atualizado_em = $2
-            WHERE loja_uuid = $3;
+            SET tipo_calculo = $1
+            WHERE loja_uuid = $2;
         ")
         .bind(novo_tipo.to_string())
-        .bind(agora())
         .bind(loja_uuid)
         .execute(self.pool())
         .await
@@ -110,10 +105,9 @@ impl ConfiguracaoPedidosLojaRepository {
         }
 
         let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja SET max_partes = $1, atualizado_em = $2 WHERE loja_uuid = $3;
+            UPDATE configuracoes_pedidos_loja SET max_partes = $1 WHERE loja_uuid = $2;
         ")
         .bind(novo_max)
-        .bind(agora())
         .bind(loja_uuid)
         .execute(self.pool())
         .await
@@ -135,15 +129,13 @@ impl Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository
 
     async fn criar(&self, item: &ConfiguracaoDePedidosLoja) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
-            VALUES ($1, $2, $3, $4, $5, $6);
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
+            VALUES ($1, $2, $3, $4);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
         .bind(item.max_partes)
         .bind(item.tipo_calculo.to_string())
-        .bind(&item.criado_em)
-        .bind(&item.atualizado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
@@ -154,13 +146,12 @@ impl Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository
     async fn atualizar(&self, item: ConfiguracaoDePedidosLoja) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja SET loja_uuid = $1, max_partes = $2, tipo_calculo = $3, atualizado_em = $4
-            WHERE uuid = $5
+            UPDATE configuracoes_pedidos_loja SET loja_uuid = $1, max_partes = $2, tipo_calculo = $3
+            WHERE uuid = $4
         ")
         .bind(item.loja_uuid)
         .bind(item.max_partes)
         .bind(item.tipo_calculo.to_string())
-        .bind(&item.atualizado_em)
         .bind(uuid)
         .execute(self.pool())
         .await

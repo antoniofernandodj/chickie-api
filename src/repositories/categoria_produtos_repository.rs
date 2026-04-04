@@ -39,15 +39,14 @@ impl Repository<CategoriaProdutos> for CategoriaProdutosRepository {
 
     async fn criar(&self, item: &CategoriaProdutos) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO categorias_produtos (uuid, loja_uuid, nome, descricao, ordem, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO categorias_produtos (uuid, loja_uuid, nome, descricao, ordem)
+            VALUES ($1, $2, $3, $4, $5)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
         .bind(&item.nome)
         .bind(&item.descricao)
         .bind(item.ordem)
-        .bind(&item.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

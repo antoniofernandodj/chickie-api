@@ -44,8 +44,8 @@ impl Repository<Cupom> for CupomRepository {
 
     async fn criar(&self, item: &Cupom) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO cupons (uuid, loja_uuid, codigo, descricao, tipo_desconto, valor_desconto, valor_minimo, data_validade, limite_uso, status, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+            INSERT INTO cupons (uuid, loja_uuid, codigo, descricao, tipo_desconto, valor_desconto, valor_minimo, data_validade, limite_uso, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -57,7 +57,6 @@ impl Repository<Cupom> for CupomRepository {
         .bind(&item.data_validade)
         .bind(item.limite_uso)
         .bind(item.status.to_string())
-        .bind(&item.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

@@ -34,13 +34,12 @@ impl Repository<Cliente> for ClienteRepository {
 
     async fn criar(&self, item: &Cliente) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO clientes (uuid, usuario_uuid, loja_uuid, criado_em)
-            VALUES ($1, $2, $3, $4);
+            INSERT INTO clientes (uuid, usuario_uuid, loja_uuid)
+            VALUES ($1, $2, $3);
         ")
         .bind(item.uuid)
         .bind(item.usuario_uuid)
         .bind(item.loja_uuid)
-        .bind(&item.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

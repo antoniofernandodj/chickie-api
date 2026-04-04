@@ -48,8 +48,8 @@ impl HorarioFuncionamentoRepository {
         horario: &HorarioFuncionamento,
     ) -> Result<(), String> {
         sqlx::query("
-            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo)
+            VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (loja_uuid, dia_semana) DO UPDATE SET abertura = excluded.abertura, fechamento = excluded.fechamento, ativo = excluded.ativo;
         ")
         .bind(&horario.uuid)
@@ -58,7 +58,6 @@ impl HorarioFuncionamentoRepository {
         .bind(&horario.abertura)
         .bind(&horario.fechamento)
         .bind(horario.ativo)
-        .bind(&horario.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
@@ -84,8 +83,8 @@ impl HorarioFuncionamentoRepository {
         }
 
         sqlx::query("
-            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7);
+            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo)
+            VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(&horario.uuid)
         .bind(&horario.loja_uuid)
@@ -93,7 +92,6 @@ impl HorarioFuncionamentoRepository {
         .bind(&horario.abertura)
         .bind(&horario.fechamento)
         .bind(horario.ativo)
-        .bind(&horario.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

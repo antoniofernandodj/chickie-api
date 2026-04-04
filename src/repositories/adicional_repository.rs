@@ -50,8 +50,8 @@ impl Repository<Adicional> for AdicionalRepository {
 
     async fn criar(&self, item: &Adicional) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO adicionais (uuid, loja_uuid, nome, descricao, preco, disponivel, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7);
+            INSERT INTO adicionais (uuid, loja_uuid, nome, descricao, preco, disponivel)
+            VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -59,7 +59,6 @@ impl Repository<Adicional> for AdicionalRepository {
         .bind(&item.descricao)
         .bind(item.preco)
         .bind(item.disponivel)
-        .bind(&item.criado_em)
         .execute(self.pool())
         .await
         .map_err(|e: sqlx::Error| e.to_string())?;

@@ -232,8 +232,8 @@ impl Repository<Pedido> for PedidoRepository {
         tracing::info!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
 
         sqlx::query("
-            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min, criado_em, atualizado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         ")
         .bind(&pedido.uuid)
         .bind(&pedido.usuario_uuid)
@@ -246,8 +246,6 @@ impl Repository<Pedido> for PedidoRepository {
         .bind(&pedido.forma_pagamento)
         .bind(&pedido.observacoes)
         .bind(&pedido.tempo_estimado_min)
-        .bind(&pedido.criado_em)
-        .bind(&pedido.atualizado_em)
         .execute(&mut *tx)
         .await
         .map_err(|e| {
@@ -332,8 +330,8 @@ impl Repository<Pedido> for PedidoRepository {
     async fn atualizar(&self, item: Pedido) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8, atualizado_em = $9
-            WHERE uuid = $10
+            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8
+            WHERE uuid = $9
         ")
         .bind(item.status.to_string())
         .bind(item.total)
@@ -343,7 +341,6 @@ impl Repository<Pedido> for PedidoRepository {
         .bind(&item.forma_pagamento)
         .bind(&item.observacoes)
         .bind(item.tempo_estimado_min)
-        .bind(item.atualizado_em)
         .bind(uuid)
         .execute(self.pool())
         .await
