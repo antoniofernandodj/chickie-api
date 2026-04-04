@@ -22,7 +22,7 @@ pub async fn avaliar_produto(
 ) -> Result<impl IntoResponse, AppError> {
 
     let usecase = MarketingUsecase::new(
-        Arc::new(state.marketing_service.clone()),
+        state.marketing_service.clone(),
         loja_uuid,
         usuario
     );

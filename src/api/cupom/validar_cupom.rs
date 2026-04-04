@@ -1,16 +1,15 @@
 use axum::{
-    Json,
-    extract::{Path, State},
-    response::{IntoResponse}
+    Extension, Json, extract::{Path, State}, response::IntoResponse
 };
 use uuid::Uuid;
 
 
 use std::sync::Arc;
-use crate::{api::{AppState, dto::AppError}};
+use crate::{api::{AppState, dto::AppError}, models::Usuario};
 
 
 pub async fn validar_cupom(
+    Extension(_): Extension<Usuario>,
     State(state): State<Arc<AppState>>,
     Path(codigo): Path<String>,
     Path(loja_uuid): Path<Uuid>,

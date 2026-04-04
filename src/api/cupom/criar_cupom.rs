@@ -20,10 +20,10 @@ pub struct CriarCupomRequest {
 
 
 pub async fn criar_cupom(
+    Extension(_): Extension<Usuario>,
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Json(p): Json<CriarCupomRequest>,
-    Extension(_): Extension<Usuario>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let cupom = state.marketing_service.criar_cupom(
@@ -35,7 +35,7 @@ pub async fn criar_cupom(
         p.valor_minimo,
         p.data_validade,
         p.limite_uso
-    ).await?; 
+    ).await?;
 
     Ok(Json(cupom))
 }

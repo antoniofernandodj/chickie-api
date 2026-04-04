@@ -14,7 +14,7 @@ pub async fn listar_minhas_favoritas(
 ) -> Result<impl IntoResponse, AppError> {
 
     let usecase = ListarLojasFavoritasUsecase::new(
-        Arc::new(state.loja_favorita_service.clone()),
+        state.loja_favorita_service.clone(),
         usuario
     );
 

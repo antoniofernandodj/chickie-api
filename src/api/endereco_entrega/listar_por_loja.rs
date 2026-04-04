@@ -15,7 +15,7 @@ pub async fn listar_por_loja(
 ) -> Result<impl IntoResponse, AppError> {
 
     let usecase = ListarEnderecosEntregaPorLojaUsecase::new(
-        Arc::new(state.endereco_entrega_service.clone()),
+        state.endereco_entrega_service.clone(),
         usuario,
         loja_uuid
     );

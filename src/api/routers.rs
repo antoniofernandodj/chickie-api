@@ -130,9 +130,9 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
 pub fn marketing_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/{loja_uuid}/cupons", post(criar_cupom))
+        .route("/cupons/{codigo}", get(validar_cupom))
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .route("/cupons", get(listar_cupons))
-        .route("/cupons/{codigo}", get(validar_cupom))
         .route("/{loja_uuid}/avaliar-loja", post(avaliar_loja))
         .route("/{loja_uuid}/avaliar-produto", post(avaliar_produto))
         .route("/{loja_uuid}/promocoes", post(criar_promocao))

@@ -16,7 +16,7 @@ pub async fn marcar_indisponivel(
 ) -> Result<impl IntoResponse, AppError> {
 
     let usecase = CatalogoUsecase::new(
-        Arc::new(state.catalogo_service.clone()),
+        state.catalogo_service.clone(),
         loja_uuid,
         usuario
     );

@@ -30,7 +30,7 @@ pub async fn criar_promocao(
 ) -> Result<impl IntoResponse, AppError> {
 
     let usecase = MarketingUsecase::new(
-        Arc::new(state.marketing_service.clone()),
+        state.marketing_service.clone(),
         loja_uuid,
         usuario
     );

@@ -17,7 +17,7 @@ pub async fn atualizar_produto(
     Json(p): Json<AtualizarProdutoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    let service = Arc::new(state.catalogo_service.clone());
+    let service = state.catalogo_service.clone();
     let usecase: CatalogoUsecase =
         CatalogoUsecase::new(service, loja_uuid, usuario_logado);
 

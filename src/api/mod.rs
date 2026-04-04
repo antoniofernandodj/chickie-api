@@ -32,7 +32,6 @@ pub use state::{AppState};
 pub use dto::{
     CreateUsuarioRequest,
     CreateLojaRequest,
-    CreatePedidoRequest,
     Claims
 };
 

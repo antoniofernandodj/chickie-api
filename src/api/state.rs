@@ -38,14 +38,16 @@ use crate::{
 };
 
 pub struct AppState {
-    pub usuario_service: UsuarioService,
-    pub loja_service: LojaService,
-    pub catalogo_service: CatalogoService,
-    pub pedido_service: PedidoService,
-    pub marketing_service: MarketingService,
-    pub endereco_entrega_service: EnderecoEntregaService,
-    pub endereco_usuario_service: EnderecoUsuarioService,
-    pub loja_favorita_service: LojaFavoritaService,
+
+    pub usuario_service: Arc<UsuarioService>,
+    pub loja_service: Arc<LojaService>,
+    pub catalogo_service: Arc<CatalogoService>,
+    pub pedido_service: Arc<PedidoService>,
+    pub marketing_service: Arc<MarketingService>,
+    pub endereco_entrega_service: Arc<EnderecoEntregaService>,
+    pub endereco_usuario_service: Arc<EnderecoUsuarioService>,
+    pub loja_favorita_service: Arc<LojaFavoritaService>,
+
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
     pub cupom_repo: Arc<CupomRepository>,
@@ -100,71 +102,90 @@ impl AppState {
             Arc::new(LojaFavoritaRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
-        let usuario_service = UsuarioService::new(
-            Arc::clone(&usuario_repo)
+        let usuario_service = Arc::new(
+            UsuarioService::new(
+                Arc::clone(&usuario_repo)
+            )
         );
 
-        let loja_service = LojaService::new(
-            Arc::clone(&loja_repo),
-            Arc::clone(&config_partes_repo),
-            Arc::clone(&horario_repo),
-            Arc::clone(&funcionario_repo),
-            Arc::clone(&entregador_repo),
-            Arc::clone(&cliente_repo),
-            Arc::clone(&usuario_repo)
+        let loja_service = Arc::new(
+            LojaService::new(
+                Arc::clone(&loja_repo),
+                Arc::clone(&config_partes_repo),
+                Arc::clone(&horario_repo),
+                Arc::clone(&funcionario_repo),
+                Arc::clone(&entregador_repo),
+                Arc::clone(&cliente_repo),
+                Arc::clone(&usuario_repo)
+            )
         );
 
-        let catalogo_service = CatalogoService::new(
-            Arc::clone(&produto_repo),
-            Arc::clone(&categorias_de_produtos_repo),
-            Arc::clone(&adicional_repo)
+        let catalogo_service = Arc::new(
+            CatalogoService::new(
+                Arc::clone(&produto_repo),
+                Arc::clone(&categorias_de_produtos_repo),
+                Arc::clone(&adicional_repo)
+            )
         );
 
-        let pedido_service = PedidoService::new(
-            Arc::clone(&pedido_repo),
-            Arc::clone(&config_partes_repo),
-            Arc::clone(&cupom_repo),
-            Arc::clone(&promocao_repo),
-            Arc::clone(&endereco_entrega_repo),
+        let pedido_service = Arc::new(
+            PedidoService::new(
+                Arc::clone(&pedido_repo),
+                Arc::clone(&config_partes_repo),
+                Arc::clone(&cupom_repo),
+                Arc::clone(&promocao_repo),
+                Arc::clone(&endereco_entrega_repo),
+            )
         );
 
-        let marketing_service = MarketingService::new(
-            Arc::clone(&cupom_repo),
-            Arc::clone(&promocao_repo),
-            Arc::clone(&avaliacoes_de_loja_repo),
-            Arc::clone(&avaliacoes_de_produto_repo)
+        let marketing_service = Arc::new(
+            MarketingService::new(
+                Arc::clone(&cupom_repo),
+                Arc::clone(&promocao_repo),
+                Arc::clone(&avaliacoes_de_loja_repo),
+                Arc::clone(&avaliacoes_de_produto_repo)
+            )
         );
 
-        let endereco_entrega_service = EnderecoEntregaService::new(
-            Arc::clone(&endereco_entrega_repo)
+        let endereco_entrega_service = Arc::new(
+            EnderecoEntregaService::new(
+                Arc::clone(&endereco_entrega_repo)
+            )
         );
 
-        let endereco_usuario_service = EnderecoUsuarioService::new(
-            Arc::clone(&endereco_usuario_repo)
+        let endereco_usuario_service = Arc::new(
+            EnderecoUsuarioService::new(
+                Arc::clone(&endereco_usuario_repo)
+            )
         );
 
-        let loja_favorita_service = LojaFavoritaService::new(
-            Arc::clone(&loja_favorita_repo)
+        let loja_favorita_service = Arc::new(
+            LojaFavoritaService::new(
+                Arc::clone(&loja_favorita_repo)
+            )
         );
 
 
         // 4. Estado compartilhado
-        let s = Arc::new(AppState {
-            usuario_service,
-            loja_service,
-            catalogo_service,
-            pedido_service,
-            marketing_service,
-            endereco_entrega_service,
-            endereco_usuario_service,
-            loja_favorita_service,
-            pedido_repo: Arc::clone(&pedido_repo),
-            cupom_repo: Arc::clone(&cupom_repo),
-            usuario_repo: Arc::clone(&usuario_repo),
-            loja_repo: Arc::clone(&loja_repo),
-            produto_repo: Arc::clone(&produto_repo),
-            db: pool,
-        });
+        let s = Arc::new(
+            AppState {
+                usuario_service: Arc::clone(&usuario_service),
+                loja_service: Arc::clone(&loja_service),
+                catalogo_service: Arc::clone(&catalogo_service),
+                pedido_service: Arc::clone(&pedido_service),
+                marketing_service: Arc::clone(&marketing_service),
+                endereco_entrega_service: Arc::clone(&endereco_entrega_service),
+                endereco_usuario_service: Arc::clone(&endereco_usuario_service),
+                loja_favorita_service: Arc::clone(&loja_favorita_service),
+
+                pedido_repo: Arc::clone(&pedido_repo),
+                cupom_repo: Arc::clone(&cupom_repo),
+                usuario_repo: Arc::clone(&usuario_repo),
+                loja_repo: Arc::clone(&loja_repo),
+                produto_repo: Arc::clone(&produto_repo),
+                db: pool,
+            }
+        );
 
         s
     }

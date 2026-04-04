@@ -1,8 +1,8 @@
-mod catalogo;
-mod pedido;
-mod marketing;
-mod endereco_entrega;
-mod loja_favorita;
+pub mod catalogo;
+pub mod pedido;
+pub mod marketing;
+pub mod endereco_entrega;
+pub mod loja_favorita;
 
 pub use catalogo::{CatalogoUsecase, AtualizarProdutoRequest, CreateProdutoRequest};
 pub use marketing::MarketingUsecase;
@@ -12,4 +12,10 @@ pub use loja_favorita::{
     RemoverLojaFavoritaUsecase,
     ListarLojasFavoritasUsecase,
     VerificarLojaFavoritaUsecase
+};
+pub use pedido::{
+    PedidoUsecase,
+    ItemPedidoInput,
+    ParteItemInput,
+    EnderecoEntregaInput
 };

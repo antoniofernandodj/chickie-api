@@ -11,7 +11,7 @@ pub async fn listar_produtos(
     Path(loja_uuid): Path<Uuid>,
 ) -> Result<Json<Vec<models::Produto>>, AppError> {
 
-    let service = Arc::new(state.catalogo_service.clone());
+    let service = state.catalogo_service.clone();
     let usecase: CatalogoUsecase =
         CatalogoUsecase::new(service, loja_uuid, usuario_logado);
     
