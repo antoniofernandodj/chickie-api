@@ -292,6 +292,7 @@ src/
 | Serialização | serde / serde_json            |
 | Timestamps   | chrono::DateTime<Utc>         |
 | Horários     | chrono::NaiveTime             |
+| Decimais     | rust_decimal::Decimal         |
 
 ---
 
