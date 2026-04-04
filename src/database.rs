@@ -46,19 +46,81 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Executa o arquivo de migração completo
+/// Executa o arquivo de migração completo, dividindo em statements individuais
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    // Tenta carregar do diretório do binário ou do cwd
     let sql = std::fs::read_to_string("migrations/0001_criar_tabelas.sql")
         .or_else(|_| std::fs::read_to_string("src/../migrations/0001_criar_tabelas.sql"))
         .map_err(|e| format!("Não foi possível ler o arquivo de migração: {}", e))?;
 
-    sqlx::query(&sql)
-        .execute(pool)
-        .await
-        .map_err(|e| format!("Falha ao aplicar migração: {}", e))?;
+    // Split into individual statements, respecting $$ blocks and comments
+    let statements = split_sql_statements(&sql)?;
 
+    for (i, stmt) in statements.iter().enumerate() {
+        sqlx::query(stmt)
+            .execute(pool)
+            .await
+            .map_err(|e| format!("Falha no statement #{}: {}", i + 1, e))?;
+    }
+
+    tracing::info!("   {} statements executados", statements.len());
     Ok(())
+}
+
+/// Divide SQL em statements individuais, respeitando blocos $$ e ignorando comentários
+fn split_sql_statements(sql: &str) -> Result<Vec<String>, String> {
+    let mut statements = Vec::new();
+    let mut current = String::new();
+    let mut in_dollar_quote = false;
+    let mut lines = sql.lines();
+
+    while let Some(line) = lines.next() {
+        let trimmed = line.trim();
+
+        // Skip comment-only lines
+        if trimmed.starts_with("--") {
+            continue;
+        }
+
+        // Track $$ blocks
+        if !in_dollar_quote {
+            if trimmed.contains("$$") {
+                in_dollar_quote = true;
+            }
+        } else {
+            if trimmed.contains("$$") {
+                in_dollar_quote = false;
+            }
+        }
+
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        current.push_str(line);
+        current.push('\n');
+
+        // If we're inside a $$ block, don't split on ;
+        if in_dollar_quote {
+            continue;
+        }
+
+        // Check if this line ends with ; (statement boundary)
+        if trimmed.ends_with(';') {
+            let stmt = current.trim().to_string();
+            if !stmt.is_empty() {
+                statements.push(stmt);
+            }
+            current.clear();
+        }
+    }
+
+    // Handle remaining content
+    let remaining = current.trim().to_string();
+    if !remaining.is_empty() {
+        statements.push(remaining);
+    }
+
+    Ok(statements)
 }
 
 /// Dropa todas as tabelas do schema public usando CASCADE
