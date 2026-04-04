@@ -237,27 +237,6 @@ CREATE TABLE IF NOT EXISTS enderecos_usuario (
 CREATE INDEX IF NOT EXISTS idx_enderecos_usuario_usuario ON enderecos_usuario(usuario_uuid);
 
 -- ============================================================================
--- TABELA: enderecos_entrega
--- ============================================================================
-CREATE TABLE IF NOT EXISTS enderecos_entrega (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    loja_uuid UUID NOT NULL,
-    pedido_uuid UUID NOT NULL,
-    cep TEXT,
-    logradouro TEXT NOT NULL,
-    numero TEXT NOT NULL,
-    complemento TEXT,
-    bairro TEXT NOT NULL,
-    cidade TEXT NOT NULL,
-    estado TEXT NOT NULL,
-    latitude NUMERIC(10,8),
-    longitude NUMERIC(11,8),
-    FOREIGN KEY (pedido_uuid) REFERENCES pedidos(uuid) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_enderecos_entrega_pedido ON enderecos_entrega(pedido_uuid);
-
--- ============================================================================
 -- TABELA: entregadores
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS entregadores (
@@ -329,7 +308,7 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- TABELA: pedidos
+-- TABELA: pedidos (antes de enderecos_entrega, pois há FK)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS pedidos (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -337,12 +316,12 @@ CREATE TABLE IF NOT EXISTS pedidos (
     usuario_uuid UUID NOT NULL,
     status TEXT NOT NULL DEFAULT 'criado' CHECK (
         status IN (
-            'criado', 
-            'aguardando_confirmacao_de_loja', 
-            'confirmado_pela_loja', 
-            'em_preparo', 
-            'pronto_para_retirada', 
-            'saiu_para_entrega', 
+            'criado',
+            'aguardando_confirmacao_de_loja',
+            'confirmado_pela_loja',
+            'em_preparo',
+            'pronto_para_retirada',
+            'saiu_para_entrega',
             'entregue'
         )
     ),
@@ -368,6 +347,47 @@ CREATE TRIGGER trigger_pedidos_atualizado
 BEFORE UPDATE ON pedidos
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================================================
+-- TABELA: enderecos_loja
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS enderecos_loja (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    loja_uuid UUID NOT NULL,
+    cep TEXT,
+    logradouro TEXT NOT NULL,
+    numero TEXT NOT NULL,
+    complemento TEXT,
+    bairro TEXT NOT NULL,
+    cidade TEXT NOT NULL,
+    estado TEXT NOT NULL,
+    latitude NUMERIC(10,8),
+    longitude NUMERIC(11,8),
+    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_enderecos_loja_loja ON enderecos_loja(loja_uuid);
+
+-- ============================================================================
+-- TABELA: enderecos_entrega (depende de pedidos)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS enderecos_entrega (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    loja_uuid UUID NOT NULL,
+    pedido_uuid UUID NOT NULL,
+    cep TEXT,
+    logradouro TEXT NOT NULL,
+    numero TEXT NOT NULL,
+    complemento TEXT,
+    bairro TEXT NOT NULL,
+    cidade TEXT NOT NULL,
+    estado TEXT NOT NULL,
+    latitude NUMERIC(10,8),
+    longitude NUMERIC(11,8),
+    FOREIGN KEY (pedido_uuid) REFERENCES pedidos(uuid) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_enderecos_entrega_pedido ON enderecos_entrega(pedido_uuid);
 
 -- ============================================================================
 -- TABELA: itens_pedido
