@@ -1,0 +1,51 @@
+use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use serde::Deserialize;
+use std::sync::Arc;
+use uuid::Uuid;
+
+use crate::{
+    api::{dto::AppError, AppState},
+    models::Usuario,
+    usecases::MarketingUsecase
+};
+
+#[derive(Deserialize)]
+pub struct CriarPromocaoRequest {
+    pub nome: String,
+    pub descricao: String,
+    pub tipo_desconto: String,
+    pub valor_desconto: Option<f64>,
+    pub valor_minimo: Option<f64>,
+    pub data_inicio: String,
+    pub data_fim: String,
+    pub dias_semana_validos: Option<Vec<u8>>,
+    pub prioridade: i32,
+}
+
+pub async fn criar_promocao(
+    State(state): State<Arc<AppState>>,
+    Path(loja_uuid): Path<Uuid>,
+    Extension(usuario): Extension<Usuario>,
+    Json(p): Json<CriarPromocaoRequest>,
+) -> Result<impl IntoResponse, AppError> {
+
+    let usecase = MarketingUsecase::new(
+        Arc::new(state.marketing_service.clone()),
+        loja_uuid,
+        usuario
+    );
+
+    let promocao = usecase.criar_promocao(
+        p.nome,
+        p.descricao,
+        p.tipo_desconto,
+        p.valor_desconto,
+        p.valor_minimo,
+        p.data_inicio,
+        p.data_fim,
+        p.dias_semana_validos,
+        p.prioridade
+    ).await?;
+
+    Ok(Json(promocao))
+}

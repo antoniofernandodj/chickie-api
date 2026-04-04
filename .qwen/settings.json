@@ -4,7 +4,9 @@
       "Bash(cargo check)",
       "Bash(rm *)",
       "Bash(cp *)",
-      "Bash(mv *)"
+      "Bash(mv *)",
+      "Bash(rmdir *)",
+      "Bash(sed *)"
     ]
   },
   "$version": 3

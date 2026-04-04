@@ -227,6 +227,9 @@ Cada repositório implementa também:
 | Método | Rota | Descrição |
 |--------|------|-----------|
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
 
 #### Pedidos (auth required)
@@ -244,7 +247,8 @@ Cada repositório implementa também:
 | `POST` | `/api/cupons/` | Criar cupom |
 | `GET` | `/api/cupons/{codigo}` | Validar cupom |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-loja` | Avaliar loja |
-| `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar product |
+| `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto |
+| `POST` | `/api/cupons/{loja_uuid}/promocoes` | Criar promoção |
 
 #### Endereços de Entrega (auth required)
 
@@ -366,8 +370,8 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 
 | Entidade         | Descrição                                                                                         |
 |------------------|---------------------------------------------------------------------------------------------------|
-| `Usuario`        | Usuário do sistema. Possui campo `classe`: **`cliente`**, **`administrador`**, **`funcionario`**, ou **`entregador`**. |
-| `ClasseUsuario`  | Enum com quatro variantes: `Cliente` (padrão), `Administrador`, `Funcionario`, `Entregador`. Apenas admins podem criar lojas.   |
+| `Usuario`        | Usuário do sistema. Possui campo `classe`: **`cliente`**, **`administrador`**, **`funcionario`**, **`entregador`** ou **`owner`**. |
+| `ClasseUsuario`  | Enum com cinco variantes: `Cliente` (padrão), `Administrador`, `Funcionario`, `Entregador`, `Owner`. `Owner` é o dono da plataforma. Apenas admins podem criar lojas. |
 
 #### Lojas & Catálogo
 
@@ -512,6 +516,9 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-04  | `ClasseUsuario.Owner` adicionado (dono da plataforma) |
+| 2026-04-04  | Endpoint `POST /api/cupons/{loja_uuid}/promocoes` criado via MarketingUsecase |
+| 2026-04-04  | Endpoints de adicionais (listar, disponíveis, indisponível) criados |
 | 2026-04-03  | Tabela `lojas_favoritas` e endpoints de favoritos criados |
 | 2026-04-04  | `Funcionario` e `Entregador` agora referenciam `Usuario` via FK (`usuario_uuid`) |
 | 2026-04-04  | `ClasseUsuario` expandido com `Funcionario` e `Entregador` |

@@ -136,4 +136,25 @@ impl CatalogoService {
 
     }
 
+    pub async fn listar_adicionais(
+        &self,
+        loja_uuid: Uuid,
+    ) -> Result<Vec<Adicional>, String> {
+        self.adicional_repo.buscar_por_loja(loja_uuid).await
+    }
+
+    pub async fn listar_adicionais_disponiveis(
+        &self,
+        loja_uuid: Uuid,
+    ) -> Result<Vec<Adicional>, String> {
+        self.adicional_repo.buscar_disponiveis(loja_uuid).await
+    }
+
+    pub async fn marcar_adicional_indisponivel(
+        &self,
+        adicional_uuid: Uuid,
+    ) -> Result<(), String> {
+        self.adicional_repo.marcar_indisponivel(adicional_uuid).await
+    }
+
 }

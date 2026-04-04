@@ -26,6 +26,20 @@ impl AdicionalRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn marcar_indisponivel(&self, uuid: Uuid) -> Result<(), String> {
+        let result = sqlx::query("UPDATE adicionais SET disponivel = false WHERE uuid = $1")
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Adicional não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
 }
 
 #[async_trait::async_trait]

@@ -65,6 +65,7 @@ pub use produto::{
 pub use cupom::{
     criar_cupom,
     validar_cupom, // listar_cupons, buscar_cupom
+    criar_promocao
 };
 
 pub use wipe::wipe_database;
@@ -76,7 +77,10 @@ pub use marketing::{
 
 pub use catalogo::{
     criar_adicional,
-    criar_categoria
+    criar_categoria,
+    listar_adicionais,
+    listar_adicionais_disponiveis,
+    marcar_indisponivel
 };
 
 pub use endereco_entrega::{

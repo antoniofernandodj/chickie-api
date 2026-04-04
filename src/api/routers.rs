@@ -19,6 +19,7 @@ use crate::api::{
     listar_produtos,
     criar_cupom,
     validar_cupom,
+    criar_promocao,
     atualizar_produto,
     wipe_database,
     avaliar_loja,
@@ -29,6 +30,9 @@ use crate::api::{
     listar_lojas_admin,
     criar_adicional,
     criar_categoria,
+    listar_adicionais,
+    listar_adicionais_disponiveis,
+    marcar_indisponivel,
     criar_para_pedido,
     buscar_por_pedido,
     listar_por_loja,
@@ -81,6 +85,9 @@ pub fn pedido_routes() -> Router<Arc<AppState>> {
 pub fn catalogo_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{loja_uuid}/adicionais", post(criar_adicional))
+        .route("/{loja_uuid}/adicionais", get(listar_adicionais))
+        .route("/{loja_uuid}/adicionais/disponiveis", get(listar_adicionais_disponiveis))
+        .route("/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel", put(marcar_indisponivel))
         .route("/{loja_uuid}/categorias", post(criar_categoria))
 }
 
@@ -124,6 +131,7 @@ pub fn marketing_routes() -> Router<Arc<AppState>> {
         .route("/{codigo}", get(validar_cupom))
         .route("/{loja_uuid}/avaliar-loja", post(avaliar_loja))
         .route("/{loja_uuid}/avaliar-produto", post(avaliar_produto))
+        .route("/{loja_uuid}/promocoes", post(criar_promocao))
 }
 
 

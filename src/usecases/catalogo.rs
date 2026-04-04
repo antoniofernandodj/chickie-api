@@ -5,7 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{models::{Produto, Usuario}, services::CatalogoService};
+use crate::{models::{Adicional, Produto, Usuario}, services::CatalogoService};
 
 pub struct CatalogoUsecase {
     pub catalogo_service: Arc<CatalogoService>,
@@ -84,7 +84,7 @@ impl CatalogoUsecase {
             .criar_produto(
                 data.nome,
                 data.descricao,
-                data.preco, 
+                data.preco,
                 data.categoria_uuid,
                 self.loja_uuid,
                 data.tempo_preparo_min
@@ -92,5 +92,22 @@ impl CatalogoUsecase {
             .await?;
 
         Ok(produto)
+    }
+
+    // ─── Adicionais ───
+
+    pub async fn listar_adicionais(&self) -> Result<Vec<Adicional>, String> {
+        self.catalogo_service.listar_adicionais(self.loja_uuid).await
+    }
+
+    pub async fn listar_adicionais_disponiveis(&self) -> Result<Vec<Adicional>, String> {
+        self.catalogo_service.listar_adicionais_disponiveis(self.loja_uuid).await
+    }
+
+    pub async fn marcar_adicional_indisponivel(
+        &self,
+        adicional_uuid: Uuid,
+    ) -> Result<(), String> {
+        self.catalogo_service.marcar_adicional_indisponivel(adicional_uuid).await
     }
 }

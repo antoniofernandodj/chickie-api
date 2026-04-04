@@ -14,6 +14,7 @@ pub enum ClasseUsuario {
     Administrador,
     Funcionario,
     Entregador,
+    Owner,
 }
 
 impl ClasseUsuario {
@@ -23,6 +24,7 @@ impl ClasseUsuario {
             Self::Administrador => "administrador",
             Self::Funcionario => "funcionario",
             Self::Entregador => "entregador",
+            Self::Owner => "owner",
         }
     }
 
@@ -32,6 +34,7 @@ impl ClasseUsuario {
             "administrador" => Ok(Self::Administrador),
             "funcionario" => Ok(Self::Funcionario),
             "entregador" => Ok(Self::Entregador),
+            "owner" => Ok(Self::Owner),
             other => Err(format!("ClasseUsuario inválida: '{}'", other)),
         }
     }

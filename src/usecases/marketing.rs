@@ -61,4 +61,30 @@ impl MarketingUsecase {
             descricao
         ).await
     }
+
+    pub async fn criar_promocao(
+        &self,
+        nome: String,
+        descricao: String,
+        tipo_desconto: String,
+        valor_desconto: Option<f64>,
+        valor_minimo: Option<f64>,
+        data_inicio: String,
+        data_fim: String,
+        dias_semana_validos: Option<Vec<u8>>,
+        prioridade: i32,
+    ) -> Result<Promocao, String> {
+        self.marketing_service.criar_promocao(
+            self.loja_uuid,
+            nome,
+            descricao,
+            tipo_desconto,
+            valor_desconto,
+            valor_minimo,
+            data_inicio,
+            data_fim,
+            dias_semana_validos,
+            prioridade
+        ).await
+    }
 }

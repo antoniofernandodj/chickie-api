@@ -114,10 +114,13 @@ Todos os endpoints vivem sob `/api`.
 
 ### Catálogo (auth required)
 
-| Método | Rota                                     | Descrição       | Auth |
-|--------|------------------------------------------|-----------------|------|
-| `POST` | `/api/catalogo/{loja_uuid}/adicionais`   | Criar adicional | ✅   |
-| `POST` | `/api/catalogo/{loja_uuid}/categorias`   | Criar categoria | ✅   |
+| Método | Rota                                     | Descrição              | Auth |
+|--------|------------------------------------------|------------------------|------|
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais`   | Criar adicional        | ✅   |
+| `GET`  | `/api/catalogo/{loja_uuid}/adicionais`   | Listar todos adicionais| ✅   |
+| `GET`  | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar disponíveis | ✅ |
+| `PUT`  | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar indisponível | ✅ |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias`   | Criar categoria        | ✅   |
 
 ### Pedidos (auth required)
 
@@ -135,6 +138,7 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/cupons/{codigo}`                  | Validar cupom          | ❌   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-loja`  | Avaliar loja           | ✅   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto      | ✅   |
+| `POST` | `/api/cupons/{loja_uuid}/promocoes` | Criar promoção       | ✅   |
 
 ### Endereços de Entrega (auth required)
 
@@ -244,7 +248,10 @@ A API usa **JWT (JSON Web Token)** para autenticação e **classe de usuário** 
 | Classe | Descrição |
 |--------|-----------|
 | `cliente` | Padrão. Pode navegar lojas, fazer pedidos e avaliar. |
-| `administrador` | Pode criar lojas, gerenciar catálogos, funcionários e entregadores. |
+| `administrador` | Pode criar lojas e gerenciar catálogos, funcionários e entregadores. |
+| `funcionario` | Funcionário de uma loja (cargo, salário). |
+| `entregador` | Entregador de uma loja (veículo, placa). |
+| `owner` | Dono da plataforma. Acesso total. |
 | `funcionario` | Funcionário de uma loja. Possui conta de usuário com credenciais. |
 | `entregador` | Entregador de uma loja. Possui conta de usuário com credenciais. |
 
