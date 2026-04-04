@@ -197,26 +197,6 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- TABELA: enderecos_loja
--- ============================================================================
-CREATE TABLE IF NOT EXISTS enderecos_loja (
-    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    loja_uuid UUID NOT NULL,
-    cep TEXT,
-    logradouro TEXT NOT NULL,
-    numero TEXT NOT NULL,
-    complemento TEXT,
-    bairro TEXT NOT NULL,
-    cidade TEXT NOT NULL,
-    estado TEXT NOT NULL,
-    latitude NUMERIC(10,8),
-    longitude NUMERIC(11,8),
-    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_enderecos_loja_loja ON enderecos_loja(loja_uuid);
-
--- ============================================================================
 -- TABELA: enderecos_usuario
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS enderecos_usuario (
