@@ -4,6 +4,7 @@ use sqlx::FromRow;
 use chrono::Utc;
 use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
 use sqlx::PgPool;
+use rust_decimal::Decimal;
 
 // ---------------------------------------------------------------------------
 // TipoCalculoPedido — como o preço é calculado quando há múltiplos sabores
@@ -113,7 +114,7 @@ pub struct ParteDeItemPedido {
     pub item_uuid: Option<Uuid>,
     pub produto_nome: String,
     pub produto_uuid: Uuid,
-    pub preco_unitario: f64,
+    pub preco_unitario: Decimal,
     pub posicao: i32,
     #[sqlx(skip)]
     pub adicionais: Vec<AdicionalDeItemDePedido>
@@ -168,21 +169,21 @@ impl ParteDeItemPedido {
 // ---------------------------------------------------------------------------
 
 /// Calcula o preço unitário de um item com múltiplos sabores.
-/// Retorna 0.0 se não houver sabores.
+/// Retorna Decimal::ZERO se não houver sabores.
 pub fn calcular_preco_por_partes(
     sabores: &[ParteDeItemPedido],
     tipo: &TipoCalculoPedido,
-) -> f64 {
+) -> Decimal {
     if sabores.is_empty() {
-        return 0.0;
+        return Decimal::ZERO;
     }
 
     match tipo {
         // Cada sabor contribui igualmente: média simples dos preços
         // Ex: [30.0, 40.0, 35.0, 50.0] → (30+40+35+50) / 4 = 38.75
         &TipoCalculoPedido::MediaPonderada => {
-            let soma: f64 = sabores.iter().map(|s| s.preco_unitario).sum();
-            soma / sabores.len() as f64
+            let soma: Decimal = sabores.iter().map(|s| s.preco_unitario).sum();
+            soma / Decimal::from(sabores.len())
         }
 
         // Preço = o sabor mais caro
@@ -191,7 +192,7 @@ pub fn calcular_preco_por_partes(
             sabores
                 .iter()
                 .map(|s| s.preco_unitario)
-                .fold(f64::NEG_INFINITY, f64::max)
+                .fold(Decimal::MIN, Decimal::max)
         }
     }
 }

@@ -2,6 +2,7 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
+use rust_decimal::Decimal;
 
 use crate::models::Model;
 
@@ -11,7 +12,7 @@ pub struct AvaliacaoDeLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub usuario_uuid: Uuid,
-    pub nota: f64,
+    pub nota: Decimal,
     pub comentario: Option<String>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -20,7 +21,7 @@ impl AvaliacaoDeLoja {
     pub fn new(
         loja_uuid: Uuid,
         usuario_uuid: Uuid,
-        nota: f64,
+        nota: Decimal,
         comentario: Option<String>,
     ) -> Self {
         Self {
@@ -41,7 +42,7 @@ pub struct AvaliacaoDeProduto {
     pub loja_uuid: Uuid,
     pub produto_uuid: Uuid,
     pub comentario: Option<String>,
-    pub nota: f64,
+    pub nota: Decimal,
     pub descricao: String,
     pub uuid: Uuid,
     pub criado_em: chrono::DateTime<chrono::Utc>
@@ -53,7 +54,7 @@ impl AvaliacaoDeProduto {
         loja_uuid: Uuid,
         produto_uuid: Uuid,
         comentario: Option<String>,
-        nota: f64,
+        nota: Decimal,
         descricao: String,
     ) -> Self {
         Self {

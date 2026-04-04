@@ -4,6 +4,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
+use rust_decimal::Decimal;
 
 use crate::{
     api::{dto::AppError, AppState},
@@ -16,8 +17,8 @@ pub struct CriarPromocaoRequest {
     pub nome: String,
     pub descricao: String,
     pub tipo_desconto: String,
-    pub valor_desconto: Option<f64>,
-    pub valor_minimo: Option<f64>,
+    pub valor_desconto: Option<Decimal>,
+    pub valor_minimo: Option<Decimal>,
     pub data_inicio: String,
     pub data_fim: String,
     pub dias_semana_validos: Option<Vec<u8>>,

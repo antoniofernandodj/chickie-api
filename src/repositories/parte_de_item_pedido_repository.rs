@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 use crate::{
     models::{ParteDeItemPedido, ConfiguracaoDePedidosLoja},
     models::calcular_preco_por_partes
@@ -32,7 +33,7 @@ impl ParteDeItemPedidoRepository {
         &self,
         partes: &[ParteDeItemPedido],
         config: &ConfiguracaoDePedidosLoja,
-    ) -> Result<f64, String> {
+    ) -> Result<Decimal, String> {
         // if partes.is_empty() {
         //     return Err("Lista de partes nao pode ser vazia".into());
         // }

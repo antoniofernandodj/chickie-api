@@ -2,6 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::{
     api::{dto::AppError, AppState},
@@ -12,7 +13,7 @@ use crate::{
 pub struct CreateAdicionalRequest {
     pub nome: String,
     pub descricao: String,
-    pub preco: f64,
+    pub preco: Decimal,
 }
 
 pub async fn criar_adicional(

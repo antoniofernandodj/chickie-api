@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use uuid::Uuid;
+use rust_decimal::Decimal;
+use rust_decimal::prelude::*;
 
 use crate::models::{
     Cliente,
@@ -96,9 +98,9 @@ impl LojaService {
             hora_fechamento,
             dias_funcionamento,
             tempo_preparo_min,
-            taxa_entrega,
-            valor_minimo_pedido,
-            raio_entrega_km,
+            Decimal::from_f64(taxa_entrega.unwrap_or_default()),
+            Decimal::from_f64(valor_minimo_pedido.unwrap_or_default()),
+            Decimal::from_f64(raio_entrega_km.unwrap_or_default()),
             Some(criado_por),
         );
 
@@ -148,7 +150,7 @@ impl LojaService {
         senha: String,
         celular: String,
         cargo: Option<String>,
-        salario: Option<f64>,
+        salario: Option<Decimal>,
         data_admissao: String,
     ) -> Result<Funcionario, String> {
 

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use rust_decimal::{Decimal, prelude::FromPrimitive};
 use uuid::Uuid;
 
 use crate::{
@@ -49,13 +50,13 @@ impl AdminUsecase {
 
     // ─── Ingredientes ───
     pub async fn criar_ingrediente(&self, nome: String, unidade_medida: Option<String>, preco_unitario: f64) -> Result<Ingrediente, String> {
-        self.ingrediente_service.criar(self.loja_uuid, nome, unidade_medida, preco_unitario).await
+        self.ingrediente_service.criar(self.loja_uuid, nome, unidade_medida, Decimal::from_f64(preco_unitario).unwrap_or_default()).await
     }
     pub async fn listar_ingredientes(&self) -> Result<Vec<Ingrediente>, String> {
         self.ingrediente_service.listar_por_loja(self.loja_uuid).await
     }
     pub async fn atualizar_ingrediente(&self, uuid: Uuid, nome: String, unidade_medida: Option<String>, quantidade: f64, preco_unitario: f64) -> Result<(), String> {
-        self.ingrediente_service.atualizar(uuid, nome, unidade_medida, quantidade, preco_unitario).await
+        self.ingrediente_service.atualizar(uuid, nome, unidade_medida, Decimal::from_f64(quantidade).unwrap_or_default(), Decimal::from_f64(preco_unitario).unwrap_or_default()).await
     }
     pub async fn deletar_ingrediente(&self, uuid: Uuid) -> Result<(), String> {
         self.ingrediente_service.deletar(uuid).await
@@ -87,7 +88,7 @@ impl AdminUsecase {
     pub async fn listar_funcionarios(&self) -> Result<Vec<Funcionario>, String> {
         self.funcionario_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<f64>, data_admissao: String) -> Result<(), String> {
+    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<Decimal>, data_admissao: String) -> Result<(), String> {
         self.funcionario_service.atualizar(uuid, usuario_uuid, nome, email, senha, celular, telefone, cargo, salario, data_admissao).await
     }
     pub async fn funcionario_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
@@ -115,7 +116,7 @@ impl AdminUsecase {
     }
 
     // ─── Cupons ───
-    pub async fn atualizar_cupom(&self, uuid: Uuid, codigo: String, descricao: String, tipo_desconto: String, valor_desconto: Option<f64>, valor_minimo: Option<f64>, data_validade: String, limite_uso: Option<i32>) -> Result<(), String> {
+    pub async fn atualizar_cupom(&self, uuid: Uuid, codigo: String, descricao: String, tipo_desconto: String, valor_desconto: Option<Decimal>, valor_minimo: Option<Decimal>, data_validade: String, limite_uso: Option<i32>) -> Result<(), String> {
         self.marketing_service.atualizar_cupom(uuid, self.loja_uuid, codigo, descricao, tipo_desconto, valor_desconto, valor_minimo, data_validade, limite_uso).await
     }
     pub async fn deletar_cupom(&self, uuid: Uuid) -> Result<(), String> {

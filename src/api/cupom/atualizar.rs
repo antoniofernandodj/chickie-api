@@ -2,6 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
+use rust_decimal::prelude::*;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
@@ -32,6 +33,16 @@ pub async fn atualizar_cupom(
         usuario,
         loja_uuid,
     );
-    uc.atualizar_cupom(uuid, p.codigo, p.descricao, p.tipo_desconto, p.valor_desconto, p.valor_minimo, p.data_validade, p.limite_uso).await?;
+
+    uc.atualizar_cupom(
+        uuid,
+        p.codigo,
+        p.descricao,
+        p.tipo_desconto,
+        p.valor_desconto.map(|v| Decimal::from_f64(v).unwrap_or(Decimal::ZERO)),
+        p.valor_minimo.map(|v| Decimal::from_f64(v).unwrap_or(Decimal::ZERO)),
+        p.data_validade,
+        p.limite_uso,
+    ).await?;
     Ok(StatusCode::NO_CONTENT)
 }

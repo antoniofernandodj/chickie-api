@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 
 #[derive(Deserialize)]
@@ -156,14 +157,14 @@ pub struct LoginRequest {
 
 #[derive(serde::Deserialize)]
 pub struct AvaliarLojaRequest {
-    pub nota: f64,
+    pub nota: Decimal,
     pub comentario: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
 pub struct AvaliarProdutoRequest {
     pub produto_uuid: Uuid,
-    pub nota: f64,
+    pub nota: Decimal,
     pub descricao: String,
     pub comentario: Option<String>,
 }

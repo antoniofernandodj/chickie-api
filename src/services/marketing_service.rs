@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::{Cupom, Promocao, AvaliacaoDeLoja, AvaliacaoDeProduto};
 use crate::repositories::{
@@ -35,8 +36,8 @@ impl MarketingService {
         codigo: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_validade: String,
         limite_uso: Option<i32>,
     ) -> Result<Cupom, String> {
@@ -63,8 +64,8 @@ impl MarketingService {
         nome: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
@@ -99,7 +100,7 @@ impl MarketingService {
         &self,
         loja_uuid: Uuid,
         usuario_uuid: Uuid,
-        nota: f64,
+        nota: Decimal,
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeLoja, String> {
 
@@ -121,7 +122,7 @@ impl MarketingService {
         loja_uuid: Uuid,
         produto_uuid: Uuid,
         comentario: Option<String>,
-        nota: f64,
+        nota: Decimal,
         descricao: String,
     ) -> Result<AvaliacaoDeProduto, String> {
 
@@ -150,8 +151,8 @@ impl MarketingService {
         codigo: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_validade: String,
         limite_uso: Option<i32>,
     ) -> Result<(), String> {
@@ -182,8 +183,8 @@ impl MarketingService {
         nome: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,

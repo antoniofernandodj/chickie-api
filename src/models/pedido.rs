@@ -3,6 +3,7 @@ use uuid::Uuid;
 use crate::models::{Model, ParteDeItemPedido};
 use chrono::Utc;
 use sqlx::FromRow;
+use rust_decimal::Decimal;
 
 // --- AdicionalDeItemDePedido ---
 
@@ -13,7 +14,7 @@ pub struct AdicionalDeItemDePedido {
     pub loja_uuid: Uuid,
     pub nome: String,
     pub descricao: String,
-    pub preco: f64,
+    pub preco: Decimal,
 }
 
 impl AdicionalDeItemDePedido {
@@ -22,7 +23,7 @@ impl AdicionalDeItemDePedido {
         descricao: String,
         loja_uuid: Uuid,
         item_uuid: Uuid,
-        preco: f64,
+        preco: Decimal,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
@@ -190,10 +191,10 @@ pub struct Pedido {
     pub usuario_uuid: Uuid,
     pub loja_uuid: Uuid,
     pub status: EstadoDePedido,
-    pub total: f64,
-    pub subtotal: f64,
-    pub taxa_entrega: f64,
-    pub desconto: Option<f64>,
+    pub total: Decimal,
+    pub subtotal: Decimal,
+    pub taxa_entrega: Decimal,
+    pub desconto: Option<Decimal>,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub tempo_estimado_min: Option<i32>,
@@ -209,8 +210,8 @@ impl Pedido {
     pub fn new(
         usuario_uuid: Uuid,
         loja_uuid: Uuid,
-        subtotal: f64,
-        taxa_entrega: f64,
+        subtotal: Decimal,
+        taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
     ) -> Self {

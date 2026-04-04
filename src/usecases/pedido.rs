@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::{
     models::{ParteDeItemPedido, Pedido, EstadoDePedido, EnderecoEntrega, Produto, Usuario},
@@ -36,7 +37,7 @@ impl PedidoUsecase {
 
     pub async fn criar_pedido(
         &self,
-        taxa_entrega: f64,
+        taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
         codigo_cupom: Option<String>,
@@ -65,7 +66,7 @@ impl PedidoUsecase {
         let mut pedido = Pedido::new(
             self.usuario.uuid,
             self.loja_uuid,
-            0.0,
+            Decimal::ZERO,
             taxa_entrega,
             forma_pagamento,
             observacoes,

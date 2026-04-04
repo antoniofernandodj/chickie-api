@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::Ingrediente;
 use crate::repositories::{IngredienteRepository, Repository as _};
@@ -20,7 +21,7 @@ impl IngredienteService {
         nome: String,
         unidade_medida: Option<String>,
         // quantidade: f64,
-        preco_unitario: f64,
+        preco_unitario: Decimal,
     ) -> Result<Ingrediente, String> {
         let ingrediente = Ingrediente::new(
             nome,
@@ -45,8 +46,8 @@ impl IngredienteService {
         uuid: Uuid,
         nome: String,
         unidade_medida: Option<String>,
-        quantidade: f64,
-        preco_unitario: f64,
+        quantidade: Decimal,
+        preco_unitario: Decimal,
     ) -> Result<(), String> {
         let mut ingrediente = self.repo.buscar_por_uuid(uuid).await?
             .ok_or("Ingrediente não encontrado")?;

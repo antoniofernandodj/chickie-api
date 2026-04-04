@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::Funcionario;
 use crate::repositories::{FuncionarioRepository, UsuarioRepository, Repository as _};
@@ -29,7 +30,7 @@ impl FuncionarioService {
         celular: Option<String>,
         telefone: Option<String>,
         cargo: Option<String>,
-        salario: Option<f64>,
+        salario: Option<Decimal>,
         data_admissao: String,
     ) -> Result<(), String> {
         let mut funcionario = self.repo.buscar_por_uuid(uuid).await?

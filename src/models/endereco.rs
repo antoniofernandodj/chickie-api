@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use sqlx::FromRow;
+use rust_decimal::Decimal;
 
 use crate::models::Model;
 
@@ -19,8 +20,8 @@ pub struct EnderecoLoja {
     pub bairro: String,
     pub cidade: String,
     pub estado: String,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
+    pub latitude: Option<Decimal>,
+    pub longitude: Option<Decimal>,
 }
 
 impl EnderecoLoja {
@@ -34,8 +35,8 @@ impl EnderecoLoja {
         bairro: String,
         cidade: String,
         estado: String,
-        latitude: Option<f64>,
-        longitude: Option<f64>,
+        latitude: Option<Decimal>,
+        longitude: Option<Decimal>,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
@@ -66,8 +67,8 @@ pub struct EnderecoUsuario {
     pub bairro: String,
     pub cidade: String,
     pub estado: String,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
+    pub latitude: Option<Decimal>,
+    pub longitude: Option<Decimal>,
 }
 
 impl EnderecoUsuario {
@@ -111,8 +112,8 @@ pub struct EnderecoEntrega {
     pub bairro: String,
     pub cidade: String,
     pub estado: String,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
+    pub latitude: Option<Decimal>,
+    pub longitude: Option<Decimal>,
 }
 
 impl EnderecoEntrega {

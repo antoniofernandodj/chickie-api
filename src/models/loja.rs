@@ -2,6 +2,7 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 use chrono::{Utc, NaiveTime};
+use rust_decimal::Decimal;
 
 use crate::models::Model;
 
@@ -20,9 +21,9 @@ pub struct Loja {
     pub horario_fechamento: Option<NaiveTime>,
     pub dias_funcionamento: Option<Vec<i32>>,  // [0,1,2,3,4,5,6] → Domingo..Sábado
     pub tempo_preparo_min: Option<i32>,
-    pub taxa_entrega: Option<f64>,
-    pub valor_minimo_pedido: Option<f64>,
-    pub raio_entrega_km: Option<f64>,
+    pub taxa_entrega: Option<Decimal>,
+    pub valor_minimo_pedido: Option<Decimal>,
+    pub raio_entrega_km: Option<Decimal>,
     pub criado_por: Option<Uuid>,  // Admin que criou a loja
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
@@ -39,9 +40,9 @@ impl Loja {
         horario_fechamento: Option<NaiveTime>,
         dias_funcionamento: Option<Vec<i32>>,
         tempo_preparo_min: Option<i32>,
-        taxa_entrega: Option<f64>,
-        valor_minimo_pedido: Option<f64>,
-        raio_entrega_km: Option<f64>,
+        taxa_entrega: Option<Decimal>,
+        valor_minimo_pedido: Option<Decimal>,
+        raio_entrega_km: Option<Decimal>,
         criado_por: Option<Uuid>,
     ) -> Self {
 

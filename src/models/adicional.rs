@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
@@ -12,7 +13,7 @@ pub struct Adicional {
     pub loja_uuid: Uuid,
     pub disponivel: bool,
     pub descricao: String,
-    pub preco: f64,
+    pub preco: Decimal,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
@@ -21,7 +22,7 @@ impl Adicional {
         nome: String,
         loja_uuid: Uuid,
         descricao: String,
-        preco: f64,
+        preco: Decimal,
     ) -> Self {
 
         Self {

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use chrono::Datelike;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::{Pedido, EstadoDePedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
 use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
@@ -120,25 +121,25 @@ impl PedidoService {
     async fn __calcular_melhor_promocao(
         &self,
         pedido: &Pedido
-    ) -> Result<(f64, String), String> {
+    ) -> Result<(Decimal, String), String> {
         // Assumindo que existe um método buscar_ativas no repo (ou listar_todos filtrado)
         // Para simplificar, vamos simular a busca:
-    
+
 
         // Ideal: filtrar por loja_uuid e status ativo
-        let promocoes = self.promocao_repo.listar_todos().await?; 
+        let promocoes = self.promocao_repo.listar_todos().await?;
         let agora = agora(); // String de data hora atual
-        
+
         // Helper simples para obter dia da semana (0=Domingo, 6=Sábado)
         // Nota: Em produção, use chrono para parsing correto da string
         let dia_semana_atual = chrono::Utc::now().weekday().num_days_from_sunday() as u8;
 
-        let mut melhor_desconto = 0.0;
+        let mut melhor_desconto = Decimal::ZERO;
         let mut melhor_descricao = String::new();
 
         for promo in promocoes {
             if promo.loja_uuid != pedido.loja_uuid { continue; }
-            
+
             // Usa o método eh_aplicavel do modelo Promocao
             if promo.eh_aplicavel(
                 pedido.subtotal,
@@ -166,7 +167,7 @@ impl PedidoService {
         &self,
         pedido: &Pedido,
         codigo: Option<String>
-    ) -> Result<(f64, String), String> {
+    ) -> Result<(Decimal, String), String> {
 
         if let Some(cod) = codigo {
             // Busca cupom pelo código
@@ -174,22 +175,22 @@ impl PedidoService {
 
                 // Validações básicas
                 if cupom.loja_uuid != pedido.loja_uuid {
-                    return Ok((0.0, "Cupom inválido para esta loja".to_string()));
+                    return Ok((Decimal::ZERO, "Cupom inválido para esta loja".to_string()));
                 }
 
                 if cupom.status != StatusCupom::Ativo {
-                    return Ok((0.0, "Cupom inativo".to_string()));
+                    return Ok((Decimal::ZERO, "Cupom inativo".to_string()));
                 }
 
                 // Verifica validade (simples comparação de string ISO 8601
                 // funciona se formato for igual)
                 if agora() > cupom.data_validade {
-                     return Ok((0.0, "Cupom expirado".to_string()));
+                     return Ok((Decimal::ZERO, "Cupom expirado".to_string()));
                 }
                 // Verifica valor mínimo
                 if let Some(minimo) = cupom.valor_minimo {
                     if pedido.subtotal < minimo {
-                        return Ok((0.0, format!("Pedido abaixo do mínimo de {:.2}", minimo)));
+                        return Ok((Decimal::ZERO, format!("Pedido abaixo do mínimo de {:.2}", minimo)));
                     }
                 }
 
@@ -201,7 +202,7 @@ impl PedidoService {
                 return Ok((desconto, cupom.codigo));
             }
         }
-        Ok((0.0, String::new()))
+        Ok((Decimal::ZERO, String::new()))
     }
 
     /// Método principal para criar pedido COM endereço de entrega
@@ -260,7 +261,7 @@ impl PedidoService {
         pedido: &mut Pedido,
         codigo_cupom: Option<String>,
     ) -> Result<(), String> {
-        
+
         // 1. Buscar configuração da loja (como calcular preço dos sabores)
         let config_loja = self.config_repo
             .buscar_por_loja(pedido.loja_uuid)
@@ -270,8 +271,8 @@ impl PedidoService {
         // 2. Calcular Subtotal dos Itens
         // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
         // Aqui usamos os preços que já vieram no objeto Pedido (snapshots).
-        let mut subtotal_calculado = 0.0;
-        
+        let mut subtotal_calculado = Decimal::ZERO;
+
         for item in &pedido.itens {
             // Soma o preço base do item (calculado pela regra de sabores)
             let preco_item = calcular_preco_por_partes(
@@ -280,16 +281,16 @@ impl PedidoService {
             );
 
             // Soma adicionais
-            let total_adicionais: f64 = item.partes.iter()
+            let total_adicionais: Decimal = item.partes.iter()
                 .flat_map(|p| &p.adicionais)
                 .map(|a| a.preco)
                 .sum();
 
-            subtotal_calculado += (preco_item + total_adicionais) * item.quantidade as f64;
+            subtotal_calculado += (preco_item + total_adicionais) * Decimal::from(item.quantidade);
         }
 
         pedido.subtotal = subtotal_calculado;
-        
+
         // 3. Calcular descontos
         let (desconto_promocao, descricao_promo) =
             self.__calcular_melhor_promocao(pedido).await?;
@@ -301,19 +302,19 @@ impl PedidoService {
 
         // 4. Decisão de negócio: Escolher o maior desconto (não acumulativo)
         // Ou aplicar lógica de prioridade. Ex: Cupom tem prioridade, senão usa promoção.
-        
+
         let desconto_final;
         let observacao_desconto;
 
-        if desconto_cupom > 0.0 {
+        if desconto_cupom > Decimal::ZERO {
             desconto_final = desconto_cupom;
             observacao_desconto = format!("Cupom aplicado: {}", descricao_cupom);
             // Aqui você poderia marcar o cupom como usado no banco
-        } else if desconto_promocao > 0.0 {
+        } else if desconto_promocao > Decimal::ZERO {
             desconto_final = desconto_promocao;
             observacao_desconto = format!("Promoção aplicada: {}", descricao_promo);
         } else {
-            desconto_final = 0.0;
+            desconto_final = Decimal::ZERO;
             observacao_desconto = "Nenhum desconto aplicado".to_string();
         }
 
@@ -328,7 +329,7 @@ impl PedidoService {
             pedido.observacoes = Some(observacao_desconto);
         }
 
-        tracing::info!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}", 
+        tracing::info!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}",
             pedido.subtotal,
             desconto_final,
             pedido.total

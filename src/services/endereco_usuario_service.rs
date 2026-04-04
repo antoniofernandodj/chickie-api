@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::EnderecoUsuario;
 use crate::repositories::{EnderecoUsuarioRepository, Repository as _};
@@ -72,8 +73,8 @@ impl EnderecoUsuarioService {
         bairro: String,
         cidade: String,
         estado: String,
-        latitude: Option<f64>,
-        longitude: Option<f64>,
+        latitude: Option<Decimal>,
+        longitude: Option<Decimal>,
     ) -> Result<EnderecoUsuario, String> {
         
         // Busca e valida propriedade

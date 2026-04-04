@@ -2,6 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::{
     api::{AppState, auth::AdminPermission, dto::AppError},
@@ -16,7 +17,7 @@ pub struct AdicionarFuncionarioRequest {
     pub senha: String,
     pub celular: String,
     pub cargo: Option<String>,
-    pub salario: Option<f64>,
+    pub salario: Option<Decimal>,
     pub data_admissao: String,
 }
 

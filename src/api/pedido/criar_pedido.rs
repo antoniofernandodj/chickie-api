@@ -4,6 +4,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
+use rust_decimal::Decimal;
 
 use crate::{
     api::{dto::AppError, AppState},
@@ -19,7 +20,7 @@ use crate::{
 #[derive(Deserialize)]
 pub struct CriarPedidoRequest {
     pub loja_uuid: Uuid,
-    pub taxa_entrega: f64,
+    pub taxa_entrega: Decimal,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub codigo_cupom: Option<String>,

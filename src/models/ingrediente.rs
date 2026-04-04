@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
+use rust_decimal::Decimal;
 use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -10,8 +11,8 @@ pub struct Ingrediente {
     pub loja_uuid: Uuid,
     pub nome: String,
     pub unidade_medida: Option<String>,
-    pub quantidade: f64,
-    pub preco_unitario: f64,
+    pub quantidade: Decimal,
+    pub preco_unitario: Decimal,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -21,14 +22,14 @@ impl Ingrediente {
         nome: String,
         loja_uuid: Uuid,
         unidade_medida: Option<String>,
-        preco_unitario: f64,
+        preco_unitario: Decimal,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
             loja_uuid,
             nome,
             unidade_medida,
-            quantidade: 0.0,
+            quantidade: Decimal::ZERO,
             preco_unitario,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),

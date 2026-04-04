@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::{
     models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
@@ -32,7 +33,7 @@ impl MarketingUsecase {
 
     pub async fn avaliar_loja(
         &self,
-        nota: f64,
+        nota: Decimal,
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeLoja, String> {
 
@@ -47,7 +48,7 @@ impl MarketingUsecase {
     pub async fn avaliar_produto(
         &self,
         produto_uuid: Uuid,
-        nota: f64,
+        nota: Decimal,
         descricao: String,
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeProduto, String> {
@@ -67,8 +68,8 @@ impl MarketingUsecase {
         nome: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
@@ -109,8 +110,8 @@ impl MarketingUsecase {
         nome: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,

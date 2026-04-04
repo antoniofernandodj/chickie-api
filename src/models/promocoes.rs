@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
+use rust_decimal::Decimal;
 
 use crate::models::Model;
 
@@ -146,8 +147,8 @@ pub struct Cupom {
     pub codigo: String,
     pub descricao: String,
     pub tipo_desconto: String,
-    pub valor_desconto: Option<f64>,
-    pub valor_minimo: Option<f64>,
+    pub valor_desconto: Option<Decimal>,
+    pub valor_minimo: Option<Decimal>,
     pub data_validade: String,
     pub limite_uso: Option<i32>,
     pub uso_atual: i32,
@@ -161,8 +162,8 @@ impl Cupom {
         codigo: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_validade: String,
         limite_uso: Option<i32>,
     ) -> Self {
@@ -182,15 +183,15 @@ impl Cupom {
         }
     }
 
-    pub fn calcular_desconto(&self, valor_pedido: f64, valor_frete: f64) -> f64 {
+    pub fn calcular_desconto(&self, valor_pedido: Decimal, valor_frete: Decimal) -> Decimal {
         match self.tipo_desconto.as_str() {
             "percentual"   => valor_desconto_com_limite(
-                valor_pedido * (self.valor_desconto.unwrap_or(0.0) / 100.0),
+                valor_pedido * (self.valor_desconto.unwrap_or(Decimal::ZERO) / Decimal::from(100)),
                 None,
             ),
-            "valor_fixo"   => self.valor_desconto.unwrap_or(0.0),
+            "valor_fixo"   => self.valor_desconto.unwrap_or(Decimal::ZERO),
             "frete_gratis" => valor_frete,
-            _              => 0.0,
+            _              => Decimal::ZERO,
         }
     }
 
@@ -214,7 +215,7 @@ impl Cupom {
     }
 }
 
-fn valor_desconto_com_limite(desconto: f64, maximo: Option<f64>) -> f64 {
+fn valor_desconto_com_limite(desconto: Decimal, maximo: Option<Decimal>) -> Decimal {
     if let Some(max) = maximo {
         desconto.min(max)
     } else {
@@ -230,7 +231,7 @@ pub struct UsoCupom {
     pub cupom_uuid: Uuid,
     pub usuario_uuid: Uuid,
     pub pedido_uuid: Uuid,
-    pub valor_desconto: f64,
+    pub valor_desconto: Decimal,
     pub usado_em: String,
 }
 
@@ -239,7 +240,7 @@ impl UsoCupom {
         cupom_uuid: Uuid,
         usuario_uuid: Uuid,
         pedido_uuid: Uuid,
-        valor_desconto: f64,
+        valor_desconto: Decimal,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
@@ -260,8 +261,8 @@ pub struct Promocao {
     pub nome: String,
     pub descricao: String,
     pub tipo_desconto: String,
-    pub valor_desconto: Option<f64>,
-    pub valor_minimo: Option<f64>,
+    pub valor_desconto: Option<Decimal>,
+    pub valor_minimo: Option<Decimal>,
     pub data_inicio: String,
     pub data_fim: String,
     pub dias_semana_validos: Option<Vec<i32>>,
@@ -279,8 +280,8 @@ impl Promocao {
         nome: String,
         descricao: String,
         tipo_desconto: String,
-        valor_desconto: Option<f64>,
-        valor_minimo: Option<f64>,
+        valor_desconto: Option<Decimal>,
+        valor_minimo: Option<Decimal>,
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
@@ -319,7 +320,7 @@ impl Promocao {
         }
     }
 
-    pub fn eh_aplicavel(&self, valor_pedido: f64, data_hora: String, dia_semana: u8) -> bool {
+    pub fn eh_aplicavel(&self, valor_pedido: Decimal, data_hora: String, dia_semana: u8) -> bool {
         if self.status != StatusCupom::Ativo {
             return false;
         }
@@ -340,12 +341,12 @@ impl Promocao {
         true
     }
 
-    pub fn calcular_desconto(&self, valor_pedido: f64, valor_frete: f64) -> f64 {
+    pub fn calcular_desconto(&self, valor_pedido: Decimal, valor_frete: Decimal) -> Decimal {
         match self.tipo_desconto.as_str() {
-            "percentual"   => valor_pedido * (self.valor_desconto.unwrap_or(0.0) / 100.0),
-            "valor_fixo"   => self.valor_desconto.unwrap_or(0.0),
+            "percentual"   => valor_pedido * (self.valor_desconto.unwrap_or(Decimal::ZERO) / Decimal::from(100)),
+            "valor_fixo"   => self.valor_desconto.unwrap_or(Decimal::ZERO),
             "frete_gratis" => valor_frete,
-            _              => 0.0,
+            _              => Decimal::ZERO,
         }
     }
 

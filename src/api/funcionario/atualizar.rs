@@ -2,6 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http
 use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
+use rust_decimal::prelude::*;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
@@ -34,6 +35,18 @@ pub async fn atualizar_funcionario(
         usuario,
         loja_uuid,
     );
-    uc.atualizar_funcionario(uuid, p.usuario_uuid, p.nome, p.email, p.senha, p.celular, p.telefone, p.cargo, p.salario, p.data_admissao).await?;
+
+    uc.atualizar_funcionario(
+        uuid,
+        p.usuario_uuid,
+        p.nome,
+        p.email,
+        p.senha,
+        p.celular,
+        p.telefone,
+        p.cargo,
+        p.salario.map(|v| Decimal::from_f64(v).unwrap_or(Decimal::ZERO)),
+        p.data_admissao,
+    ).await?;
     Ok(StatusCode::NO_CONTENT)
 }

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use uuid::Uuid;
+use rust_decimal::Decimal;
 
 use crate::models::{
     Adicional, CategoriaProdutos, Produto
@@ -34,7 +35,7 @@ impl CatalogoService {
         nome: String,
         loja_uuid: Uuid,
         descricao: String,
-        preco: f64,
+        preco: Decimal,
     ) -> Result<Adicional, String> {
 
         let adicional = Adicional::new(
@@ -73,7 +74,7 @@ impl CatalogoService {
         &self,
         nome: String,
         descricao: Option<String>,
-        preco: f64,
+        preco: Decimal,
         categoria_uuid: Uuid,
         loja_uuid: Uuid,
         tempo_preparo_min: Option<i32>,
@@ -105,7 +106,7 @@ impl CatalogoService {
         produto_uuid: Uuid,
         nome: String,
         descricao: Option<String>,
-        preco: f64,
+        preco: Decimal,
         categoria_uuid: Uuid,
         tempo_preparo_min: Option<i32>,
     ) -> Result<Produto, String> {

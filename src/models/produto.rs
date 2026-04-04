@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
+use rust_decimal::Decimal;
 
 use crate::models::Model;
 
@@ -12,7 +13,7 @@ pub struct Produto {
     pub categoria_uuid: Uuid,
     pub nome: String,
     pub descricao: Option<String>,
-    pub preco: f64,
+    pub preco: Decimal,
     pub imagem_url: Option<String>,
     pub disponivel: bool,
     pub tempo_preparo_min: Option<i32>,
@@ -25,7 +26,7 @@ impl Produto {
     pub fn new(
         nome: String,
         descricao: Option<String>,
-        preco: f64,
+        preco: Decimal,
         categoria_uuid: Uuid,
         loja_uuid: Uuid,
         tempo_preparo_min: Option<i32>,
