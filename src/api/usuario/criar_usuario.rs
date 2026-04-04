@@ -18,7 +18,8 @@ pub async fn criar_usuario(
         p.senha,
         p.email,
         p.telefone,
-        p.auth_method
+        p.auth_method,
+        p.classe
     ).await?;
 
     Ok(Json(usuario))

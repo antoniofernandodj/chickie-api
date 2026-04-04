@@ -1,19 +1,27 @@
 use axum::{
-    extract::{State},
+    extract::{State, Extension},
     response::{IntoResponse},
     Json
 };
 
 
 use std::sync::Arc;
-use crate::{api::{CreateLojaRequest, dto::AppError}, models::{TipoCalculoPedido}};
+use crate::{api::{CreateLojaRequest, dto::AppError}, models::{TipoCalculoPedido, Usuario}};
 use crate::api::AppState;
 
 
 pub async fn criar_loja(
     State(state): State<Arc<AppState>>,
+    Extension(usuario): Extension<Usuario>,
     Json(p): Json<CreateLojaRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+
+    // Apenas administradores podem criar lojas
+    if !usuario.is_administrador() {
+        return Err(AppError::Unauthorized(
+            "Apenas administradores podem criar lojas".to_string()
+        ));
+    }
 
     let loja = state
         .loja_service
@@ -33,7 +41,7 @@ pub async fn criar_loja(
             p.max_partes,
             TipoCalculoPedido::MaisCaro
         )
-        .await?; 
+        .await?;
 
     Ok(Json(loja))
 }

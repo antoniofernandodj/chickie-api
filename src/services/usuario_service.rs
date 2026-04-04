@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use bcrypt::{DEFAULT_COST, hash, verify};
-use jsonwebtoken::crypto::CryptoProvider;
-use crate::models::Usuario;
+use crate::models::{Usuario, ClasseUsuario};
 use crate::repositories::{UsuarioRepository, Repository as _};
 
 pub struct UsuarioService {
@@ -18,11 +17,17 @@ impl UsuarioService {
         email: String,
         telefone: String,
         auth_method: String,
+        classe: Option<String>,
     ) -> Result<Usuario, String> {
 
         // Dentro do registrar...
         let senha_hash = hash(senha, DEFAULT_COST)
             .map_err(|e| e.to_string())?;
+
+        // Parse classe: default = "cliente"
+        let classe_str = classe.as_deref().unwrap_or("cliente");
+        let classe = ClasseUsuario::from_str(classe_str)
+            .map_err(|e| format!("Classe de usuário inválida: {}", e))?;
 
         let usuario = Usuario::new(
             nome,
@@ -30,19 +35,20 @@ impl UsuarioService {
             email,
             senha_hash,
             telefone,
-            auth_method
+            auth_method,
+            classe
         );
 
         self.repo.criar(&usuario).await?;
-        
+
         // Exemplo de verificação pós-criação
         if let Some(u) = self
             .repo
             .buscar_por_email(&usuario.email)
             .await? {
-                println!("Usuário confirmado no banco: {:?}", u.nome);
+                tracing::info!("Usuário confirmado no banco: {:?} (classe: {})", u.nome, u.classe);
             }
-        
+
         Ok(usuario)
     }
 

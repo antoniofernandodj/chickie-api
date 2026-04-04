@@ -4,6 +4,43 @@ use uuid::Uuid;
 
 use crate::{models::Model, utils::agora};
 
+// ===========================================================================
+// ClasseUsuario — define o papel do usuário no sistema
+// ===========================================================================
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum ClasseUsuario {
+    Cliente,
+    Administrador,
+}
+
+impl ClasseUsuario {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Cliente => "cliente",
+            Self::Administrador => "administrador",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Result<Self, String> {
+        match s {
+            "cliente" => Ok(Self::Cliente),
+            "administrador" => Ok(Self::Administrador),
+            other => Err(format!("ClasseUsuario inválida: '{}'", other)),
+        }
+    }
+}
+
+impl std::fmt::Display for ClasseUsuario {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+// ===========================================================================
+// Usuario
+// ===========================================================================
+
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Usuario {
     pub nome: String,
@@ -12,9 +49,10 @@ pub struct Usuario {
     pub celular: String,
     pub criado_em: String,
     pub atualizado_em: String,
-    
+
     pub modo_de_cadastro: String,
-    
+    pub classe: String,  // "cliente" | "administrador"
+
     pub telefone: Option<String>,
     pub senha_hash: String,
     pub uuid: Uuid,
@@ -30,6 +68,7 @@ impl Usuario {
         senha_hash: String,
         celular: String,
         modo_de_cadastro: String,
+        classe: ClasseUsuario,
     ) -> Self {
 
         Self {
@@ -40,6 +79,7 @@ impl Usuario {
             criado_em: agora(),
             atualizado_em: agora(),
             modo_de_cadastro,
+            classe: classe.as_str().to_string(),
 
             telefone: None,
             senha_hash,
@@ -47,6 +87,11 @@ impl Usuario {
             ativo: true,
             passou_pelo_primeiro_acesso: false,
         }
+    }
+
+    /// Verifica se este usuário é um administrador
+    pub fn is_administrador(&self) -> bool {
+        self.classe == ClasseUsuario::Administrador.as_str()
     }
 }
 

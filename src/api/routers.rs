@@ -39,8 +39,12 @@ pub fn auth_routes() -> Router<Arc<AppState>> {
 
 pub fn loja_routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/", post(criar_loja))
         .route("/", get(listar_lojas))
+}
+
+pub fn loja_admin_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/", post(criar_loja))
 }
 
 pub fn pedido_routes() -> Router<Arc<AppState>> {
@@ -76,6 +80,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/lojas", loja_routes())
         .nest("/produtos", produto_routes())
         .nest("/cupons", marketing_routes())
+        .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())
         // ⚠️ Development-only: no auth, wipes ALL data

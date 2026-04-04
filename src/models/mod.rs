@@ -29,7 +29,7 @@ pub use categoria::{
 };
 
 pub use cliente::Cliente;
-pub use usuario::{Usuario};
+pub use usuario::{Usuario, ClasseUsuario};
 pub use loja::Loja;
 pub use pedido::{Pedido, EstadoDePedido, ItemPedido, AdicionalDeItemDePedido};
 pub use ingrediente::Ingrediente;

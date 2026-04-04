@@ -10,6 +10,7 @@ pub struct CreateUsuarioRequest {
     pub email: String,
     pub telefone: String,
     pub auth_method: String,
+    pub classe: Option<String>,  // "cliente" (default) | "administrador"
 }
 
 #[derive(Deserialize)]
@@ -104,8 +105,8 @@ use serde_json::json;
 pub enum AppError {
     NotFound(String),
     Internal(String),
-    BadRequest(String)
-    // Adicione outros como BadRequest, Unauthorized, etc.
+    BadRequest(String),
+    Unauthorized(String),
 }
 
 // O "pulo do gato": transforma seu erro em uma resposta do Axum automaticamente
@@ -115,6 +116,7 @@ impl IntoResponse for AppError {
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::Unauthorized(msg) => (StatusCode::FORBIDDEN, msg),
         };
 
         let body = Json(json!({ "error": message }));

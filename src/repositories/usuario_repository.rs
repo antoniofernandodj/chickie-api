@@ -42,8 +42,8 @@ impl Repository<Usuario> for UsuarioRepository {
 
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, telefone, celular, criado_em, atualizado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, telefone, celular, classe, criado_em, atualizado_em)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
         ")
         .bind(&item.uuid)
         .bind(&item.nome)
@@ -52,6 +52,7 @@ impl Repository<Usuario> for UsuarioRepository {
         .bind(&item.senha_hash)
         .bind(&item.telefone)
         .bind(&item.celular)
+        .bind(&item.classe)
         .bind(&item.criado_em)
         .bind(&item.atualizado_em)
         .execute(self.pool())
@@ -65,13 +66,14 @@ impl Repository<Usuario> for UsuarioRepository {
     async fn atualizar(&self, item: Usuario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, telefone = $4, atualizado_em = $5
-            WHERE uuid = $6
+            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, telefone = $4, classe = $5, atualizado_em = $6
+            WHERE uuid = $7
         ")
         .bind(&item.username)
         .bind(&item.email)
         .bind(&item.senha_hash)
         .bind(&item.telefone)
+        .bind(&item.classe)
         .bind(&item.atualizado_em)
         .bind(uuid)
         .execute(self.pool())

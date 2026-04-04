@@ -172,8 +172,8 @@ Cada repositório implementa também:
 | Todas sob `/api`                | `POST /api/pedidos`                        |
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
-| Auth via middleware             | Aplicado em `/pedidos`, `/usuarios`, `/lojas`, `/produtos`, `/cupons` |
-| Sem auth                        | `/auth/*`, `/wipe`, `/ok`                  |
+| Auth via middleware             | Aplicado em `/pedidos`, `/usuarios`, `/lojas`, `/produtos`, `/cupons`, `/admin` |
+| Sem auth                        | `/auth/*`, `/wipe`, `/ok`, `GET /api/lojas/`                  |
 
 ### AppState
 
@@ -244,9 +244,10 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 
 #### Usuários & Autenticação
 
-| Entidade   | Descrição                                              |
-|------------|--------------------------------------------------------|
-| `Usuario`  | Usuário do sistema (cliente, entregador ou admin). Admin pode cadastrar uma ou mais lojas. |
+| Entidade         | Descrição                                                                                         |
+|------------------|---------------------------------------------------------------------------------------------------|
+| `Usuario`        | Usuário do sistema. Possui campo `classe`: **`cliente`** ou **`administrador`**.                  |
+| `ClasseUsuario`  | Enum com duas variantes: `Cliente` (padrão) e `Administrador`. Apenas admins podem criar lojas.   |
 
 #### Lojas & Catálogo
 
@@ -321,8 +322,8 @@ Pedido {
 #### 1. Cadastro de Loja (Admin)
 
 ```
-Admin → cadastra-se como usuário
-     → cadastra sua loja (dados, logo, slug, etc.)
+Admin → cadastra-se como usuário (classe: "administrador")
+     → cria sua loja via POST /api/admin/lojas (requer JWT de admin)
      → configura catálogo (categorias, produtos, ingredientes, adicionais)
      → define horários de funcionamento
      → cria promoções
@@ -332,7 +333,7 @@ Admin → cadastra-se como usuário
 #### 2. Navegação e Pedido (Cliente)
 
 ```
-Cliente → cadastra-se como usuário
+Cliente → cadastra-se como usuário (classe: "cliente", padrão)
         → segue lojas preferidas (cria Cliente)
         → acessa página da loja
         → navega catálogo (apenas produtos/adicional ativos)
@@ -366,6 +367,8 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Regra | Detalhe |
 |-------|---------|
+| Classe de usuário | `cliente` (padrão) ou `administrador`. Definida no signup via campo `classe`. |
+| Criar loja | Apenas usuários com `classe = "administrador"` podem criar lojas (`POST /api/admin/lojas`). |
 | Produtos/Adicionais inativos | Não são exibidos no catálogo |
 | Avaliação de produto | Só via pedido autenticado (evite avaliação fraudulenta) |
 | Ingredientes | Não são adicionáveis pelo usuário; servem para descrever o produto |
@@ -388,6 +391,8 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-03  | `ClasseUsuario` adicionada ao `Usuario` (cliente/admin) |
+| 2026-04-03  | Endpoint `POST /api/admin/lojas` protegido por auth + verificação de admin |
 | 2026-04-03  | Repositórios extraídos para módulo com trait defaults |
 | 2026-04-03  | SQL queries otimizadas (indentação compacta)       |
 | 2026-04-03  | Endpoint `DELETE /api/wipe` criado (dev only)      |

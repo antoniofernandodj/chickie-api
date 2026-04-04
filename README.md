@@ -85,10 +85,10 @@ Todos os endpoints vivem sob `/api`.
 
 ### Lojas
 
-| Método  | Rota           | Descrição        | Auth |
-|---------|----------------|------------------|------|
-| `POST`  | `/api/lojas/`  | Criar loja       | ✅   |
-| `GET`   | `/api/lojas/`  | Listar lojas     | ❌   |
+| Método  | Rota                | Descrição        | Auth | Classe |
+|---------|---------------------|------------------|------|--------|
+| `POST`  | `/api/admin/lojas`  | Criar loja       | ✅   | Admin  |
+| `GET`   | `/api/lojas/`       | Listar lojas     | ❌   | —      |
 
 ### Produtos
 
@@ -184,15 +184,62 @@ src/
 
 ---
 
-## 🔑 Autenticação
+## 🔑 Autenticação & Autorização
 
-A API usa **JWT (JSON Web Token)** para autenticação:
+A API usa **JWT (JSON Web Token)** para autenticação e **classe de usuário** para autorização.
 
-1. `POST /api/auth/signup` — cria usuário e retorna token
+### Classes de Usuário
+
+| Classe | Descrição |
+|--------|-----------|
+| `cliente` | Padrão. Pode navegar lojas, fazer pedidos e avaliar. |
+| `administrador` | Pode criar lojas e gerenciar catálogos. |
+
+### Fluxo
+
+1. `POST /api/auth/signup` — cria usuário com `classe` (opcional, padrão: `"cliente"`)
 2. `POST /api/auth/login` — autentica com email/senha, retorna token
 3. Inclua o token no header: `Authorization: Bearer <token>`
 
-Rotas protegidas: pedidos, criação de produtos, cupons, avaliações.
+### Exemplo de Signup
+
+**Criar cliente:**
+```json
+POST /api/auth/signup
+{
+  "nome": "João Silva",
+  "username": "joao",
+  "email": "joao@email.com",
+  "senha": "senha123",
+  "telefone": "11999999999",
+  "auth_method": "email"
+}
+```
+
+**Criar administrador:**
+```json
+POST /api/auth/signup
+{
+  "nome": "Maria Admin",
+  "username": "maria",
+  "email": "maria@email.com",
+  "senha": "senha123",
+  "telefone": "11888888888",
+  "auth_method": "email",
+  "classe": "administrador"
+}
+```
+
+### Endpoints Protegidos por Classe
+
+| Endpoint | Auth | Classe |
+|----------|------|--------|
+| `POST /api/admin/lojas` | ✅ JWT | `administrador` |
+| `POST /api/pedidos` | ✅ JWT | Qualquer |
+| `POST /api/produtos` | ✅ JWT | Qualquer |
+| `POST /api/cupons` | ✅ JWT | Qualquer |
+| `POST /api/cupons/{loja_uuid}/avaliar-loja` | ✅ JWT | Qualquer |
+| `GET /api/lojas` | ❌ | — |
 
 ---
 

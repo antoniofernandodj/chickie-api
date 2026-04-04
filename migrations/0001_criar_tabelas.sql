@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefone TEXT,
     celular TEXT NOT NULL,
     modo_de_cadastro TEXT NOT NULL DEFAULT 'email',
+    classe TEXT NOT NULL DEFAULT 'cliente' CHECK (classe IN ('cliente', 'administrador')),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     passou_pelo_primeiro_acesso BOOLEAN NOT NULL DEFAULT FALSE,
     criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
