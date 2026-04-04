@@ -242,6 +242,20 @@ Cada repositório implementa também:
 | `PUT` | `/api/ingredientes/{loja_uuid}/{uuid}` | Atualizar ingrediente |
 | `DELETE` | `/api/ingredientes/{loja_uuid}/{uuid}` | Deletar ingrediente |
 
+#### Funcionários (🔒)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `PUT` | `/api/funcionarios/{loja_uuid}/{uuid}` | Atualizar funcionário (inclui campos de usuário opcionais) |
+| `PUT` | `/api/funcionarios/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
+
+#### Entregadores (🔒)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
+| `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
+
 #### Catálogo (auth required)
 
 | Método | Rota | Descrição |

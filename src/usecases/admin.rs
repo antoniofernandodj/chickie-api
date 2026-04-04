@@ -87,8 +87,11 @@ impl AdminUsecase {
     pub async fn listar_funcionarios(&self) -> Result<Vec<Funcionario>, String> {
         self.funcionario_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, cargo: Option<String>, salario: Option<f64>, data_admissao: String) -> Result<(), String> {
-        self.funcionario_service.atualizar(uuid, usuario_uuid, cargo, salario, data_admissao).await
+    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<f64>, data_admissao: String) -> Result<(), String> {
+        self.funcionario_service.atualizar(uuid, usuario_uuid, nome, email, senha, celular, telefone, cargo, salario, data_admissao).await
+    }
+    pub async fn funcionario_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
+        self.funcionario_service.trocar_email_senha(usuario_uuid, novo_email, nova_senha).await
     }
     pub async fn deletar_funcionario(&self, uuid: Uuid) -> Result<(), String> {
         self.funcionario_service.deletar(uuid).await
@@ -98,8 +101,11 @@ impl AdminUsecase {
     pub async fn listar_entregadores(&self) -> Result<Vec<Entregador>, String> {
         self.entregador_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_entregador(&self, uuid: Uuid, veiculo: Option<String>, placa: Option<String>) -> Result<(), String> {
-        self.entregador_service.atualizar(uuid, veiculo, placa).await
+    pub async fn atualizar_entregador(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, celular: Option<String>, telefone: Option<String>, veiculo: Option<String>, placa: Option<String>) -> Result<(), String> {
+        self.entregador_service.atualizar(uuid, usuario_uuid, nome, celular, telefone, veiculo, placa).await
+    }
+    pub async fn entregador_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
+        self.entregador_service.trocar_email_senha(usuario_uuid, novo_email, nova_senha).await
     }
     pub async fn definir_entregador_disponivel(&self, uuid: Uuid, disponivel: bool) -> Result<(), String> {
         self.entregador_service.definir_disponivel(uuid, disponivel).await

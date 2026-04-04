@@ -22,6 +22,10 @@ use crate::api::{
     listar_ingredientes,
     atualizar_ingrediente,
     deletar_ingrediente,
+    atualizar_funcionario,
+    funcionario_trocar_email_senha,
+    atualizar_entregador,
+    entregador_trocar_email_senha,
     listar_usuarios,
     criar_produto,
     listar_produtos,
@@ -141,6 +145,18 @@ pub fn ingrediente_routes() -> Router<Arc<AppState>> {
         .route("/{loja_uuid}/{uuid}", delete(deletar_ingrediente))
 }
 
+pub fn funcionario_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}/{uuid}", put(atualizar_funcionario))
+        .route("/{loja_uuid}/usuarios/{usuario_uuid}/credenciais", put(funcionario_trocar_email_senha))
+}
+
+pub fn entregador_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}/{uuid}", put(atualizar_entregador))
+        .route("/{loja_uuid}/usuarios/{usuario_uuid}/credenciais", put(entregador_trocar_email_senha))
+}
+
 pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_produto))
@@ -176,6 +192,8 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/enderecos-usuario", endereco_usuario_routes())
         .nest("/favoritos", loja_favorita_routes())
         .nest("/ingredientes", ingrediente_routes())
+        .nest("/funcionarios", funcionario_routes())
+        .nest("/entregadores", entregador_routes())
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())

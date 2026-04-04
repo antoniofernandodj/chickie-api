@@ -31,8 +31,8 @@ _(nenhum bug conhecido)_
 | 7 | **CRUD de ingredientes** | ✅ Criar, listar, atualizar, deletar implementados. | — |
 | 8 | **CRUD de horários de funcionamento** | Service + Usecase prontos. Faltam handlers e rotas. | Baixa |
 | 9 | **CRUD de configurações de pedido** | Service + Usecase prontos. Faltam handlers e rotas. | Baixa |
-| 10 | **CRUD de funcionários** | Service + Usecase prontos. Faltam handlers e rotas (listar, atualizar, deletar). | Média |
-| 11 | **CRUD de entregadores** | Service + Usecase prontos. Faltam handlers e rotas (listar, atualizar, deletar, set_disponivel). | Média |
+| 10 | **CRUD de funcionários** | ✅ Listar e atualizar implementados. Faltam handler de criar e deletar. | — |
+| 11 | **CRUD de entregadores** | ✅ Listar, atualizar e set_disponivel implementados. Faltam handler de criar e deletar. | — |
 | 12 | **CRUD de cupons (admin)** | Service + Usecase prontos. Faltam handlers e rotas (atualizar, deletar). | Média |
 | 13 | **Pagamentos** | Tabela e endpoints para registrar pagamentos. | Alta (futuro) |
 | 14 | **Notificações push** | Sistema de notificações para status do pedido. | Baixa (futuro) |

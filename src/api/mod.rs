@@ -14,6 +14,8 @@ mod endereco_entrega;
 mod endereco_usuario;
 mod loja_favorita;
 mod ingrediente;
+mod funcionario;
+mod entregador;
 
 // Re-export usecases from the top-level module
 // pub use crate::usecases::{
@@ -87,6 +89,16 @@ pub use ingrediente::{
     listar_ingredientes,
     atualizar_ingrediente,
     deletar_ingrediente
+};
+
+pub use funcionario::{
+    atualizar_funcionario,
+    funcionario_trocar_email_senha
+};
+
+pub use entregador::{
+    atualizar_entregador,
+    entregador_trocar_email_senha
 };
 
 pub use catalogo::{

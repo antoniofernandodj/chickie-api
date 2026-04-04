@@ -196,13 +196,15 @@ impl AppState {
 
         let funcionario_service = Arc::new(
             FuncionarioService::new(
-                Arc::new(FuncionarioRepository::new(pool.clone()))
+                Arc::new(FuncionarioRepository::new(pool.clone())),
+                Arc::clone(&usuario_repo)
             )
         );
 
         let entregador_service = Arc::new(
             EntregadorService::new(
-                Arc::new(EntregadorRepository::new(pool.clone()))
+                Arc::new(EntregadorRepository::new(pool.clone())),
+                Arc::clone(&usuario_repo)
             )
         );
 

@@ -121,6 +121,20 @@ Todos os endpoints vivem sob `/api`.
 | `PUT`  | `/api/ingredientes/{loja_uuid}/{uuid}`   | Atualizar ingrediente | ✅ |
 | `DELETE`| `/api/ingredientes/{loja_uuid}/{uuid}`  | Deletar ingrediente| ✅   |
 
+### Funcionários (auth required)
+
+| Método | Rota                                                    | Descrição                | Auth |
+|--------|---------------------------------------------------------|--------------------------|------|
+| `PUT`  | `/api/funcionarios/{loja_uuid}/{uuid}`                  | Atualizar funcionário    | ✅   |
+| `PUT`  | `/api/funcionarios/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha | ✅   |
+
+### Entregadores (auth required)
+
+| Método | Rota                                                    | Descrição                | Auth |
+|--------|---------------------------------------------------------|--------------------------|------|
+| `PUT`  | `/api/entregadores/{loja_uuid}/{uuid}`                  | Atualizar entregador     | ✅   |
+| `PUT`  | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha | ✅   |
+
 ### Catálogo (auth required)
 
 | Método | Rota                                     | Descrição              | Auth |
