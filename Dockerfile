@@ -46,4 +46,4 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 3000
-CMD ["/app/chickie"]
+CMD ["/app/chickie-api"]
