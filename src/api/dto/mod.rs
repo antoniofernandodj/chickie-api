@@ -22,7 +22,7 @@ pub struct CreateLojaRequest {
     pub telefone: Option<String>,
     pub hora_abertura: Option<String>,
     pub hora_fechamento: Option<String>,
-    pub dias_funcionamento: Option<String>,
+    pub dias_funcionamento: Option<Vec<i32>>,  // [0,1,2,3,4,5,6]
     pub tempo_medio: Option<i32>,
     pub nota_media: Option<f64>,
     pub taxa_entrega_base: Option<f64>,

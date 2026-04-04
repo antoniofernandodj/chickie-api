@@ -18,7 +18,7 @@ pub struct Loja {
     pub banner_url: Option<String>,
     pub horario_abertura: Option<NaiveTime>,
     pub horario_fechamento: Option<NaiveTime>,
-    pub dias_funcionamento: Option<String>,
+    pub dias_funcionamento: Option<Vec<i32>>,  // [0,1,2,3,4,5,6] → Domingo..Sábado
     pub tempo_preparo_min: Option<i32>,
     pub taxa_entrega: Option<f64>,
     pub valor_minimo_pedido: Option<f64>,
@@ -36,7 +36,7 @@ impl Loja {
         telefone: Option<String>,
         horario_abertura: Option<NaiveTime>,
         horario_fechamento: Option<NaiveTime>,
-        dias_funcionamento: Option<String>,
+        dias_funcionamento: Option<Vec<i32>>,
         tempo_preparo_min: Option<i32>,
         taxa_entrega: Option<f64>,
         valor_minimo_pedido: Option<f64>,

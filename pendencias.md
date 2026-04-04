@@ -27,6 +27,7 @@ _(nenhum bug conhecido)_
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
+| 15 | **Campos TIME com tipo correto** | `horario_abertura`/`horario_fechamento` (`loja`) e `abertura`/`fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. | 2026-04-05 |
 
 ## 📋 Funcionalidades Pendentes
 
@@ -56,8 +57,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 1 | 14 |
+| ✅ Concluídas | 2 | 14, 15 |
 | 📋 Features | 7 | 5–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 13 pendências ativas, 1 concluída recentemente**
+**Total: 13 pendências ativas, 2 concluídas recentemente**

@@ -66,7 +66,7 @@ impl LojaService {
         telefone: Option<String>,
         horario_abertura: Option<String>,
         horario_fechamento: Option<String>,
-        dias_funcionamento: Option<String>,
+        dias_funcionamento: Option<Vec<i32>>,
         tempo_preparo_min: Option<i32>,
         taxa_entrega: Option<f64>,
         valor_minimo_pedido: Option<f64>,
