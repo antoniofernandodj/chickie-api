@@ -13,10 +13,7 @@ impl EnderecoUsuarioRepository {
 
     /// Busca todos os enderecos registrados de um usuario
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
-        sqlx::query_as::<_, EnderecoUsuario>("
-            SELECT * FROM enderecos_usuario
-            WHERE usuario_uuid = $1;
-        ")
+        sqlx::query_as::<_, EnderecoUsuario>("SELECT * FROM enderecos_usuario WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -29,10 +26,7 @@ impl EnderecoUsuarioRepository {
         uuid: Uuid,
         usuario_uuid: Uuid
     ) -> Result<Option<EnderecoUsuario>, String> {
-        sqlx::query_as::<_, EnderecoUsuario>("
-            SELECT * FROM enderecos_usuario
-            WHERE uuid = $1 AND usuario_uuid = $2;
-        ")
+        sqlx::query_as::<_, EnderecoUsuario>("SELECT * FROM enderecos_usuario WHERE uuid = $1 AND usuario_uuid = $2")
         .bind(uuid)
         .bind(usuario_uuid)
         .fetch_optional(&*self.pool)
@@ -74,11 +68,7 @@ impl<'a> Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
     async fn atualizar(&self, item: EnderecoUsuario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE enderecos_usuario
-            SET
-                usuario_uuid = $1, cep = $2, logradouro = $3, numero = $4,
-                complemento = $5, bairro = $6, cidade = $7, estado = $8,
-                latitude = $9, longitude = $10
+            UPDATE enderecos_usuario SET usuario_uuid = $1, cep = $2, logradouro = $3, numero = $4, complemento = $5, bairro = $6, cidade = $7, estado = $8, latitude = $9, longitude = $10
             WHERE uuid = $11
         ")
         .bind(item.usuario_uuid)

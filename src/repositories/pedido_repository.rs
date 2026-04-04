@@ -10,9 +10,7 @@ impl PedidoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE usuario_uuid = $1;
-        ")
+        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -20,9 +18,7 @@ impl PedidoRepository {
     }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -31,7 +27,7 @@ impl PedidoRepository {
 
     pub async fn buscar_por_status(&self, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>(
-            "SELECT * FROM pedidos WHERE status = $1;"
+            "SELECT * FROM pedidos WHERE status = $1"
         )
         .bind(status.to_string())
         .fetch_all(&*self.pool)
@@ -40,10 +36,7 @@ impl PedidoRepository {
     }
 
     pub async fn buscar_pendentes(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos
-            WHERE loja_uuid = $1 AND (status = $2 OR status = $3)
-        ")
+        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1 AND (status = $2 OR status = $3)")
         .bind(loja_uuid)
         .bind(EstadoDePedido::EmPreparo.to_string())
         .bind(EstadoDePedido::Criado.to_string())
@@ -58,9 +51,7 @@ impl PedidoRepository {
         uuid: Uuid,
     ) -> Result<Option<Pedido>, String> {
         // 1. Busca o pedido base
-        let mut pedido = match sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos WHERE uuid = $1
-        ")
+        let mut pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1")
         .bind(uuid)
         .fetch_optional(&*self.pool)
         .await
@@ -71,11 +62,7 @@ impl PedidoRepository {
         };
 
         // 2. Busca todos os itens do pedido
-        let mut itens = sqlx::query_as::<_, ItemPedido>("
-            SELECT * FROM itens_pedido
-            WHERE pedido_uuid = $1
-            ORDER BY criado_em ASC;
-        ")
+        let mut itens = sqlx::query_as::<_, ItemPedido>("SELECT * FROM itens_pedido WHERE pedido_uuid = $1 ORDER BY criado_em ASC")
         .bind(uuid)
         .fetch_all(&*self.pool)
         .await
@@ -95,11 +82,7 @@ impl PedidoRepository {
         item: &ItemPedido,
     ) -> Result<Vec<ParteDeItemPedido>, std::string::String> {
 
-        let partes = sqlx::query_as::<_, ParteDeItemPedido>("
-            SELECT * FROM partes_item_pedido
-            WHERE item_uuid = $1
-            ORDER BY posicao ASC;
-        ")
+        let partes = sqlx::query_as::<_, ParteDeItemPedido>("SELECT * FROM partes_item_pedido WHERE item_uuid = $1 ORDER BY posicao ASC")
         .bind(item.uuid)
         .fetch_all(&*self.pool)
         .await
@@ -113,10 +96,7 @@ impl PedidoRepository {
         item: &ItemPedido
     ) -> Result<Vec<AdicionalDeItemDePedido>, String> {
 
-        let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>("
-            SELECT * FROM adicionais_item_pedido
-            WHERE item_uuid = $1;
-        ")
+        let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>("SELECT * FROM adicionais_item_pedido WHERE item_uuid = $1")
         .bind(item.uuid)
         .fetch_all(&*self.pool)
         .await
@@ -130,11 +110,7 @@ impl PedidoRepository {
         &self,
         loja_uuid: Uuid,
     ) -> Result<Vec<Pedido>, String> {
-        let pedidos = sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos
-            WHERE loja_uuid = $1
-            ORDER BY criado_em DESC;
-        ")
+        let pedidos = sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1 ORDER BY criado_em DESC")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -147,11 +123,7 @@ impl PedidoRepository {
         &self,
         usuario_uuid: Uuid,
     ) -> Result<Vec<Pedido>, String> {
-        let pedidos = sqlx::query_as::<_, Pedido>("
-            SELECT * FROM pedidos
-            WHERE usuario_uuid = $1
-            ORDER BY criado_em DESC;
-        ")
+        let pedidos = sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE usuario_uuid = $1 ORDER BY criado_em DESC")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -176,11 +148,7 @@ impl PedidoRepository {
             .collect();
 
         let mut itens = // Seguro e idiomatico PostgreSQL
-            sqlx::query_as::<_, ItemPedido>("
-                SELECT * FROM itens_pedido
-                WHERE pedido_uuid = ANY($1)
-                ORDER BY pedido_uuid, criado_em ASC;
-            ")
+            sqlx::query_as::<_, ItemPedido>("SELECT * FROM itens_pedido WHERE pedido_uuid = ANY($1) ORDER BY pedido_uuid, criado_em ASC")
             .bind(&uuids_pedidos)  // &[Uuid]
             .fetch_all(&*self.pool)
             .await
@@ -194,19 +162,16 @@ impl PedidoRepository {
                 .collect();
             let placeholder_itens = uuids_itens.join(", ");
 
-            let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>(&format!("
-                SELECT * FROM adicionais_item_pedido
-                WHERE item_uuid IN ({});
-            ", placeholder_itens))
+            let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>(&format!(
+                "SELECT * FROM adicionais_item_pedido WHERE item_uuid IN ({})", placeholder_itens
+            ))
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| e.to_string())?;
 
-            let partes = sqlx::query_as::<_, ParteDeItemPedido>(&format!("
-                SELECT * FROM partes_item_pedido
-                WHERE item_uuid IN ({})
-                ORDER BY item_uuid, posicao ASC;
-            ", placeholder_itens))
+            let partes = sqlx::query_as::<_, ParteDeItemPedido>(&format!(
+                "SELECT * FROM partes_item_pedido WHERE item_uuid IN ({}) ORDER BY item_uuid, posicao ASC", placeholder_itens
+            ))
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| e.to_string())?;
@@ -273,21 +238,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
         println!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
 
         sqlx::query("
-            INSERT INTO pedidos (
-                uuid,
-                usuario_uuid,
-                loja_uuid,
-                status,
-                total,
-                subtotal,
-                taxa_entrega,
-                desconto,
-                forma_pagamento,
-                observacoes,
-                tempo_estimado_min,
-                criado_em,
-                atualizado_em
-            )
+            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min, criado_em, atualizado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ")
         .bind(&pedido.uuid)
@@ -315,20 +266,8 @@ impl<'a> Repository<Pedido> for PedidoRepository {
         for i in pedido.itens.iter() {
             // 1. Inserir o Item
             sqlx::query("
-                INSERT INTO itens_pedido (
-                    uuid,
-                    pedido_uuid,
-                    loja_uuid,
-                    quantidade,
-                    observacoes
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5
-                )
+                INSERT INTO itens_pedido (uuid, pedido_uuid, loja_uuid, quantidade, observacoes)
+                VALUES ($1, $2, $3, $4, $5)
             ")
             .bind(i.uuid)
             .bind(i.pedido_uuid)
@@ -345,24 +284,8 @@ impl<'a> Repository<Pedido> for PedidoRepository {
             if !i.partes.is_empty() {
                 for parte in i.partes.iter() {
                     sqlx::query("
-                        INSERT INTO partes_item_pedido (
-                            uuid,
-                            loja_uuid,
-                            item_uuid,
-                            produto_uuid,
-                            produto_nome,
-                            preco_unitario,
-                            posicao
-                        )
-                        VALUES (
-                            $1,
-                            $2,
-                            $3,
-                            $4,
-                            $5,
-                            $6,
-                            $7
-                        );
+                        INSERT INTO partes_item_pedido (uuid, loja_uuid, item_uuid, produto_uuid, produto_nome, preco_unitario, posicao)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7);
                     ")
                     .bind(&parte.uuid)
                     .bind(&parte.loja_uuid)
@@ -384,22 +307,8 @@ impl<'a> Repository<Pedido> for PedidoRepository {
             // 3. Inserir Adicionais
             for a in i.adicionais.iter() {
                 sqlx::query("
-                    INSERT INTO adicionais_item_pedido (
-                        uuid,
-                        item_uuid,
-                        loja_uuid,
-                        nome,
-                        descricao,
-                        preco
-                    )
-                    VALUES (
-                        $1,
-                        $2,
-                        $3,
-                        $4,
-                        $5,
-                        $6
-                    )
+                    INSERT INTO adicionais_item_pedido (uuid, item_uuid, loja_uuid, nome, descricao, preco)
+                    VALUES ($1, $2, $3, $4, $5, $6)
                 ")
                 .bind(a.uuid)
                 .bind(a.item_uuid)
@@ -429,17 +338,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
     async fn atualizar(&self, item: Pedido) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE pedidos
-            SET
-                status = $1,
-                total = $2,
-                subtotal = $3,
-                taxa_entrega = $4,
-                desconto = $5,
-                forma_pagamento = $6,
-                observacoes = $7,
-                tempo_estimado_min = $8,
-                atualizado_em = $9
+            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8, atualizado_em = $9
             WHERE uuid = $10
         ")
         .bind(item.status.to_string())
@@ -464,9 +363,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM pedidos WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM pedidos WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -487,10 +384,7 @@ impl<'a> Repository<Pedido> for PedidoRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("
-                SELECT * FROM pedidos
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

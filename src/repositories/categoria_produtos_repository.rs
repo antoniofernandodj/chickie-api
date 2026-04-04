@@ -13,10 +13,7 @@ impl CategoriaProdutosRepository {
         &self,
         loja_uuid: Uuid
     ) -> Result<Vec<CategoriaProdutos>, String> {
-        sqlx::query_as::<_, CategoriaProdutos>("
-            SELECT * FROM categorias_produtos
-            WHERE loja_uuid = $1
-        ")
+        sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -24,10 +21,7 @@ impl CategoriaProdutosRepository {
     }
 
     pub async fn buscar_por_nome(&self, nome: &str, loja_uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
-        sqlx::query_as::<_, CategoriaProdutos>("
-            SELECT * FROM categorias_produtos
-            WHERE loja_uuid = $1 AND nome = $2
-        ")
+        sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1 AND nome = $2")
         .bind(loja_uuid)
         .bind(nome)
         .fetch_optional(&*self.pool)
@@ -52,14 +46,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
 
     async fn criar(&self, item: &CategoriaProdutos) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO categorias_produtos (
-                uuid,
-                loja_uuid,
-                nome,
-                descricao,
-                ordem,
-                criado_em
-            )
+            INSERT INTO categorias_produtos (uuid, loja_uuid, nome, descricao, ordem, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6)
         ")
         .bind(item.uuid)
@@ -78,12 +65,8 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
     async fn atualizar(&self, item: CategoriaProdutos) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE categorias_produtos
-                SET loja_uuid = $1,
-                nome = $2,
-                descricao = $3,
-                ordem = $4
-             WHERE uuid = $5
+            UPDATE categorias_produtos SET loja_uuid = $1, nome = $2, descricao = $3, ordem = $4
+            WHERE uuid = $5
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -102,9 +85,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-                DELETE FROM categorias_produtos WHERE uuid = $1
-            ")
+        let result = sqlx::query("DELETE FROM categorias_produtos WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await
@@ -125,10 +106,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<CategoriaProdutos>, String> {
-        sqlx::query_as::<_, CategoriaProdutos>("
-                SELECT * FROM categorias_produtos
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

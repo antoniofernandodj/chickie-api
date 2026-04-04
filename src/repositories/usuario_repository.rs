@@ -10,9 +10,7 @@ impl UsuarioRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE email = $1;
-        ")
+        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE email = $1")
         .bind(email)
         .fetch_optional(&*self.pool)
         .await
@@ -20,9 +18,7 @@ impl UsuarioRepository {
     }
 
     pub async fn buscar_por_username(&self, username: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE username = $1;
-        ")
+        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE username = $1")
         .bind(username)
         .fetch_optional(&*self.pool)
         .await
@@ -30,9 +26,7 @@ impl UsuarioRepository {
     }
 
     pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("
-            SELECT * FROM usuarios WHERE telefone = $1;
-        ")
+        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE telefone = $1")
         .bind(telefone)
         .fetch_optional(&*self.pool)
         .await
@@ -56,17 +50,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
 
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO usuarios (
-                uuid,
-                nome,
-                username,
-                email,
-                senha_hash,
-                telefone,
-                celular,
-                criado_em,
-                atualizado_em
-            )
+            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, telefone, celular, criado_em, atualizado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
         ")
         .bind(&item.uuid)
@@ -89,13 +73,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
     async fn atualizar(&self, item: Usuario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE usuarios
-            SET
-                username = $1,
-                email = $2,
-                senha_hash = $3,
-                telefone = $4,
-                atualizado_em = $5
+            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, telefone = $4, atualizado_em = $5
             WHERE uuid = $6
         ")
         .bind(&item.username)
@@ -116,9 +94,7 @@ impl<'a> Repository<Usuario> for UsuarioRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-                DELETE FROM usuarios WHERE uuid = $1
-            ")
+        let result = sqlx::query("DELETE FROM usuarios WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await

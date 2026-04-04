@@ -14,10 +14,7 @@ impl ConfiguracaoPedidosLojaRepository {
         &self,
         loja_uuid: Uuid,
     ) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("
-            SELECT * FROM configuracoes_pedidos_loja
-            WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_optional(&*self.pool)
         .await
@@ -38,14 +35,7 @@ impl ConfiguracaoPedidosLojaRepository {
         }
 
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (
-                uuid,
-                loja_uuid,
-                max_partes,
-                tipo_calculo,
-                criado_em,
-                atualizado_em
-            )
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
             VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(config.uuid)
@@ -67,19 +57,9 @@ impl ConfiguracaoPedidosLojaRepository {
         config: &ConfiguracaoDePedidosLoja,
     ) -> Result<(), String> {
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (
-                uuid,
-                loja_uuid,
-                max_partes,
-                tipo_calculo,
-                criado_em,
-                atualizado_em
-            )
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
             VALUES ($1, $2, $3, $4, $5, $6)
-            ON CONFLICT (loja_uuid) DO UPDATE SET
-                max_partes   = excluded.max_partes,
-                tipo_calculo  = excluded.tipo_calculo,
-                atualizado_em = excluded.atualizado_em;
+            ON CONFLICT (loja_uuid) DO UPDATE SET max_partes = excluded.max_partes, tipo_calculo = excluded.tipo_calculo, atualizado_em = excluded.atualizado_em;
         ")
         .bind(config.uuid)
         .bind(config.loja_uuid)
@@ -130,11 +110,7 @@ impl ConfiguracaoPedidosLojaRepository {
         }
 
         let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja
-            SET
-                max_partes = $1,
-                atualizado_em = $2
-            WHERE loja_uuid = $3;
+            UPDATE configuracoes_pedidos_loja SET max_partes = $1, atualizado_em = $2 WHERE loja_uuid = $3;
         ")
         .bind(novo_max)
         .bind(agora())
@@ -167,14 +143,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
 
     async fn criar(&self, item: &ConfiguracaoDePedidosLoja) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (
-                uuid,
-                loja_uuid,
-                max_partes,
-                tipo_calculo,
-                criado_em,
-                atualizado_em
-            )
+            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo, criado_em, atualizado_em)
             VALUES ($1, $2, $3, $4, $5, $6);
         ")
         .bind(item.uuid)
@@ -193,12 +162,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
     async fn atualizar(&self, item: ConfiguracaoDePedidosLoja) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja
-            SET
-                loja_uuid = $1,
-                max_partes = $2,
-                tipo_calculo = $3,
-                atualizado_em = $4
+            UPDATE configuracoes_pedidos_loja SET loja_uuid = $1, max_partes = $2, tipo_calculo = $3, atualizado_em = $4
             WHERE uuid = $1
         ")
         .bind(item.loja_uuid)
@@ -218,9 +182,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM configuracoes_pedidos_loja WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM configuracoes_pedidos_loja WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -247,10 +209,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
         // Como ha apenas 1 configuracao por loja, retorna Vec com 0 ou 1 elemento
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("
-            SELECT * FROM configuracoes_pedidos_loja
-            WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await

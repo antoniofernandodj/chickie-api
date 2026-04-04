@@ -10,9 +10,7 @@ impl ClienteRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Cliente>, String> {
-        sqlx::query_as::<_, Cliente>("
-            SELECT * FROM clientes WHERE usuario_uuid = $1;
-        ")
+        sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -20,9 +18,7 @@ impl ClienteRepository {
     }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
-        sqlx::query_as::<_, Cliente>("
-            SELECT * FROM clientes WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -57,12 +53,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
 
     async fn criar(&self, item: &Cliente) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO clientes (
-                uuid,
-                usuario_uuid,
-                loja_uuid,
-                criado_em
-            )
+            INSERT INTO clientes (uuid, usuario_uuid, loja_uuid, criado_em)
             VALUES ($1, $2, $3, $4);
         ")
         .bind(item.uuid)
@@ -79,12 +70,8 @@ impl<'a> Repository<Cliente> for ClienteRepository {
     async fn atualizar(&self, item: Cliente) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query(
-            "UPDATE clientes
-            SET
-                usuario_uuid = $1,
-                loja_uuid = $2
-            WHERE uuid = $3
-        ")
+            "UPDATE clientes SET usuario_uuid = $1, loja_uuid = $2 WHERE uuid = $3"
+        )
         .bind(item.usuario_uuid)
         .bind(item.loja_uuid)
         .bind(uuid)
@@ -100,9 +87,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-                DELETE FROM clientes WHERE uuid = $1
-            ")
+        let result = sqlx::query("DELETE FROM clientes WHERE uuid = $1")
             .bind(uuid)
             .execute(&*self.pool)
             .await
@@ -123,10 +108,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
-        sqlx::query_as::<_, Cliente>("
-                SELECT * FROM clientes
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

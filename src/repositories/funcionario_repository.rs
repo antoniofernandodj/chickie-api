@@ -10,9 +10,7 @@ impl FuncionarioRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("
-            SELECT * FROM funcionarios WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -20,10 +18,7 @@ impl FuncionarioRepository {
     }
 
     pub async fn buscar_por_cargo(&self, cargo: &str, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("
-            SELECT * FROM funcionarios
-            WHERE loja_uuid = $1 AND cargo = $2
-        ")
+        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1 AND cargo = $2")
         .bind(loja_uuid)
         .bind(cargo)
         .fetch_all(&*self.pool)
@@ -32,10 +27,7 @@ impl FuncionarioRepository {
     }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("
-            SELECT * FROM funcionarios
-            WHERE email = $1;
-        ")
+        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE email = $1")
         .bind(email)
         .fetch_optional(&*self.pool)
         .await
@@ -59,16 +51,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
 
     async fn criar(&self, item: &Funcionario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO funcionarios (
-                uuid,
-                loja_uuid,
-                nome,
-                email,
-                cargo,
-                salario,
-                data_admissao,
-                criado_em
-            )
+            INSERT INTO funcionarios (uuid, loja_uuid, nome, email, cargo, salario, data_admissao, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ")
         .bind(item.uuid)
@@ -89,14 +72,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
     async fn atualizar(&self, item: Funcionario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE funcionarios
-            SET
-                loja_uuid = $1,
-                nome = $2,
-                email = $3,
-                cargo = $4,
-                salario = $5,
-                data_admissao = $6
+            UPDATE funcionarios SET loja_uuid = $1, nome = $2, email = $3, cargo = $4, salario = $5, data_admissao = $6
             WHERE uuid = $7
         ")
         .bind(item.loja_uuid)
@@ -118,9 +94,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM funcionarios WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM funcionarios WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -141,10 +115,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("
-                SELECT * FROM funcionarios
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

@@ -11,10 +11,7 @@ impl AvaliacaoDeProdutoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_produto(&self, produto_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-            SELECT * FROM avaliacoes_produto
-            WHERE produto_uuid = $1;
-        ")
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE produto_uuid = $1")
         .bind(produto_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -22,10 +19,7 @@ impl AvaliacaoDeProdutoRepository {
     }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-            SELECT * FROM avaliacoes_produto
-            WHERE usuario_uuid = $1;
-        ")
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -33,10 +27,7 @@ impl AvaliacaoDeProdutoRepository {
     }
 
     pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-            SELECT * FROM avaliacoes_produto
-            WHERE pedido_uuid = $1;
-        ")
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE pedido_uuid = $1")
         .bind(pedido_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -44,10 +35,7 @@ impl AvaliacaoDeProdutoRepository {
     }
 
     pub async fn calcular_media(&self, produto_uuid: Uuid) -> Result<f64, String> {
-        let result = sqlx::query("
-            SELECT AVG(nota) as media FROM avaliacoes_produto
-            WHERE produto_uuid = $1;
-        ")
+        let result = sqlx::query("SELECT AVG(nota) as media FROM avaliacoes_produto WHERE produto_uuid = $1")
         .bind(produto_uuid)
         .fetch_one(&*self.pool)
         .await
@@ -73,16 +61,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
 
     async fn criar(&self, item: &AvaliacaoDeProduto) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO avaliacoes_produto (
-                uuid,
-                usuario_uuid,
-                loja_uuid,
-                produto_uuid,
-                nota,
-                descricao,
-                comentario,
-                criado_em
-            )
+            INSERT INTO avaliacoes_produto (uuid, usuario_uuid, loja_uuid, produto_uuid, nota, descricao, comentario, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
         ")
         .bind(item.uuid)
@@ -103,12 +82,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
     async fn atualizar(&self, item: AvaliacaoDeProduto) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE avaliacoes_produto
-            SET
-                produto_uuid = $1,
-                usuario_uuid = $2,
-                nota = $3,
-                comentario = $4
+            UPDATE avaliacoes_produto SET produto_uuid = $1, usuario_uuid = $2, nota = $3, comentario = $4
             WHERE uuid = $5
         ")
         .bind(item.usuario_uuid)
@@ -128,10 +102,7 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM avaliacoes_produto
-            WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM avaliacoes_produto WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -145,19 +116,14 @@ impl<'a> Repository<AvaliacaoDeProduto> for AvaliacaoDeProdutoRepository {
     }
 
     async fn listar_todos(&self) -> Result<Vec<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-            SELECT * FROM avaliacoes_produto;
-        ")
-        .fetch_all(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto")
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("
-                SELECT * FROM avaliacoes_produto
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

@@ -10,10 +10,7 @@ impl EnderecoLojaRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
-        sqlx::query_as::<_, EnderecoLoja>("
-            SELECT * FROM enderecos_loja WHERE loja_uuid = $1;
-        "
-        )
+        sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -38,32 +35,8 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
     async fn criar(&self, item: &EnderecoLoja) -> Result<Uuid, String> {
         let uuid = item.get_uuid();
         sqlx::query("
-            INSERT INTO enderecos_loja (
-                uuid,
-                loja_uuid,
-                cep,
-                logradouro,
-                numero,
-                complemento,
-                bairro,
-                cidade,
-                estado,
-                latitude,
-                longitude
-            )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                $8,
-                $9,
-                $10,
-                $11
-            )
+            INSERT INTO enderecos_loja (uuid, loja_uuid, cep, logradouro, numero, complemento, bairro, cidade, estado, latitude, longitude)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         ")
         .bind(uuid)
         .bind(item.loja_uuid)
@@ -86,19 +59,8 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
     async fn atualizar(&self, item: EnderecoLoja) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE enderecos_loja
-                SET
-                    loja_uuid = $1,
-                    cep = $2,
-                    logradouro = $3,
-                    numero = $4,
-                    complemento = $5,
-                    bairro = $6,
-                    cidade = $7,
-                    estado = $8,
-                    latitude = $9,
-                    longitude = $10
-             WHERE uuid = $11
+            UPDATE enderecos_loja SET loja_uuid = $1, cep = $2, logradouro = $3, numero = $4, complemento = $5, bairro = $6, cidade = $7, estado = $8, latitude = $9, longitude = $10
+            WHERE uuid = $11
         ")
         .bind(item.loja_uuid)
         .bind(&item.cep)
@@ -144,10 +106,7 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
-        sqlx::query_as::<_, EnderecoLoja>("
-                SELECT * FROM enderecos_loja
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

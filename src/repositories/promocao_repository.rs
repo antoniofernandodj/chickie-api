@@ -10,10 +10,7 @@ impl PromocaoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("
-            SELECT * FROM promocoes
-            WHERE loja_uuid = $1;
-        ")
+        sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -21,10 +18,7 @@ impl PromocaoRepository {
     }
 
     pub async fn buscar_ativas(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("
-            SELECT * FROM promocoes
-            WHERE loja_uuid = $1 AND status = $2;
-        ")
+        sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1 AND status = $2")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
         .fetch_all(&*self.pool)
@@ -33,11 +27,7 @@ impl PromocaoRepository {
     }
 
     pub async fn buscar_por_prioridade(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("
-            SELECT * FROM promocoes
-            WHERE loja_uuid = $1 AND status = $2
-            ORDER BY prioridade DESC;
-        ")
+        sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1 AND status = $2 ORDER BY prioridade DESC")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
         .fetch_all(&*self.pool)
@@ -62,19 +52,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
 
     async fn criar(&self, item: &Promocao) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO promocoes (
-                uuid,
-                loja_uuid,
-                nome,
-                descricao,
-                tipo_desconto,
-                valor_desconto,
-                data_inicio,
-                data_fim,
-                prioridade,
-                status,
-                criado_em
-            )
+            INSERT INTO promocoes (uuid, loja_uuid, nome, descricao, tipo_desconto, valor_desconto, data_inicio, data_fim, prioridade, status, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
         ")
         .bind(&item.uuid)
@@ -98,18 +76,8 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
     async fn atualizar(&self, item: Promocao) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE promocoes
-            SET
-                loja_uuid = $1,
-                nome = $2,
-                descricao = $3,
-                tipo_desconto = $4,
-                valor_desconto = $5,
-                data_inicio = $6,
-                data_fim = $7,
-                prioridade = $8,
-                status = $9
-             WHERE uuid = $10
+            UPDATE promocoes SET loja_uuid = $1, nome = $2, descricao = $3, tipo_desconto = $4, valor_desconto = $5, data_inicio = $6, data_fim = $7, prioridade = $8, status = $9
+            WHERE uuid = $10
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
@@ -133,10 +101,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM promocoes
-            WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM promocoes WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -157,10 +122,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("
-                SELECT * FROM promocoes
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

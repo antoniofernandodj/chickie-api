@@ -10,9 +10,7 @@ impl EntregadorRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores WHERE loja_uuid = $1
-        ")
+        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -20,10 +18,7 @@ impl EntregadorRepository {
     }
 
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores
-            WHERE loja_uuid = $1 AND disponivel = true;
-        ")
+        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1 AND disponivel = true")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -31,9 +26,7 @@ impl EntregadorRepository {
     }
 
     pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("
-            SELECT * FROM entregadores WHERE telefone = $1;
-        ")
+        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE telefone = $1")
         .bind(telefone)
         .fetch_optional(&*self.pool)
         .await
@@ -57,26 +50,8 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
 
     async fn criar(&self, item: &Entregador) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO entregadores (
-                uuid,
-                loja_uuid,
-                nome,
-                telefone,
-                veiculo,
-                placa,
-                disponivel,
-                criado_em
-            )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7,
-                $8
-            )
+            INSERT INTO entregadores (uuid, loja_uuid, nome, telefone, veiculo, placa, disponivel, criado_em)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ")
         .bind(item.uuid)
         .bind(item.loja_uuid)
@@ -96,14 +71,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
     async fn atualizar(&self, item: Entregador) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE entregadores
-            SET
-                loja_uuid = $1,
-                nome = $2,
-                telefone = $3,
-                veiculo = $4,
-                placa = $5,
-                disponivel = $6
+            UPDATE entregadores SET loja_uuid = $1, nome = $2, telefone = $3, veiculo = $4, placa = $5, disponivel = $6
             WHERE uuid = $7
         ")
         .bind(item.loja_uuid)
@@ -125,9 +93,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM entregadores WHERE uuid = $1;
-        ")
+        let result = sqlx::query("DELETE FROM entregadores WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -148,10 +114,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("
-                SELECT * FROM entregadores
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

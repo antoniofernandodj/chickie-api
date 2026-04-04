@@ -13,10 +13,7 @@ impl EnderecoEntregaRepository {
 
     /// Busca o endereco de entrega vinculado a um pedido especifico
     pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
-        sqlx::query_as::<_, EnderecoEntrega>("
-            SELECT * FROM enderecos_entrega
-            WHERE pedido_uuid = $1;
-        ")
+        sqlx::query_as::<_, EnderecoEntrega>("SELECT * FROM enderecos_entrega WHERE pedido_uuid = $1")
         .bind(pedido_uuid)
         .fetch_optional(&*self.pool)
         .await
@@ -25,11 +22,7 @@ impl EnderecoEntregaRepository {
 
     /// Busca enderecos de entrega por loja (util para relatorios/auditoria)
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
-        sqlx::query_as::<_, EnderecoEntrega>("
-            SELECT * FROM enderecos_entrega
-            WHERE loja_uuid = $1
-            ORDER BY criado_em DESC;
-        ")
+        sqlx::query_as::<_, EnderecoEntrega>("SELECT * FROM enderecos_entrega WHERE loja_uuid = $1 ORDER BY criado_em DESC")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -114,11 +107,7 @@ impl<'a> Repository<EnderecoEntrega> for EnderecoEntregaRepository {
     async fn atualizar(&self, item: EnderecoEntrega) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE enderecos_entrega
-            SET
-                loja_uuid = $1, pedido_uuid = $2, cep = $3, logradouro = $4,
-                numero = $5, complemento = $6, bairro = $7, cidade = $8,
-                estado = $9, latitude = $10, longitude = $11
+            UPDATE enderecos_entrega SET loja_uuid = $1, pedido_uuid = $2, cep = $3, logradouro = $4, numero = $5, complemento = $6, bairro = $7, cidade = $8, estado = $9, latitude = $10, longitude = $11
             WHERE uuid = $12
         ")
         .bind(item.loja_uuid)

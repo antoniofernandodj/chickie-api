@@ -19,11 +19,7 @@ impl ParteDeItemPedidoRepository {
         &self,
         item_uuid: Uuid,
     ) -> Result<Vec<ParteDeItemPedido>, String> {
-        sqlx::query_as::<_, ParteDeItemPedido>("
-            SELECT * FROM partes_item_pedido
-            WHERE item_uuid = $1
-            ORDER BY posicao ASC;
-        ")
+        sqlx::query_as::<_, ParteDeItemPedido>("SELECT * FROM partes_item_pedido WHERE item_uuid = $1 ORDER BY posicao ASC")
         .bind(item_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -57,13 +53,7 @@ impl ParteDeItemPedidoRepository {
 
         for parte in partes {
             sqlx::query("
-                INSERT INTO partes_item_pedido (
-                    uuid,
-                    item_uuid,
-                    produto_nome,
-                    preco_unitario,
-                    posicao
-                )
+                INSERT INTO partes_item_pedido (uuid, item_uuid, produto_nome, preco_unitario, posicao)
                 VALUES ($1, $2, $3, $4, $5);
             ")
             .bind(&parte.uuid)

@@ -11,11 +11,7 @@ impl HorarioFuncionamentoRepository {
 
     /// Busca todos os horarios de uma loja, ordenados pelo dia da semana
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-            SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = $1
-            ORDER BY dia_semana ASC;
-        ")
+        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 ORDER BY dia_semana ASC")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -28,10 +24,7 @@ impl HorarioFuncionamentoRepository {
         loja_uuid: Uuid,
         dia_semana: i32,
     ) -> Result<Option<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-            SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = $1 AND dia_semana = $2;
-        ")
+        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 AND dia_semana = $2")
         .bind(loja_uuid)
         .bind(dia_semana)
         .fetch_optional(&*self.pool)
@@ -41,11 +34,7 @@ impl HorarioFuncionamentoRepository {
 
     /// Busca apenas os dias ativos
     pub async fn buscar_ativos(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-            SELECT * FROM horarios_funcionamento
-            WHERE loja_uuid = $1 AND ativo = TRUE
-            ORDER BY dia_semana ASC;
-        ")
+        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 AND ativo = TRUE ORDER BY dia_semana ASC")
         .bind(loja_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -59,21 +48,9 @@ impl HorarioFuncionamentoRepository {
         horario: &HorarioFuncionamento,
     ) -> Result<(), String> {
         sqlx::query("
-            INSERT INTO horarios_funcionamento (
-                uuid,
-                loja_uuid,
-                dia_semana,
-                abertura,
-                fechamento,
-                ativo,
-                criado_em
-            )
+            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (loja_uuid, dia_semana)
-            DO UPDATE SET
-                abertura   = excluded.abertura,
-                fechamento = excluded.fechamento,
-                ativo      = excluded.ativo;
+            ON CONFLICT (loja_uuid, dia_semana) DO UPDATE SET abertura = excluded.abertura, fechamento = excluded.fechamento, ativo = excluded.ativo;
         ")
         .bind(&horario.uuid)
         .bind(&horario.loja_uuid)
@@ -107,15 +84,7 @@ impl HorarioFuncionamentoRepository {
         }
 
         sqlx::query("
-            INSERT INTO horarios_funcionamento (
-                uuid,
-                loja_uuid,
-                dia_semana,
-                abertura,
-                fechamento,
-                ativo,
-                criado_em
-            )
+            INSERT INTO horarios_funcionamento (uuid, loja_uuid, dia_semana, abertura, fechamento, ativo, criado_em)
             VALUES ($1, $2, $3, $4, $5, $6, $7);
         ")
         .bind(&horario.uuid)
@@ -203,12 +172,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
     async fn atualizar(&self, item: HorarioFuncionamento) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE horarios_funcionamento
-            SET
-                abertura = $1,
-                fechamento = $2,
-                ativo = $3
-            WHERE uuid = $4
+            UPDATE horarios_funcionamento SET abertura = $1, fechamento = $2, ativo = $3 WHERE uuid = $4
         ")
         .bind(&item.abertura)
         .bind(&item.fechamento)
@@ -226,9 +190,7 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM horarios_funcionamento WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM horarios_funcionamento WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -242,19 +204,14 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
     }
 
     async fn listar_todos(&self) -> Result<Vec<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-            SELECT * FROM horarios_funcionamento ORDER BY loja_uuid, dia_semana;
-        ")
+        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento ORDER BY loja_uuid, dia_semana")
         .fetch_all(&*self.pool)
         .await
         .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("
-                SELECT * FROM horarios_funcionamento
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

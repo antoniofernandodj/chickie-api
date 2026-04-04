@@ -11,10 +11,7 @@ impl UsoCupomRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
-        sqlx::query_as::<_, UsoCupom>("
-            SELECT * FROM uso_cupons
-            WHERE usuario_uuid = $1;
-        ")
+        sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -22,10 +19,7 @@ impl UsoCupomRepository {
     }
 
     pub async fn buscar_por_cupom(&self, cupom_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
-        sqlx::query_as::<_, UsoCupom>("
-            SELECT * FROM uso_cupons
-            WHERE cupom_uuid = $1;
-        ")
+        sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE cupom_uuid = $1")
         .bind(cupom_uuid)
         .fetch_all(&*self.pool)
         .await
@@ -33,10 +27,7 @@ impl UsoCupomRepository {
     }
 
     pub async fn contar_usos_usuario(&self, usuario_uuid: Uuid, cupom_uuid: Uuid) -> Result<u32, String> {
-        let result = sqlx::query("
-            SELECT COUNT(*) as count FROM uso_cupons
-            WHERE usuario_uuid = $1 AND cupom_uuid = $2;
-        ")
+        let result = sqlx::query("SELECT COUNT(*) as count FROM uso_cupons WHERE usuario_uuid = $1 AND cupom_uuid = $2")
         .bind(usuario_uuid)
         .bind(cupom_uuid)
         .fetch_one(&*self.pool)
@@ -63,13 +54,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
 
     async fn criar(&self, item: &UsoCupom) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO uso_cupons (
-                uuid,
-                cupom_uuid,
-                usuario_uuid,
-                pedido_uuid,
-                usado_em
-            )
+            INSERT INTO uso_cupons (uuid, cupom_uuid, usuario_uuid, pedido_uuid, usado_em)
             VALUES ($1, $2, $3, $4, $5);
         ")
         .bind(item.uuid)
@@ -87,12 +72,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
     async fn atualizar(&self, item: UsoCupom) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE uso_cupons
-            SET
-                cupom_uuid = $1,
-                usuario_uuid = $2,
-                pedido_uuid = $3,
-                usado_em = $4
+            UPDATE uso_cupons SET cupom_uuid = $1, usuario_uuid = $2, pedido_uuid = $3, usado_em = $4
             WHERE uuid = $5
         ")
         .bind(item.cupom_uuid)
@@ -112,10 +92,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
     }
 
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("
-            DELETE FROM uso_cupons
-            WHERE uuid = $1
-        ")
+        let result = sqlx::query("DELETE FROM uso_cupons WHERE uuid = $1")
         .bind(uuid)
         .execute(&*self.pool)
         .await
@@ -136,10 +113,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
-        sqlx::query_as::<_, UsoCupom>("
-                SELECT * FROM uso_cupons
-                WHERE loja_uuid = $1;
-            ")
+        sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE loja_uuid = $1")
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await
