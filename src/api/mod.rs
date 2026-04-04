@@ -14,6 +14,8 @@ mod endereco_entrega;
 mod endereco_usuario;
 mod loja_favorita;
 mod ingrediente;
+mod horario;
+mod config_pedido;
 mod funcionario;
 mod entregador;
 
@@ -69,8 +71,10 @@ pub use produto::{
 
 pub use cupom::{
     criar_cupom,
-    validar_cupom, // listar_cupons, buscar_cupom
-    listar_cupons
+    validar_cupom,
+    listar_cupons,
+    atualizar_cupom,
+    deletar_cupom
 };
 
 pub use wipe::wipe_database;
@@ -89,6 +93,18 @@ pub use ingrediente::{
     listar_ingredientes,
     atualizar_ingrediente,
     deletar_ingrediente
+};
+
+pub use horario::{
+    listar_horarios,
+    criar_ou_atualizar_horario,
+    definir_ativo,
+    deletar_horario_dia
+};
+
+pub use config_pedido::{
+    buscar_config_pedido,
+    salvar_config_pedido
 };
 
 pub use funcionario::{

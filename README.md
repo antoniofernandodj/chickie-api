@@ -112,6 +112,29 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/produtos/`    | Listar produtos     | ✅   |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |
 
+### Horários de Funcionamento (auth required)
+
+| Método | Rota | Descrição | Auth |
+|--------|------|-----------|------|
+| `GET` | `/api/horarios/{loja_uuid}` | Listar horários | ✅ |
+| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário | ✅ |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia | ✅ |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia | ✅ |
+
+### Configurações de Pedido (auth required)
+
+| Método | Rota | Descrição | Auth |
+|--------|------|-----------|------|
+| `GET` | `/api/config-pedido/{loja_uuid}` | Buscar configuração | ✅ |
+| `PUT` | `/api/config-pedido/{loja_uuid}` | Salvar configuração | ✅ |
+
+### Cupons Admin (auth required)
+
+| Método | Rota | Descrição | Auth |
+|--------|------|-----------|------|
+| `PUT` | `/api/cupons/admin/{loja_uuid}/{uuid}` | Atualizar cupom | ✅ |
+| `DELETE` | `/api/cupons/admin/{loja_uuid}/{uuid}` | Deletar cupom | ✅ |
+
 ### Ingredientes (auth required)
 
 | Método | Rota                                     | Descrição          | Auth |

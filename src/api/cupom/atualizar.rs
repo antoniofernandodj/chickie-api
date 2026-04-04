@@ -1,0 +1,37 @@
+use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode};
+use serde::Deserialize;
+use uuid::Uuid;
+use std::sync::Arc;
+
+use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
+
+#[derive(Deserialize)]
+pub struct AtualizarCupomRequest {
+    pub codigo: String,
+    pub descricao: String,
+    pub tipo_desconto: String,
+    pub valor_desconto: Option<f64>,
+    pub valor_minimo: Option<f64>,
+    pub data_validade: String,
+    pub limite_uso: Option<i32>,
+}
+
+pub async fn atualizar_cupom(
+    State(state): State<Arc<AppState>>,
+    Path((loja_uuid, uuid)): Path<(Uuid, Uuid)>,
+    Extension(usuario): Extension<Usuario>,
+    Json(p): Json<AtualizarCupomRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let uc = AdminUsecase::new(
+        state.ingrediente_service.clone(),
+        state.horario_funcionamento_service.clone(),
+        state.config_pedido_service.clone(),
+        state.funcionario_service.clone(),
+        state.entregador_service.clone(),
+        state.marketing_service.clone(),
+        usuario,
+        loja_uuid,
+    );
+    uc.atualizar_cupom(uuid, p.codigo, p.descricao, p.tipo_desconto, p.valor_desconto, p.valor_minimo, p.data_validade, p.limite_uso).await?;
+    Ok(StatusCode::NO_CONTENT)
+}

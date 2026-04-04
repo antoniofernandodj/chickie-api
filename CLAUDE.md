@@ -233,6 +233,29 @@ Cada repositório implementa também:
 | `GET` | `/api/produtos/` | Listar produtos |
 | `PUT` | `/api/produtos/{uuid}` | Atualizar product |
 
+#### Horários de Funcionamento (🔒)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/horarios/{loja_uuid}` | Listar horários |
+| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia |
+
+#### Configurações de Pedido (🔒)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/config-pedido/{loja_uuid}` | Buscar configuração |
+| `PUT` | `/api/config-pedido/{loja_uuid}` | Salvar configuração |
+
+#### Cupons Admin (🔒)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `PUT` | `/api/cupons/admin/{loja_uuid}/{uuid}` | Atualizar cupom |
+| `DELETE` | `/api/cupons/admin/{loja_uuid}/{uuid}` | Deletar cupom |
+
 #### Ingredientes (🔒)
 
 | Método | Rota | Descrição |

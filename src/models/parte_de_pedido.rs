@@ -8,7 +8,7 @@ use sqlx::PgPool;
 // TipoCalculoPedido — como o preço é calculado quando há múltiplos sabores
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TipoCalculoPedido {
     MediaPonderada, // média simples: soma dos preços / qtd de sabores
     MaisCaro,       // preço = o sabor mais caro
@@ -70,7 +70,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
 // Uma loja pode ter apenas uma configuração ativa.
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct ConfiguracaoDePedidosLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

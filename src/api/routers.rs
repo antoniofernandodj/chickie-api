@@ -22,6 +22,14 @@ use crate::api::{
     listar_ingredientes,
     atualizar_ingrediente,
     deletar_ingrediente,
+    listar_horarios,
+    criar_ou_atualizar_horario,
+    definir_ativo,
+    deletar_horario_dia,
+    buscar_config_pedido,
+    salvar_config_pedido,
+    atualizar_cupom,
+    deletar_cupom,
     atualizar_funcionario,
     funcionario_trocar_email_senha,
     atualizar_entregador,
@@ -137,6 +145,26 @@ pub fn loja_favorita_routes() -> Router<Arc<AppState>> {
         .route("/minhas", get(listar_minhas_favoritas))
         .route("/{loja_uuid}/verificar", get(verificar_favorita))
 }
+pub fn horario_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}", get(listar_horarios))
+        .route("/{loja_uuid}", post(criar_ou_atualizar_horario))
+        .route("/{loja_uuid}/dia/{dia_semana}/ativo", put(definir_ativo))
+        .route("/{loja_uuid}/dia/{dia_semana}", delete(deletar_horario_dia))
+}
+
+pub fn config_pedido_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}", get(buscar_config_pedido))
+        .route("/{loja_uuid}", put(salvar_config_pedido))
+}
+
+pub fn cupom_admin_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}/{uuid}", put(atualizar_cupom))
+        .route("/{loja_uuid}/{uuid}", delete(deletar_cupom))
+}
+
 pub fn ingrediente_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{loja_uuid}", post(criar_ingrediente))
@@ -192,6 +220,9 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/enderecos-usuario", endereco_usuario_routes())
         .nest("/favoritos", loja_favorita_routes())
         .nest("/ingredientes", ingrediente_routes())
+        .nest("/horarios", horario_routes())
+        .nest("/config-pedido", config_pedido_routes())
+        .nest("/cupons/admin", cupom_admin_routes())
         .nest("/funcionarios", funcionario_routes())
         .nest("/entregadores", entregador_routes())
         .nest("/admin", loja_admin_routes())

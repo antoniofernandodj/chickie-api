@@ -28,24 +28,18 @@ _(nenhum bug conhecido)_
 |---|---------|---------|------------|
 | 5 | **Atribuir entregador ao pedido** | Sem endpoint para vincular entregador a um pedido. | Alta |
 | 6 | **Listar pedidos por usuário** | Endpoint para cliente ver seus próprios pedidos. | Média |
-| 7 | **CRUD de ingredientes** | ✅ Criar, listar, atualizar, deletar implementados. | — |
-| 8 | **CRUD de horários de funcionamento** | Service + Usecase prontos. Faltam handlers e rotas. | Baixa |
-| 9 | **CRUD de configurações de pedido** | Service + Usecase prontos. Faltam handlers e rotas. | Baixa |
-| 10 | **CRUD de funcionários** | ✅ Listar e atualizar implementados. Faltam handler de criar e deletar. | — |
-| 11 | **CRUD de entregadores** | ✅ Listar, atualizar e set_disponivel implementados. Faltam handler de criar e deletar. | — |
-| 12 | **CRUD de cupons (admin)** | Service + Usecase prontos. Faltam handlers e rotas (atualizar, deletar). | Média |
-| 13 | **Pagamentos** | Tabela e endpoints para registrar pagamentos. | Alta (futuro) |
-| 14 | **Notificações push** | Sistema de notificações para status do pedido. | Baixa (futuro) |
-| 15 | **CI/CD pipeline** | Linters, testes automatizados, deploy. | Média |
-| 16 | **Soft-delete de usuários** | Marcado `a_remover` + scheduler (conforme docs). | Média |
-| 17 | **Soft-delete de lojas** | Mesmo mecanismo de soft-delete. | Média |
+| 7 | **Pagamentos** | Tabela e endpoints para registrar pagamentos. | Alta (futuro) |
+| 8 | **Notificações push** | Sistema de notificações para status do pedido. | Baixa (futuro) |
+| 9 | **CI/CD pipeline** | Linters, testes automatizados, deploy. | Média |
+| 10 | **Soft-delete de usuários** | Marcado `a_remover` + scheduler (conforme docs). | Média |
+| 11 | **Soft-delete de lojas** | Mesmo mecanismo de soft-delete. | Média |
 
 ## 📝 Documentação
 
 | # | Tarefa | Detalhe |
 |---|--------|---------|
-| 18 | **Atualizar diagrama de relacionamento** | Entidades foram expandidas — diagrama de ER está ausente. |
-| 19 | **Documentar permissões por classe** | Tabela de quais classes podem acessar quais endpoints. |
+| 12 | **Atualizar diagrama de relacionamento** | Entidades foram expandidas — diagrama de ER está ausente. |
+| 13 | **Documentar permissões por classe** | Tabela de quais classes podem acessar quais endpoints. |
 
 ---
 
@@ -56,18 +50,7 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| 📋 Features | 11 | 5, 6, 8–17 |
-| 📝 Docs | 2 | 18, 19 |
+| 📋 Features | 7 | 5–11 |
+| 📝 Docs | 2 | 12, 13 |
 
-**Total: 17 pendências**
-
-### Infraestrutura Pronta (services + usecases criados)
-
-| Entidade | Service | Usecase | Handlers | Rotas |
-|----------|---------|---------|----------|-------|
-| **Ingredientes** | ✅ | ✅ | ✅ (4/4) | ✅ |
-| **Horários** | ✅ | ✅ | ❌ | ❌ |
-| **Config Pedido** | ✅ | ✅ | ❌ | ❌ |
-| **Funcionários** | ✅ | ✅ | ❌ | ❌ |
-| **Entregadores** | ✅ | ✅ | ❌ | ❌ |
-| **Cupons (update/delete)** | ✅ | ✅ | ❌ | ❌ |
+**Total: 13 pendências**
