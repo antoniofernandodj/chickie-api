@@ -350,6 +350,7 @@ docker build -t chickie .  # Build da imagem
 | `DATABASE_URL` | —          | String de conexão PostgreSQL               |
 | `RUST_LOG`     | `info`     | Nível de log (`debug` em dev)              |
 | `JWT_SECRET`   | `secret`   | Chave de assinatura JWT                    |
+| `MODE`         | —          | `development` = dropa banco e reaplica migrações no startup |
 
 ---
 

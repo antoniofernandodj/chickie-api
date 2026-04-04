@@ -44,6 +44,11 @@ async fn main() {
         .expect("Falha ao criar pool")
     );
 
+    // Aplica migrações (com drop se MODE=DEVELOPMENT)
+    database::aplicar_migrations(&pool)
+        .await
+        .expect("Falha ao aplicar migrações");
+
     let s: Arc<AppState> = AppState::new(pool);
 
     let api_routes = api::api_routes(&s);

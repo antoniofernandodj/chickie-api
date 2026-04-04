@@ -316,6 +316,7 @@ Injetado via `State(state): State<Arc<AppState>>`.
 | `DATABASE_URL`| —       | String de conexão PostgreSQL (Dokploy internal) |
 | `RUST_LOG`    | `info`  | Nível de log (`debug` em desenvolvimento)       |
 | `JWT_SECRET`  | `secret`| Chave de assinatura JWT (fallback)              |
+| `MODE`        | —       | Se `development`, dropa o banco e reaplica migrações no startup |
 
 ---
 

@@ -128,7 +128,7 @@ pub fn marketing_routes() -> Router<Arc<AppState>> {
 
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
-    Router::new()
+    let mut router = Router::new()
         .nest("/pedidos", pedido_routes())
         .nest("/usuarios", usuario_routes())
         .nest("/lojas", loja_routes())
@@ -141,9 +141,17 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())
-        // ⚠️ Development-only: no auth, wipes ALL data
-        .route("/wipe", delete(wipe_database))
-        .route("/ok", get(ok_handler))
+        .route("/ok", get(ok_handler));
+
+        let mode = std::env::var("MODE").unwrap_or_default();
+        let is_dev = mode.eq_ignore_ascii_case("development");
+
+        if is_dev {
+            tracing::info!("🧹 MODE=DEVELOPMENT — registrando endpoint de limpar banco de dados");
+            router = router.route("/wipe", delete(wipe_database))
+        }
+
+        router
 }
 
 
