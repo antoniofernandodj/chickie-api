@@ -589,6 +589,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-05  | **Endpoint minhas lojas**: `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. |
 | 2026-04-05  | **Campos TIME corrigidos**: `horario_abertura`, `horario_fechamento` (`loja`) e `abertura`, `fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. `loja_service` agora converte `String → NaiveTime::parse_from_str("%H:%M")`. |
 | 2026-04-05  | **Timestamps corrigidos**: Models migrados de `String` para `chrono::DateTime<Utc>`. Repositórios agora omitem `criado_em`/`atualizado_em` em INSERTs/UPDATEs (usam DEFAULT/TRIGGER do PostgreSQL). |
 | 2026-04-05  | Máquina de estados do pedido + endpoint `PUT /status` |

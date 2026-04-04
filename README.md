@@ -101,6 +101,7 @@ Todos os endpoints vivem sob `/api`.
 |---------|------------------------------------------|----------------------|------|--------|
 | `POST`  | `/api/admin/lojas`                       | Criar loja           | ✅   | Admin  |
 | `GET`   | `/api/admin/lojas/listar`                | Listar todas as lojas| ✅   | Admin  |
+| `GET`   | `/api/admin/minhas-lojas`                | Listar lojas do admin| ✅   | Admin  |
 | `POST`  | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário | ✅ | Admin |
 | `POST`  | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador | ✅  | Admin  |
 

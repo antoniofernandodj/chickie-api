@@ -51,7 +51,7 @@ async fn run_migrations(pool: &PgPool) -> Result<(), String> {
     let migration_files = [
         "migrations/0001_criar_tabelas.sql",
         "migrations/0002_add_promocao_escopo.sql",
-        "migrations/0003_add_criado_por_lojas"
+        "migrations/0003_add_criado_por_lojas.sql"
     ];
 
     for migration_path in &migration_files {

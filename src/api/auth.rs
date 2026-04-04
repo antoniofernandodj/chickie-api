@@ -1,14 +1,11 @@
+use async_trait::async_trait;
 use axum::{
-    extract::{Request, State},
-    middleware::Next,
-    response::Response,
-    http::{StatusCode, header},
-    Json,
+    Json, extract::{FromRequest, Request, State, RequestParts}, http::{StatusCode, header}, middleware::Next, response::Response
 };
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde_json::json;
 use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
-use crate::{api::{AppState, Claims}, models::Usuario, repositories::Repository}; // Importe seus Claims e AppState
+use crate::{api::{AppState, Claims, dto::AppError}, models::Usuario, repositories::Repository}; // Importe seus Claims e AppState
 
 
 pub async fn auth_middleware(
@@ -95,4 +92,37 @@ pub fn create_jwt(usuario: Usuario) -> Result<String, jsonwebtoken::errors::Erro
     )?;
 
     Ok(token)
+}
+
+
+
+
+
+
+
+#[derive(Debug)]
+pub struct AdminPermission(pub Usuario);
+
+#[async_trait]
+impl<B> FromRequest<B> for AdminPermission
+where
+    B: Send,
+{
+    type Rejection = AppError;
+
+    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
+        // Primeiro, extraímos o estado e o usuário
+        let usuario: Extension<Usuario> = Extension::<Usuario>::from_request(req)
+            .await
+            .map_err(|_| AppError::Unauthorized("Usuário não autenticado".to_string()))?;
+
+        // Verifique se o usuário é um administrador
+        if !usuario.is_administrador() {
+            return Err(AppError::Unauthorized(
+                "Apenas administradores podem realizar essa ação.".to_string(),
+            ));
+        }
+
+        Ok(AdminPermission(usuario))
+    }
 }
