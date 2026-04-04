@@ -1,7 +1,8 @@
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 use serde::{Serialize, Deserialize};
+use chrono::Utc;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct CategoriaProdutos {
@@ -10,7 +11,7 @@ pub struct CategoriaProdutos {
     pub nome: String,
     pub descricao: Option<String>,
     pub ordem: Option<i32>,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl CategoriaProdutos {
@@ -26,7 +27,7 @@ impl CategoriaProdutos {
             nome,
             descricao,
             ordem,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 }

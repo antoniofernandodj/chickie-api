@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct HorarioFuncionamento {
@@ -12,7 +13,7 @@ pub struct HorarioFuncionamento {
     pub abertura: String,     // "HH:MM"
     pub fechamento: String,   // "HH:MM"
     pub ativo: bool,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl HorarioFuncionamento {
@@ -49,7 +50,7 @@ impl HorarioFuncionamento {
             abertura,
             fechamento,
             ativo: true,
-            criado_em: agora(),
+            criado_em: Utc::now(),
         })
     }
 

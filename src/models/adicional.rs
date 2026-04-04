@@ -1,7 +1,8 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use crate::{models::Model, utils::agora};
+use chrono::Utc;
+use crate::models::Model;
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -12,7 +13,7 @@ pub struct Adicional {
     pub disponivel: bool,
     pub descricao: String,
     pub preco: f64,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Adicional {
@@ -30,7 +31,7 @@ impl Adicional {
             descricao,
             preco,
             uuid: Uuid::new_v4(),
-            criado_em: agora()
+            criado_em: Utc::now()
         }
 
     }

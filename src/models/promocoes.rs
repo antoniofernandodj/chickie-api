@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 // --- TipoEscopoPromocao ---
 
@@ -151,7 +152,7 @@ pub struct Cupom {
     pub limite_uso: Option<i32>,
     pub uso_atual: i32,
     pub status: StatusCupom,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Cupom {
@@ -177,7 +178,7 @@ impl Cupom {
             limite_uso,
             uso_atual: 0,
             status: StatusCupom::Ativo,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 
@@ -246,7 +247,7 @@ impl UsoCupom {
             usuario_uuid,
             pedido_uuid,
             valor_desconto,
-            usado_em: agora(),
+            usado_em: Utc::now().to_rfc3339(),
         }
     }
 }
@@ -269,7 +270,7 @@ pub struct Promocao {
     pub categoria_uuid: Option<Uuid>,
     pub status: StatusCupom,
     pub prioridade: i32,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Promocao {
@@ -304,7 +305,7 @@ impl Promocao {
             categoria_uuid,
             status: StatusCupom::Ativo,
             prioridade,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 

@@ -1,8 +1,9 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -12,7 +13,7 @@ pub struct AvaliacaoDeLoja {
     pub usuario_uuid: Uuid,
     pub nota: f64,
     pub comentario: Option<String>,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl AvaliacaoDeLoja {
@@ -28,7 +29,7 @@ impl AvaliacaoDeLoja {
             usuario_uuid,
             nota,
             comentario,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 }
@@ -43,7 +44,7 @@ pub struct AvaliacaoDeProduto {
     pub nota: f64,
     pub descricao: String,
     pub uuid: Uuid,
-    pub criado_em: String
+    pub criado_em: chrono::DateTime<chrono::Utc>
 }
 
 impl AvaliacaoDeProduto {
@@ -63,7 +64,7 @@ impl AvaliacaoDeProduto {
             nota,
             descricao,
             uuid: Uuid::new_v4(),
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 }

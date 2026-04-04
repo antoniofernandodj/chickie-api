@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::{models::Model, utils::agora};
+use chrono::Utc;
+use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Ingrediente {
@@ -11,8 +12,8 @@ pub struct Ingrediente {
     pub unidade_medida: Option<String>,
     pub quantidade: f64,
     pub preco_unitario: f64,
-    pub criado_em: String,
-    pub atualizado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Ingrediente {
@@ -29,8 +30,8 @@ impl Ingrediente {
             unidade_medida,
             quantidade: 0.0,
             preco_unitario,
-            criado_em: agora(),
-            atualizado_em: agora(),
+            criado_em: Utc::now(),
+            atualizado_em: Utc::now(),
         }
     }
 }

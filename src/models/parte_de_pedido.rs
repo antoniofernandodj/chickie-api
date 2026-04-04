@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::{models::{Adicional, AdicionalDeItemDePedido, Model, Produto}, utils::agora};
+use chrono::Utc;
+use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
 use sqlx::PgPool;
 
 // ---------------------------------------------------------------------------
@@ -76,8 +77,8 @@ pub struct ConfiguracaoDePedidosLoja {
     pub loja_uuid: Uuid,
     pub max_partes: i32,               // máximo de sabores por item (ex: 4)
     pub tipo_calculo: TipoCalculoPedido, // como calcular o preço final
-    pub criado_em: String,
-    pub atualizado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl ConfiguracaoDePedidosLoja {
@@ -94,8 +95,8 @@ impl ConfiguracaoDePedidosLoja {
             loja_uuid,
             max_partes,
             tipo_calculo,
-            criado_em: agora(),
-            atualizado_em: agora(),
+            criado_em: Utc::now(),
+            atualizado_em: Utc::now(),
         })
     }
 }

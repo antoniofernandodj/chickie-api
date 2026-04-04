@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
-use crate::{models::Model, utils::agora};
+use chrono::Utc;
+use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Entregador {
@@ -11,7 +12,7 @@ pub struct Entregador {
     pub veiculo: Option<String>,
     pub placa: Option<String>,
     pub disponivel: bool,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Entregador {
@@ -28,7 +29,7 @@ impl Entregador {
             veiculo,
             placa,
             disponivel: false,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
     }
 }

@@ -1,8 +1,9 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Funcionario {
@@ -12,7 +13,7 @@ pub struct Funcionario {
     pub cargo: Option<String>,
     pub salario: Option<f64>,
     pub data_admissao: String,
-    pub criado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Funcionario {
@@ -31,7 +32,7 @@ impl Funcionario {
             cargo,
             salario,
             data_admissao,
-            criado_em: agora()
+            criado_em: Utc::now()
         }
 
     }

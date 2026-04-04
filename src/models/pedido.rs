@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::{models::{Model, ParteDeItemPedido}, utils::agora};
+use crate::models::{Model, ParteDeItemPedido};
+use chrono::Utc;
 use sqlx::FromRow;
 
 // --- AdicionalDeItemDePedido ---
@@ -196,8 +197,8 @@ pub struct Pedido {
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub tempo_estimado_min: Option<i32>,
-    pub criado_em: String,
-    pub atualizado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
     #[sqlx(skip)]
     pub itens: Vec<ItemPedido>,
     #[sqlx(skip)]
@@ -225,8 +226,8 @@ impl Pedido {
             forma_pagamento,
             observacoes,
             tempo_estimado_min: None,
-            criado_em: agora(),
-            atualizado_em: agora(),
+            criado_em: Utc::now(),
+            atualizado_em: Utc::now(),
             itens: Vec::new(),
             partes: Vec::new()
         }

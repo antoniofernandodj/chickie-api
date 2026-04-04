@@ -1,8 +1,9 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Loja {
@@ -22,8 +23,8 @@ pub struct Loja {
     pub taxa_entrega: Option<f64>,
     pub valor_minimo_pedido: Option<f64>,
     pub raio_entrega_km: Option<f64>,
-    pub criado_em: String,
-    pub atualizado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
 
 impl Loja {
@@ -59,8 +60,8 @@ impl Loja {
             taxa_entrega,
             valor_minimo_pedido,
             raio_entrega_km,
-            criado_em: agora(),
-            atualizado_em: agora(),
+            criado_em: Utc::now(),
+            atualizado_em: Utc::now(),
         }
     }
 }

@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
+use chrono::Utc;
 
-use crate::{models::Model, utils::agora};
+use crate::models::Model;
 
 // ===========================================================================
 // ClasseUsuario — define o papel do usuário no sistema
@@ -56,8 +57,8 @@ pub struct Usuario {
     pub username: String,
     pub email: String,
     pub celular: String,
-    pub criado_em: String,
-    pub atualizado_em: String,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
 
     pub modo_de_cadastro: String,
     pub classe: String,  // "cliente" | "administrador"
@@ -85,8 +86,8 @@ impl Usuario {
             username,
             email,
             celular,
-            criado_em: agora(),
-            atualizado_em: agora(),
+            criado_em: Utc::now(),
+            atualizado_em: Utc::now(),
             modo_de_cadastro,
             classe: classe.as_str().to_string(),
 
