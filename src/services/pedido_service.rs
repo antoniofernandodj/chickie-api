@@ -4,7 +4,7 @@ use chrono::Datelike;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Pedido, EstadoDePedido, StatusCupom, TipoCalculoPedido, calcular_preco_por_partes};
+use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
 use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
 use crate::utils::agora;
 

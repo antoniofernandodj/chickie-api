@@ -46,7 +46,7 @@ pub use parte_de_pedido::{
 };
 pub use promocoes::{
     StatusCupom,
-    TipoEscopoPromocao,
+    // TipoEscopoPromocao,
     Cupom,
     UsoCupom,
     Promocao

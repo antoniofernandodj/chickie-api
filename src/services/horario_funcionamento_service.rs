@@ -2,7 +2,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::HorarioFuncionamento;
-use crate::repositories::{HorarioFuncionamentoRepository, Repository as _};
+use crate::repositories::{HorarioFuncionamentoRepository};
 
 #[derive(Clone)]
 pub struct HorarioFuncionamentoService {

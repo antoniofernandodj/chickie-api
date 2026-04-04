@@ -2,7 +2,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::{ConfiguracaoDePedidosLoja, TipoCalculoPedido};
-use crate::repositories::{ConfiguracaoPedidosLojaRepository, Repository as _};
+use crate::repositories::{ConfiguracaoPedidosLojaRepository};
 
 #[derive(Clone)]
 pub struct ConfiguracaoPedidosLojaService {

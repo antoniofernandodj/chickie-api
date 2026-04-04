@@ -3,7 +3,7 @@ use rust_decimal::{Decimal, prelude::FromPrimitive};
 use uuid::Uuid;
 
 use crate::{
-    models::{Ingrediente, HorarioFuncionamento, ConfiguracaoDePedidosLoja, Funcionario, Entregador, Cupom, Usuario},
+    models::{Ingrediente, HorarioFuncionamento, ConfiguracaoDePedidosLoja, Funcionario, Entregador, Usuario},
     services::{
         IngredienteService,
         HorarioFuncionamentoService,

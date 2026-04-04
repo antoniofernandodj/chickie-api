@@ -3,7 +3,6 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
 use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
-use sqlx::PgPool;
 use rust_decimal::Decimal;
 
 // ---------------------------------------------------------------------------
