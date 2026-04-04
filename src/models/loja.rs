@@ -23,6 +23,7 @@ pub struct Loja {
     pub taxa_entrega: Option<f64>,
     pub valor_minimo_pedido: Option<f64>,
     pub raio_entrega_km: Option<f64>,
+    pub criado_por: Option<Uuid>,  // Admin que criou a loja
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -41,6 +42,7 @@ impl Loja {
         taxa_entrega: Option<f64>,
         valor_minimo_pedido: Option<f64>,
         raio_entrega_km: Option<f64>,
+        criado_por: Option<Uuid>,
     ) -> Self {
 
         Self {
@@ -60,6 +62,7 @@ impl Loja {
             taxa_entrega,
             valor_minimo_pedido,
             raio_entrega_km,
+            criado_por,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
         }

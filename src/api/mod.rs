@@ -60,7 +60,8 @@ pub use loja::{
     adicionar_funcionario,
     adicionar_entregador,
     adicionar_cliente,
-    listar_lojas_admin
+    listar_lojas_admin,
+    listar_minhas_lojas
 };
 
 pub use produto::{

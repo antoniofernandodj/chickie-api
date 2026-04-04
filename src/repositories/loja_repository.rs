@@ -23,6 +23,14 @@ impl LojaRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn buscar_por_criador(&self, admin_uuid: Uuid) -> Result<Vec<Loja>, String> {
+        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE criado_por = $1 ORDER BY criado_em DESC")
+        .bind(admin_uuid)
+        .fetch_all(self.pool())
+        .await
+        .map_err(|e| e.to_string())
+    }
 }
 
 #[async_trait::async_trait]
@@ -34,8 +42,8 @@ impl Repository<Loja> for LojaRepository {
 
     async fn criar(&self, item: &Loja) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO lojas (uuid, nome, slug, descricao, email, telefone, ativa, logo_url, banner_url, horario_abertura, horario_fechamento, dias_funcionamento, tempo_preparo_min, taxa_entrega, valor_minimo_pedido, raio_entrega_km)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+            INSERT INTO lojas (uuid, nome, slug, descricao, email, telefone, ativa, logo_url, banner_url, horario_abertura, horario_fechamento, dias_funcionamento, tempo_preparo_min, taxa_entrega, valor_minimo_pedido, raio_entrega_km, criado_por)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         ")
         .bind(item.uuid)
         .bind(&item.nome)
@@ -53,6 +61,7 @@ impl Repository<Loja> for LojaRepository {
         .bind(item.taxa_entrega)
         .bind(item.valor_minimo_pedido)
         .bind(item.raio_entrega_km)
+        .bind(&item.criado_por)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

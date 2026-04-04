@@ -41,6 +41,7 @@ pub async fn criar_loja(
             p.nota_media,
             p.taxa_entrega_base,
             p.pedido_minimo,
+            usuario.uuid,  // criado_por
             p.max_partes,
             TipoCalculoPedido::MaisCaro
         )

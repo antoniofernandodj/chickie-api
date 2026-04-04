@@ -71,6 +71,7 @@ impl LojaService {
         taxa_entrega: Option<f64>,
         valor_minimo_pedido: Option<f64>,
         raio_entrega_km: Option<f64>,
+        criado_por: Uuid,
         max_partes: i32,
         tipo_calculo: TipoCalculoPedido
     ) -> Result<Loja, String> {
@@ -98,6 +99,7 @@ impl LojaService {
             taxa_entrega,
             valor_minimo_pedido,
             raio_entrega_km,
+            Some(criado_por),
         );
 
         self.loja_repo.criar(&loja).await?;
@@ -257,5 +259,9 @@ impl LojaService {
     
     pub async fn listar(&self) -> Result<Vec<Loja>, String> {
         self.loja_repo.listar_todos().await
+    }
+
+    pub async fn listar_por_criador(&self, admin_uuid: Uuid) -> Result<Vec<Loja>, String> {
+        self.loja_repo.buscar_por_criador(admin_uuid).await
     }
 }

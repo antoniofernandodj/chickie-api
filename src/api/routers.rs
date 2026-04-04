@@ -52,6 +52,7 @@ use crate::api::{
     adicionar_entregador,
     adicionar_cliente,
     listar_lojas_admin,
+    listar_minhas_lojas,
     criar_adicional,
     criar_categoria,
     listar_adicionais,
@@ -92,6 +93,7 @@ pub fn loja_admin_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/lojas", post(criar_loja))
         .route("/listar", get(listar_lojas_admin))
+        .route("/minhas-lojas", get(listar_minhas_lojas))
         .route("/{loja_uuid}/funcionarios", post(adicionar_funcionario))
         .route("/{loja_uuid}/entregadores", post(adicionar_entregador))
         .route("/{loja_uuid}/clientes", post(adicionar_cliente))
