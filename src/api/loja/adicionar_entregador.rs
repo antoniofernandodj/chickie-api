@@ -4,7 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api::{AppState, auth::AdminPermission, dto::AppError},
     models::Usuario
 };
 
@@ -22,15 +22,9 @@ pub struct AdicionarEntregadorRequest {
 pub async fn adicionar_entregador(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
+    AdminPermission(_): AdminPermission,
     Json(p): Json<AdicionarEntregadorRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-
-    if !usuario.is_administrador() {
-        return Err(AppError::Unauthorized(
-            "Apenas administradores podem adicionar entregadores".to_string()
-        ));
-    }
 
     let entregador = state.loja_service.adicionar_entregador(
         loja_uuid,

@@ -1,26 +1,18 @@
 use axum::{
-    extract::{State, Extension},
+    extract::State,
     response::IntoResponse,
     Json,
 };
 use std::sync::Arc;
 use crate::{
-    api::{dto::AppError, AppState},
-    models::Usuario,
+    api::{AppState, auth::AdminPermission, dto::AppError},
 };
 
 /// Lista todas as lojas criadas pelo admin autenticado
 pub async fn listar_minhas_lojas(
     State(state): State<Arc<AppState>>,
-    Extension(usuario): Extension<Usuario>,
+    AdminPermission(usuario): AdminPermission,
 ) -> Result<impl IntoResponse, AppError> {
-
-    // Apenas administradores podem listar suas lojas
-    if !usuario.is_administrador() {
-        return Err(AppError::Unauthorized(
-            "Apenas administradores podem listar lojas".to_string()
-        ));
-    }
 
     let lojas = state
         .loja_service

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api::{AppState, auth::AdminPermission, dto::AppError},
     models::Usuario
 };
 
@@ -23,15 +23,9 @@ pub struct AdicionarFuncionarioRequest {
 pub async fn adicionar_funcionario(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
+    AdminPermission(_): AdminPermission,
     Json(p): Json<AdicionarFuncionarioRequest>,
 ) -> Result<impl IntoResponse, AppError> {
-
-    if !usuario.is_administrador() {
-        return Err(AppError::Unauthorized(
-            "Apenas administradores podem adicionar funcionários".to_string()
-        ));
-    }
 
     let funcionario = state.loja_service.adicionar_funcionario(
         loja_uuid,
