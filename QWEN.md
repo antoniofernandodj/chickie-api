@@ -614,3 +614,4 @@ Entregador entrega → pedido status → ENTREGUE
 
 ## Qwen Added Memories
 - Regra arquitetural obrigatória: TODO endpoint deve seguir a pilha Handler → Usecase → Service → Repository → Database. Handlers NUNCA podem conter lógica de negócio, queries SQL, ou chamadas diretas a repositories. Handlers apenas extraem dados da request, instanciam o usecase, chamam seu método e retornam a response. Isso vale para qualquer novo endpoint criado no projeto Chickie API.
+- O projeto Chickie API usa o comando `make export-docs` para sincronizar API.md, CLAUDE.md e README.md para o projeto chickie-ui em ../../TS/chickie-ui/api_docs/

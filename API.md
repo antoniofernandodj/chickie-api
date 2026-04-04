@@ -154,7 +154,24 @@ Content-Type: application/json
 
 > `classe` é opcional. Default: `"cliente"`.
 
-**Response `200`:** `Usuario`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "João Silva",
+  "username": "joao",
+  "email": "joao@email.com",
+  "celular": "11999999999",
+  "telefone": "11888888888",
+  "classe": "cliente",
+  "ativo": true,
+  "passou_pelo_primeiro_acesso": false,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z",
+  "modo_de_cadastro": "email",
+  "senha_hash": "$2b$12$..."
+}
+```
 
 ---
 
@@ -191,7 +208,31 @@ Content-Type: application/json
 GET /api/lojas/
 ```
 
-**Response `200`:** `Vec<Loja>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "Pizzaria do João",
+    "slug": "pizzaria-do-joao",
+    "descricao": "A melhor pizza da cidade",
+    "email": "contato@pizzaria.com",
+    "telefone": "11999999999",
+    "ativa": true,
+    "logo_url": "https://example.com/logo.png",
+    "banner_url": "https://example.com/banner.jpg",
+    "horario_abertura": "18:00",
+    "horario_fechamento": "23:00",
+    "dias_funcionamento": "2,3,4,5,6,0",
+    "tempo_preparo_min": 45,
+    "taxa_entrega": 5.0,
+    "valor_minimo_pedido": 20.0,
+    "raio_entrega_km": 5.0,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -204,7 +245,26 @@ GET /api/usuarios/
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Usuario>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "João Silva",
+    "username": "joao",
+    "email": "joao@email.com",
+    "celular": "11999999999",
+    "telefone": "11888888888",
+    "classe": "cliente",
+    "ativo": true,
+    "passou_pelo_primeiro_acesso": true,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z",
+    "modo_de_cadastro": "email",
+    "senha_hash": "$2b$12$..."
+  }
+]
+```
 
 ---
 
@@ -237,7 +297,29 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Loja`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Pizzaria do João",
+  "slug": "pizzaria-do-joao",
+  "descricao": "A melhor pizza da cidade",
+  "email": "contato@pizzaria.com",
+  "telefone": "11999999999",
+  "ativa": true,
+  "logo_url": "https://example.com/logo.png",
+  "banner_url": "https://example.com/banner.jpg",
+  "horario_abertura": "18:00",
+  "horario_fechamento": "23:00",
+  "dias_funcionamento": "2,3,4,5,6,0",
+  "tempo_preparo_min": 45,
+  "taxa_entrega": 5.0,
+  "valor_minimo_pedido": 20.0,
+  "raio_entrega_km": 5.0,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -248,7 +330,31 @@ GET /api/admin/lojas/listar
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Loja>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "Pizzaria do João",
+    "slug": "pizzaria-do-joao",
+    "descricao": "A melhor pizza da cidade",
+    "email": "contato@pizzaria.com",
+    "telefone": "11999999999",
+    "ativa": true,
+    "logo_url": "https://example.com/logo.png",
+    "banner_url": "https://example.com/banner.jpg",
+    "horario_abertura": "18:00",
+    "horario_fechamento": "23:00",
+    "dias_funcionamento": "2,3,4,5,6,0",
+    "tempo_preparo_min": 45,
+    "taxa_entrega": 5.0,
+    "valor_minimo_pedido": 20.0,
+    "raio_entrega_km": 5.0,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -274,7 +380,18 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Funcionario`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440001",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440002",
+  "cargo": "Gerente",
+  "salario": 2500.0,
+  "data_admissao": "2026-04-04",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -299,7 +416,18 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Entregador`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440003",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440004",
+  "veiculo": "Moto",
+  "placa": "ABC-1234",
+  "disponivel": true,
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -322,7 +450,15 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Cliente`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440005",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440006",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -381,7 +517,58 @@ GET /api/pedidos/
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Pedido>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "criado",
+    "total": 65.90,
+    "subtotal": 55.90,
+    "taxa_entrega": 5.0,
+    "desconto": 0.0,
+    "forma_pagamento": "PIX",
+    "observacoes": "Sem cebola",
+    "tempo_estimado_min": 45,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z",
+    "itens": [
+      {
+        "uuid": "550e8400-e29b-41d4-a716-446655440011",
+        "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+        "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+        "quantidade": 1,
+        "observacoes": null,
+        "adicionais": [],
+        "partes": [
+          {
+            "uuid": "550e8400-e29b-41d4-a716-446655440012",
+            "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+            "produto_nome": "Pizza Grande",
+            "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+            "preco_unitario": 49.90,
+            "posicao": 1,
+            "adicionais": [
+              {
+                "uuid": "550e8400-e29b-41d4-a716-446655440014",
+                "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+                "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+                "nome": "Queijo Extra",
+                "descricao": "Queijo mussarela adicional",
+                "preco": 3.50
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "partes": []
+  }
+]
+```
 
 ---
 
@@ -392,7 +579,56 @@ GET /api/pedidos/{uuid}
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Pedido` (com itens, partes e adicionais hidratados)
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440010",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "status": "criado",
+  "total": 65.90,
+  "subtotal": 55.90,
+  "taxa_entrega": 5.0,
+  "desconto": 0.0,
+  "forma_pagamento": "PIX",
+  "observacoes": "Sem cebola",
+  "tempo_estimado_min": 45,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z",
+  "itens": [
+    {
+      "uuid": "550e8400-e29b-41d4-a716-446655440011",
+      "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+      "quantidade": 1,
+      "observacoes": null,
+      "adicionais": [],
+      "partes": [
+        {
+          "uuid": "550e8400-e29b-41d4-a716-446655440012",
+          "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+          "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+          "produto_nome": "Pizza Grande",
+          "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+          "preco_unitario": 49.90,
+          "posicao": 1,
+          "adicionais": [
+            {
+              "uuid": "550e8400-e29b-41d4-a716-446655440014",
+              "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+              "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+              "nome": "Queijo Extra",
+              "descricao": "Queijo mussarela adicional",
+              "preco": 3.50
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "partes": []
+}
+```
 
 ---
 
@@ -403,22 +639,93 @@ GET /api/pedidos/criar
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Pedido>` (com itens, partes e adicionais hidratados)
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "criado",
+    "total": 65.90,
+    "subtotal": 55.90,
+    "taxa_entrega": 5.0,
+    "desconto": 0.0,
+    "forma_pagamento": "PIX",
+    "observacoes": "Sem cebola",
+    "tempo_estimado_min": 45,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z",
+    "itens": [
+      {
+        "uuid": "550e8400-e29b-41d4-a716-446655440011",
+        "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+        "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+        "quantidade": 1,
+        "observacoes": null,
+        "adicionais": [],
+        "partes": [
+          {
+            "uuid": "550e8400-e29b-41d4-a716-446655440012",
+            "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+            "produto_nome": "Pizza Grande",
+            "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+            "preco_unitario": 49.90,
+            "posicao": 1,
+            "adicionais": []
+          }
+        ]
+      }
+    ],
+    "partes": []
+  }
+]
+```
 
 ---
 
 ### 6.5 Buscar Pedido com Endereço de Entrega
 
 ```
-GET /api/pedidos/criar/{pedido_uuid}/com-entrega
+GET /api/pedidos/{pedido_uuid}/com-entrega
 Authorization: Bearer <token>
 ```
 
 **Response `200`:**
 ```json
 {
-  "pedido": { ... Pedido ... },
-  "endereco_entrega": { ... EnderecoEntrega | null ... }
+  "pedido": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "criado",
+    "total": 65.90,
+    "subtotal": 55.90,
+    "taxa_entrega": 5.0,
+    "desconto": 0.0,
+    "forma_pagamento": "PIX",
+    "observacoes": null,
+    "tempo_estimado_min": 45,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z",
+    "itens": [],
+    "partes": []
+  },
+  "endereco_entrega": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440020",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "cep": "01001-000",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 101",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
 }
 ```
 
@@ -491,7 +798,23 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Cupom`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440030",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO10",
+  "descricao": "10% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 10.0,
+  "valor_minimo": 50.0,
+  "data_validade": "2026-12-31T23:59:59Z",
+  "limite_uso": 100,
+  "uso_atual": 0,
+  "status": "Ativo",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -502,7 +825,25 @@ GET /api/marketing/cupons
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Cupom>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440030",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "codigo": "PROMO10",
+    "descricao": "10% off",
+    "tipo_desconto": "percentual",
+    "valor_desconto": 10.0,
+    "valor_minimo": 50.0,
+    "data_validade": "2026-12-31T23:59:59Z",
+    "limite_uso": 100,
+    "uso_atual": 0,
+    "status": "Ativo",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -512,7 +853,23 @@ Authorization: Bearer <token>
 GET /api/marketing/cupons/{codigo}
 ```
 
-**Response `200`:** `Cupom`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440030",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO10",
+  "descricao": "10% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 10.0,
+  "valor_minimo": 50.0,
+  "data_validade": "2026-12-31T23:59:59Z",
+  "limite_uso": 100,
+  "uso_atual": 0,
+  "status": "Ativo",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -532,7 +889,17 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `AvaliacaoDeLoja`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440040",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nota": 4.5,
+  "comentario": "Ótima pizza!",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -554,7 +921,19 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `AvaliacaoDeProduto`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440041",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "nota": 5.0,
+  "descricao": "Pizza deliciosa!",
+  "comentario": "Melhor pizza que já comi",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -584,7 +963,27 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Promocao`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440050",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Promoção Pizza",
+  "descricao": "Desconto especial em pizzas",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 20.0,
+  "valor_minimo": null,
+  "data_inicio": "2026-04-04T00:00:00Z",
+  "data_fim": "2026-04-04T23:59:59Z",
+  "dias_semana_validos": [5],
+  "tipo_escopo": "produto",
+  "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "categoria_uuid": null,
+  "status": "Ativo",
+  "prioridade": 1,
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -595,7 +994,29 @@ GET /api/marketing/{loja_uuid}/promocoes
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Promocao>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440050",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "Promoção Pizza",
+    "descricao": "Desconto especial em pizzas",
+    "tipo_desconto": "percentual",
+    "valor_desconto": 20.0,
+    "valor_minimo": null,
+    "data_inicio": "2026-04-04T00:00:00Z",
+    "data_fim": "2026-04-04T23:59:59Z",
+    "dias_semana_validos": [5],
+    "tipo_escopo": "produto",
+    "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+    "categoria_uuid": null,
+    "status": "Ativo",
+    "prioridade": 1,
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -643,7 +1064,18 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Adicional`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440060",
+  "nome": "Queijo Extra",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "disponivel": true,
+  "descricao": "Queijo mussarela adicional",
+  "preco": 3.50,
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -654,7 +1086,20 @@ GET /api/catalogo/{loja_uuid}/adicionais
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Adicional>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440060",
+    "nome": "Queijo Extra",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "disponivel": true,
+    "descricao": "Queijo mussarela adicional",
+    "preco": 3.50,
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -665,7 +1110,20 @@ GET /api/catalogo/{loja_uuid}/adicionais/disponiveis
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Adicional>` (apenas `disponivel = true`)
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440060",
+    "nome": "Queijo Extra",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "disponivel": true,
+    "descricao": "Queijo mussarela adicional",
+    "preco": 3.50,
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -697,7 +1155,17 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `CategoriaProdutos`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440070",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Bebidas",
+  "descricao": "Bebidas geladas",
+  "ordem": 1,
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -724,7 +1192,23 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `EnderecoEntrega`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440080",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+  "cep": "01001-000",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "complemento": "Apto 101",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
 
 ---
 
@@ -735,7 +1219,23 @@ GET /api/enderecos-entrega/{pedido_uuid}
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `EnderecoEntrega`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440080",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+  "cep": "01001-000",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "complemento": "Apto 101",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
 
 ---
 
@@ -746,7 +1246,25 @@ GET /api/enderecos-entrega/{loja_uuid}/loja
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<EnderecoEntrega>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440080",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "cep": "01001-000",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 101",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
+]
+```
 
 ---
 
@@ -773,7 +1291,22 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `EnderecoUsuario`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440090",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "cep": "01001-000",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "complemento": "Apto 101",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
 
 ---
 
@@ -784,7 +1317,24 @@ GET /api/enderecos-usuario/
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<EnderecoUsuario>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440090",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "cep": "01001-000",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 101",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
+]
+```
 
 ---
 
@@ -795,7 +1345,22 @@ GET /api/enderecos-usuario/{uuid}
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `EnderecoUsuario`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440090",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "cep": "01001-000",
+  "logradouro": "Rua das Flores",
+  "numero": "123",
+  "complemento": "Apto 101",
+  "bairro": "Centro",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
 
 ---
 
@@ -820,7 +1385,22 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `EnderecoUsuario`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440090",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "cep": "01001-000",
+  "logradouro": "Rua Nova",
+  "numero": "456",
+  "complemento": "Casa",
+  "bairro": "Jardim",
+  "cidade": "São Paulo",
+  "estado": "SP",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
 
 ---
 
@@ -844,7 +1424,15 @@ POST /api/favoritos/{loja_uuid}
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `LojaFavorita`
+**Response `200`:**
+```json
+{
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "uuid": "550e8400-e29b-41d4-a716-446655440100",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -869,7 +1457,17 @@ GET /api/favoritos/minhas
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<LojaFavorita>`
+**Response `200`:**
+```json
+[
+  {
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "uuid": "550e8400-e29b-41d4-a716-446655440100",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -914,7 +1512,23 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Produto`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "categoria_uuid": "550e8400-e29b-41d4-a716-446655440070",
+  "nome": "Pizza Grande",
+  "descricao": "Pizza grande com até 4 sabores",
+  "preco": 49.90,
+  "imagem_url": "https://example.com/pizza.jpg",
+  "disponivel": true,
+  "tempo_preparo_min": 30,
+  "destaque": false,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
@@ -925,7 +1539,25 @@ GET /api/produtos/
 Authorization: Bearer <token>
 ```
 
-**Response `200`:** `Vec<Produto>`
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440013",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "categoria_uuid": "550e8400-e29b-41d4-a716-446655440070",
+    "nome": "Pizza Grande",
+    "descricao": "Pizza grande com até 4 sabores",
+    "preco": 49.90,
+    "imagem_url": "https://example.com/pizza.jpg",
+    "disponivel": true,
+    "tempo_preparo_min": 30,
+    "destaque": false,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
 
 ---
 
@@ -948,7 +1580,23 @@ Content-Type: application/json
 }
 ```
 
-**Response `200`:** `Produto`
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "categoria_uuid": "550e8400-e29b-41d4-a716-446655440070",
+  "nome": "Pizza Grande Especial",
+  "descricao": "Pizza grande premium",
+  "preco": 59.90,
+  "imagem_url": "https://example.com/pizza.jpg",
+  "disponivel": true,
+  "tempo_preparo_min": 35,
+  "destaque": true,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z"
+}
+```
 
 ---
 
