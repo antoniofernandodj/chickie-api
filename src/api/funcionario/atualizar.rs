@@ -25,6 +25,7 @@ pub async fn atualizar_funcionario(
     Extension(usuario): Extension<Usuario>,
     Json(p): Json<AtualizarFuncionarioRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+
     let uc = AdminUsecase::new(
         state.ingrediente_service.clone(),
         state.horario_funcionamento_service.clone(),
