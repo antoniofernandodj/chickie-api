@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
-use crate::{models::{Cliente, Model, Produto}, repositories::Repository};
+use crate::{models::{Cliente, Model}, repositories::Repository};
 
 pub struct ClienteRepository { pool: Arc<PgPool> }
 
@@ -23,17 +23,6 @@ impl ClienteRepository {
         .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
-    }
-
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("
-                SELECT * FROM produtos
-                WHERE loja_uuid = $1;
-            ")
-            .bind(loja_uuid)
-            .fetch_all(self.pool())
-            .await
-            .map_err(|e| e.to_string())
     }
 }
 

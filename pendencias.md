@@ -15,8 +15,7 @@
 
 | # | Bug | Detalhe | Arquivo(s) |
 |---|-----|---------|------------|
-| 4 | **`ClienteRepository::listar_todos_por_loja` retorna `Vec<Produto>`** | Método copia/cola errado — tipo de retorno não bate com a entidade. | `src/repositories/cliente_repository.rs` |
-| 5 | **`Promocao` aplica para toda a loja** | Modelo atual não suporta promoção por produto ou categoria. | `src/models/promocoes.rs` |
+| 3 | **`Promocao` aplica para toda a loja** | Modelo atual não suporta promoção por produto ou categoria. | `src/models/promocoes.rs` |
 
 ## 🟢 Melhorias de Código
 
@@ -61,9 +60,9 @@
 | Prioridade | Count | Itens |
 |------------|-------|-------|
 | 🔴 Crítico | 2 | 1, 2 |
-| 🟡 Bugs | 2 | 3, 4 |
-| 🟢 Melhorias | 4 | 5, 6, 7, 8 |
-| 📋 Features | 14 | 9–22 |
-| 📝 Docs | 3 | 23, 24, 25 |
+| 🟡 Bugs | 1 | 3 |
+| 🟢 Melhorias | 4 | 4, 5, 6, 7 |
+| 📋 Features | 14 | 8–21 |
+| 📝 Docs | 3 | 22, 23, 24 |
 
-**Total: 25 pendências**
+**Total: 24 pendências**
