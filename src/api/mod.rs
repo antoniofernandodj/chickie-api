@@ -9,6 +9,7 @@ mod routers;
 mod auth;
 mod usecases;
 mod wipe;
+mod marketing;
 
 pub use routers::api_routes;
 
@@ -27,7 +28,8 @@ pub use dto::{
 };
 
 pub use usecases::{
-    CatalogoUsecase
+    CatalogoUsecase,
+    MarketingUsecase
 };
 
 pub use pedido::{
@@ -58,3 +60,8 @@ pub use cupom::{
 };
 
 pub use wipe::wipe_database;
+
+pub use marketing::{
+    avaliar_loja,
+    avaliar_produto
+};

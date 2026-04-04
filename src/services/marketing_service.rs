@@ -11,6 +11,7 @@ use crate::repositories::{
     Repository as _
 };
 
+#[derive(Clone)]
 pub struct MarketingService {
     cupom_repo: Arc<CupomRepository>,
     promocao_repo: Arc<PromocaoRepository>,

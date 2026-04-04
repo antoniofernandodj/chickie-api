@@ -20,7 +20,9 @@ use crate::api::{
     criar_cupom,
     validar_cupom,
     atualizar_produto,
-    wipe_database
+    wipe_database,
+    avaliar_loja,
+    avaliar_produto
 };
 
 
@@ -57,11 +59,13 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
         .route("/{uuid}", put(atualizar_produto))
 }
 
-// Rotas de Marketing / Cupons
+// Rotas de Marketing / Cupons / Avaliações
 pub fn marketing_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_cupom))
         .route("/{codigo}", get(validar_cupom))
+        .route("/{loja_uuid}/avaliar-loja", post(avaliar_loja))
+        .route("/{loja_uuid}/avaliar-produto", post(avaliar_produto))
 }
 
 

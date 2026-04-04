@@ -151,3 +151,17 @@ pub struct LoginRequest {
     pub senha: String,
 }
 
+#[derive(serde::Deserialize)]
+pub struct AvaliarLojaRequest {
+    pub nota: f64,
+    pub comentario: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct AvaliarProdutoRequest {
+    pub produto_uuid: Uuid,
+    pub nota: f64,
+    pub descricao: String,
+    pub comentario: Option<String>,
+}
+
