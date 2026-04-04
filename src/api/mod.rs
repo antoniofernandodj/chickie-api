@@ -12,6 +12,7 @@ mod marketing;
 mod catalogo;
 mod endereco_entrega;
 mod endereco_usuario;
+mod loja_favorita;
 
 // Re-export usecases from the top-level module
 pub use crate::usecases::{
@@ -51,6 +52,7 @@ pub use loja::{
     listar_lojas, // buscar_loja
     adicionar_funcionario,
     adicionar_entregador,
+    adicionar_cliente,
     listar_lojas_admin
 };
 
@@ -79,7 +81,8 @@ pub use catalogo::{
 
 pub use endereco_entrega::{
     criar_para_pedido,
-    buscar_por_pedido
+    buscar_por_pedido,
+    listar_por_loja
 };
 
 pub use endereco_usuario::{
@@ -88,4 +91,11 @@ pub use endereco_usuario::{
     buscar_endereco,
     atualizar_endereco,
     deletar_endereco
+};
+
+pub use loja_favorita::{
+    adicionar_favorita,
+    remover_favorita,
+    listar_minhas_favoritas,
+    verificar_favorita
 };

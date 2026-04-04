@@ -25,16 +25,22 @@ use crate::api::{
     avaliar_produto,
     adicionar_funcionario,
     adicionar_entregador,
+    adicionar_cliente,
     listar_lojas_admin,
     criar_adicional,
     criar_categoria,
     criar_para_pedido,
     buscar_por_pedido,
+    listar_por_loja,
     criar_endereco,
     listar_enderecos,
     buscar_endereco,
     atualizar_endereco,
-    deletar_endereco
+    deletar_endereco,
+    adicionar_favorita,
+    remover_favorita,
+    listar_minhas_favoritas,
+    verificar_favorita
 };
 
 
@@ -60,6 +66,7 @@ pub fn loja_admin_routes() -> Router<Arc<AppState>> {
         .route("/listar", get(listar_lojas_admin))
         .route("/{loja_uuid}/funcionarios", post(adicionar_funcionario))
         .route("/{loja_uuid}/entregadores", post(adicionar_entregador))
+        .route("/{loja_uuid}/clientes", post(adicionar_cliente))
 }
 
 pub fn pedido_routes() -> Router<Arc<AppState>> {
@@ -82,6 +89,7 @@ pub fn endereco_entrega_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{pedido_uuid}/{loja_uuid}", post(criar_para_pedido))
         .route("/{pedido_uuid}", get(buscar_por_pedido))
+        .route("/{loja_uuid}/loja", get(listar_por_loja))
 }
 
 // Rotas de Endereço de Usuário
@@ -92,6 +100,15 @@ pub fn endereco_usuario_routes() -> Router<Arc<AppState>> {
         .route("/{uuid}", get(buscar_endereco))
         .route("/{uuid}", put(atualizar_endereco))
         .route("/{uuid}", delete(deletar_endereco))
+}
+
+// Rotas de Lojas Favoritas
+pub fn loja_favorita_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}", post(adicionar_favorita))
+        .route("/{loja_uuid}", delete(remover_favorita))
+        .route("/minhas", get(listar_minhas_favoritas))
+        .route("/{loja_uuid}/verificar", get(verificar_favorita))
 }
 pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
@@ -120,6 +137,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/catalogo", catalogo_routes())
         .nest("/enderecos-entrega", endereco_entrega_routes())
         .nest("/enderecos-usuario", endereco_usuario_routes())
+        .nest("/favoritos", loja_favorita_routes())
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())

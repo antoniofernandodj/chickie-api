@@ -18,7 +18,7 @@ pub struct CreateCategoriaRequest {
 pub async fn criar_categoria(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
+    Extension(_): Extension<Usuario>,
     Json(p): Json<CreateCategoriaRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 

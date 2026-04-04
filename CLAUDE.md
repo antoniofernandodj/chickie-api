@@ -60,7 +60,10 @@ src/
 │   ├── loja_service.rs
 │   ├── pedido_service.rs
 │   ├── catalogo_service.rs
-│   └── marketing_service.rs
+│   ├── marketing_service.rs
+│   ├── endereco_entrega_service.rs
+│   ├── endereco_usuario_service.rs
+│   └── loja_favorita_service.rs
 │
 ├── usecases/               # Casos de uso (orquestram services + usuário)
 │   ├── mod.rs
@@ -81,6 +84,10 @@ src/
     ├── pedido/             # Handlers de pedido
     ├── produto/            # Handlers de produto
     ├── cupom/              # Handlers de cupom
+    ├── catalogo/           # Handlers de catálogo (adicionais, categorias)
+    ├── endereco_entrega/   # Handlers de endereço de entrega
+    ├── endereco_usuario/   # Handlers de endereço de usuário
+    ├── loja_favorita/      # Handlers de lojas favoritas
     └── marketing/          # Handlers de avaliação (loja/produto)
 ```
 
@@ -163,7 +170,7 @@ Cada repositório implementa também:
 ### Tratamento de Erros
 
 - Handlers retornam `Result<impl IntoResponse, AppError>`
-- `AppError` enum em `api/dto/mod.rs`: `NotFound`, `Internal`, `BadRequest`
+- `AppError` enum em `api/dto/mod.rs`: `NotFound`, `Internal`, `BadRequest`, `Unauthorized`
 - **Nunca** usar `.unwrap()` fora do bootstrap do `main.rs`
 - Usar `?` com `From<String> for AppError` para conversão automática
 
@@ -174,8 +181,102 @@ Cada repositório implementa também:
 | Todas sob `/api`                | `POST /api/pedidos`                        |
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
-| Auth via middleware             | Aplicado em `/pedidos`, `/usuarios`, `/lojas`, `/produtos`, `/cupons`, `/admin` |
+| Auth via middleware             | Aplicado em `/pedidos`, `/usuarios`, `/produtos`, `/cupons`, `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/admin` |
 | Sem auth                        | `/auth/*`, `/wipe`, `/ok`, `GET /api/lojas/`                  |
+
+### Referência Completa de Endpoints
+
+#### Autenticação (sem auth)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/auth/signup` | Cadastro de usuário |
+| `POST` | `/api/auth/login` | Login (gera JWT) |
+
+#### Usuários (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/usuarios/` | Listar usuários |
+
+#### Lojas Públicas (sem auth para listagem)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/lojas/` | Listar lojas |
+
+#### Administração (auth required, apenas admin)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/admin/lojas` | Criar loja |
+| `GET` | `/api/admin/lojas/listar` | Listar todas as lojas |
+| `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário |
+| `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador |
+
+#### Produtos (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/produtos/` | Criar produto |
+| `GET` | `/api/produtos/` | Listar produtos |
+| `PUT` | `/api/produtos/{uuid}` | Atualizar product |
+
+#### Catálogo (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
+
+#### Pedidos (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/pedidos/` | Criar pedido |
+| `GET` | `/api/pedidos/` | Listar pedidos |
+| `GET` | `/api/pedidos/{uuid}` | Buscar pedido |
+
+#### Cupons & Avaliações (auth required, exceto validar cupom)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/cupons/` | Criar cupom |
+| `GET` | `/api/cupons/{codigo}` | Validar cupom |
+| `POST` | `/api/cupons/{loja_uuid}/avaliar-loja` | Avaliar loja |
+| `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar product |
+
+#### Endereços de Entrega (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | Criar endereço para pedido |
+| `GET` | `/api/enderecos-entrega/{pedido_uuid}` | Buscar endereço do pedido |
+
+#### Endereços de Usuário (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/enderecos-usuario/` | Criar endereço |
+| `GET` | `/api/enderecos-usuario/` | Listar endereços do usuário |
+| `GET` | `/api/enderecos-usuario/{uuid}` | Buscar endereço |
+| `PUT` | `/api/enderecos-usuario/{uuid}` | Atualizar endereço |
+| `DELETE` | `/api/enderecos-usuario/{uuid}` | Deletar endereço |
+
+#### Lojas Favoritas (auth required)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `POST` | `/api/favoritos/{loja_uuid}` | Adicionar loja às favoritas |
+| `DELETE` | `/api/favoritos/{loja_uuid}` | Remover loja das favoritas |
+| `GET` | `/api/favoritos/minhas` | Listar minhas lojas favoritas |
+| `GET` | `/api/favoritos/{loja_uuid}/verificar` | Verificar se loja é favorita |
+
+#### Administração
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `DELETE` | `/api/wipe` | ⚠️ Limpar todo o banco (dev only) |
 
 ### AppState
 
@@ -187,6 +288,9 @@ pub struct AppState {
     pub catalogo_service: CatalogoService,
     pub pedido_service: PedidoService,
     pub marketing_service: MarketingService,
+    pub endereco_entrega_service: EnderecoEntregaService,
+    pub endereco_usuario_service: EnderecoUsuarioService,
+    pub loja_favorita_service: LojaFavoritaService,
 
     // Repositórios brutos (buscas simples em handlers)
     pub pedido_repo: Arc<PedidoRepository>,
@@ -244,6 +348,19 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 
 ### Entidades
 
+#### Serviços Disponíveis
+
+| Serviço | Responsabilidade |
+|---------|-----------------|
+| `UsuarioService` | Registro, autenticação, listagem de usuários |
+| `LojaService` | Criação de loja, funcionários, entregadores, clientes |
+| `CatalogoService` | Produtos, categorias, adicionais |
+| `PedidoService` | Criação, busca, listagem de pedidos |
+| `MarketingService` | Cupons, promoções, avaliações |
+| `EnderecoEntregaService` | Endereços de entrega vinculados a pedidos |
+| `EnderecoUsuarioService` | CRUD de endereços de usuários |
+| `LojaFavoritaService` | Favoritar/desfavoritar lojas, listar favoritas |
+
 #### Usuários & Autenticação
 
 | Entidade         | Descrição                                                                                         |
@@ -285,7 +402,8 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 
 | Entidade                      | Descrição                                            |
 |-------------------------------|------------------------------------------------------|
-| `Cliente`                     | Usuário que segue uma loja (relacionamento user-loja). |
+| `Cliente`                     | Usuário que é favorito de uma loja (usuário favorito da loja). |
+| `LojaFavorita`                | Loja que é favorita de um usuário (loja favorita do usuário). |
 | `Entregador`                  | Entregador vinculado a uma loja.                     |
 | `Funcionario`                 | Funcionário vinculado a uma loja.                    |
 | `HorarioFuncionamento`        | Horário de funcionamento por dia da semana.          |
@@ -393,8 +511,12 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-03  | Tabela `lojas_favoritas` e endpoints de favoritos criados |
+| 2026-04-03  | `LojaService::adicionar_cliente` agora cria usuário cliente automaticamente |
+| 2026-04-03  | `EnderecoEntregaService` e `EnderecoUsuarioService` injetados no AppState |
 | 2026-04-03  | `ClasseUsuario` adicionada ao `Usuario` (cliente/admin) |
 | 2026-04-03  | Endpoint `POST /api/admin/lojas` protegido por auth + verificação de admin |
+| 2026-04-03  | Pasta `src/api/usecases/` movida para `src/usecases/` |
 | 2026-04-03  | Repositórios extraídos para módulo com trait defaults |
 | 2026-04-03  | SQL queries otimizadas (indentação compacta)       |
 | 2026-04-03  | Endpoint `DELETE /api/wipe` criado (dev only)      |

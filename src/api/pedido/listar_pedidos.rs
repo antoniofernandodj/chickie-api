@@ -5,7 +5,6 @@ use uuid::Uuid;
 
 use std::sync::Arc;
 use crate::{api::dto::AppError};
-use crate::repositories::Repository;
 use crate::api::AppState;
 
 
@@ -17,7 +16,7 @@ pub async fn listar_pedidos(
 
     let pedidos = state
         .pedido_repo
-        .listar_todos()
+        .buscar_por_loja(loja_uuid)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 

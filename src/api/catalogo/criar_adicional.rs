@@ -18,7 +18,7 @@ pub struct CreateAdicionalRequest {
 pub async fn criar_adicional(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
+    Extension(_): Extension<Usuario>,
     Json(p): Json<CreateAdicionalRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 

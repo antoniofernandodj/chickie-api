@@ -17,7 +17,7 @@ pub async fn validar_cupom(
 ) -> Result<impl IntoResponse, AppError> {
 
     let cupom = state.cupom_repo
-        .buscar_por_codigo(&codigo)
+        .buscar_por_codigo(&codigo, loja_uuid)
         .await
         // Erro de banco -> Internal
         .map_err(|e| AppError::Internal(e.to_string()))?

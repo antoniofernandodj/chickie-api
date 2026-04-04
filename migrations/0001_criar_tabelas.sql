@@ -83,7 +83,7 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- TABELA: clientes (relacionamento usuario-loja)
+-- TABELA: clientes (relacionamento usuario-loja — usuarios favoritos da loja)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS clientes (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -97,6 +97,22 @@ CREATE TABLE IF NOT EXISTS clientes (
 
 CREATE INDEX IF NOT EXISTS idx_clientes_usuario ON clientes(usuario_uuid);
 CREATE INDEX IF NOT EXISTS idx_clientes_loja ON clientes(loja_uuid);
+
+-- ============================================================================
+-- TABELA: lojas_favoritas (relacionamento usuario-loja — lojas favoritas do usuario)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS lojas_favoritas (
+    uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    usuario_uuid UUID NOT NULL,
+    loja_uuid UUID NOT NULL,
+    criado_em TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE CASCADE,
+    FOREIGN KEY (loja_uuid) REFERENCES lojas(uuid) ON DELETE CASCADE,
+    UNIQUE(usuario_uuid, loja_uuid)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lojas_favoritas_usuario ON lojas_favoritas(usuario_uuid);
+CREATE INDEX IF NOT EXISTS idx_lojas_favoritas_loja ON lojas_favoritas(loja_uuid);
 
 -- ============================================================================
 -- TABELA: categorias_produtos

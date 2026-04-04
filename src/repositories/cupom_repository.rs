@@ -9,9 +9,10 @@ pub struct CupomRepository { pool: Arc<PgPool> }
 impl CupomRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
-    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Option<Cupom>, String> {
-        sqlx::query_as::<_, Cupom>("SELECT * FROM cupons WHERE UPPER(codigo) = UPPER($1)")
+    pub async fn buscar_por_codigo(&self, codigo: &str, loja_uuid: Uuid) -> Result<Option<Cupom>, String> {
+        sqlx::query_as::<_, Cupom>("SELECT * FROM cupons WHERE UPPER(codigo) = UPPER($1) and loja_uuid = $2")
         .bind(codigo)
+        .bind(loja_uuid)
         .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())

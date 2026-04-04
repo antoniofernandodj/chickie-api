@@ -10,7 +10,7 @@ use crate::{
 pub async fn buscar_por_pedido(
     State(state): State<Arc<AppState>>,
     Path(pedido_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
+    Extension(_): Extension<Usuario>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let endereco = state.endereco_entrega_service

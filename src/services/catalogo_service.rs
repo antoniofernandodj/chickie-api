@@ -3,7 +3,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::{
-    Adicional, CategoriaProdutos, Model, Produto
+    Adicional, CategoriaProdutos, Produto
 };
 
 use crate::repositories::{

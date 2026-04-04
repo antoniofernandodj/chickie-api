@@ -49,10 +49,12 @@ impl PedidoRepository {
     pub async fn buscar_completo(
         &self,
         uuid: Uuid,
+        loja_uuid: Uuid,
     ) -> Result<Option<Pedido>, String> {
         // 1. Busca o pedido base
-        let mut pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1")
+        let mut pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1 AND loja_uuid = $2")
         .bind(uuid)
+        .bind(loja_uuid)
         .fetch_optional(&*self.pool)
         .await
         .map_err(|e| e.to_string())?

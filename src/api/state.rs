@@ -18,6 +18,7 @@ use crate::{
         EntregadorRepository,
         FuncionarioRepository,
         HorarioFuncionamentoRepository,
+        LojaFavoritaRepository,
         LojaRepository,
         PedidoRepository,
         ProdutoRepository,
@@ -28,6 +29,7 @@ use crate::{
         CatalogoService,
         EnderecoEntregaService,
         EnderecoUsuarioService,
+        LojaFavoritaService,
         LojaService,
         MarketingService,
         PedidoService,
@@ -43,6 +45,7 @@ pub struct AppState {
     pub marketing_service: MarketingService,
     pub endereco_entrega_service: EnderecoEntregaService,
     pub endereco_usuario_service: EnderecoUsuarioService,
+    pub loja_favorita_service: LojaFavoritaService,
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
     pub cupom_repo: Arc<CupomRepository>,
@@ -93,6 +96,8 @@ impl AppState {
             Arc::new(EnderecoEntregaRepository::new(pool.clone()));
         let endereco_usuario_repo =
             Arc::new(EnderecoUsuarioRepository::new(pool.clone()));
+        let loja_favorita_repo =
+            Arc::new(LojaFavoritaRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
         let usuario_service = UsuarioService::new(
@@ -102,10 +107,11 @@ impl AppState {
         let loja_service = LojaService::new(
             Arc::clone(&loja_repo),
             Arc::clone(&config_partes_repo),
-            Arc::clone(&horario_repo), 
+            Arc::clone(&horario_repo),
             Arc::clone(&funcionario_repo),
             Arc::clone(&entregador_repo),
-            Arc::clone(&cliente_repo)
+            Arc::clone(&cliente_repo),
+            Arc::clone(&usuario_repo)
         );
 
         let catalogo_service = CatalogoService::new(
@@ -137,6 +143,10 @@ impl AppState {
             Arc::clone(&endereco_usuario_repo)
         );
 
+        let loja_favorita_service = LojaFavoritaService::new(
+            Arc::clone(&loja_favorita_repo)
+        );
+
 
         // 4. Estado compartilhado
         let s = Arc::new(AppState {
@@ -147,6 +157,7 @@ impl AppState {
             marketing_service,
             endereco_entrega_service,
             endereco_usuario_service,
+            loja_favorita_service,
             pedido_repo: Arc::clone(&pedido_repo),
             cupom_repo: Arc::clone(&cupom_repo),
             usuario_repo: Arc::clone(&usuario_repo),

@@ -80,6 +80,7 @@ pub mod configuracao_pedidos_loja_repository;
 pub mod parte_de_item_pedido_repository;
 pub mod endereco_usuario_repository;
 pub mod endereco_entrega_repository;
+pub mod loja_favorita_repository;
 
 // Re-export all repository structs
 pub use usuario_repository::UsuarioRepository;
@@ -103,3 +104,4 @@ pub use configuracao_pedidos_loja_repository::ConfiguracaoPedidosLojaRepository;
 pub use parte_de_item_pedido_repository::ParteDeItemPedidoRepository;
 pub use endereco_usuario_repository::EnderecoUsuarioRepository;
 pub use endereco_entrega_repository::EnderecoEntregaRepository;
+pub use loja_favorita_repository::LojaFavoritaRepository;

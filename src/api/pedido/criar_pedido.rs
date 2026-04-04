@@ -1,5 +1,5 @@
 use axum::{
-    Json, extract::{Path, State}, http::StatusCode, response::{IntoResponse, Response}
+    Json, extract::{Path, State}, response::{IntoResponse, Response}
 };
 use serde_json::json;
 use uuid::Uuid;

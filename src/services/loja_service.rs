@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
-use chrono::NaiveDate;
 use uuid::Uuid;
 
 use crate::models::{
     Cliente,
+    ClasseUsuario,
     ConfiguracaoDePedidosLoja,
     Entregador,
     Funcionario,
@@ -21,6 +21,7 @@ use crate::repositories::{
     FuncionarioRepository,
     EntregadorRepository,
     ClienteRepository,
+    UsuarioRepository,
     Repository as _
 };
 
@@ -30,7 +31,8 @@ pub struct LojaService {
     horario_repo: Arc<HorarioFuncionamentoRepository>,
     funcionario_repo: Arc<FuncionarioRepository>,
     entregador_repo: Arc<EntregadorRepository>,
-    cliente_repo: Arc<ClienteRepository>
+    cliente_repo: Arc<ClienteRepository>,
+    usuario_repo: Arc<UsuarioRepository>,
 }
 
 impl LojaService {
@@ -40,7 +42,8 @@ impl LojaService {
         horario_repo: Arc<HorarioFuncionamentoRepository>,
         funcionario_repo: Arc<FuncionarioRepository>,
         entregador_repo: Arc<EntregadorRepository>,
-        cliente_repo: Arc<ClienteRepository>
+        cliente_repo: Arc<ClienteRepository>,
+        usuario_repo: Arc<UsuarioRepository>,
     ) -> Self {
 
         Self {
@@ -49,7 +52,8 @@ impl LojaService {
             horario_repo,
             funcionario_repo,
             entregador_repo,
-            cliente_repo
+            cliente_repo,
+            usuario_repo,
         }
     }
 
@@ -150,17 +154,36 @@ impl LojaService {
 
     pub async fn adicionar_cliente(
         &self,
-        usuario: &Usuario,
-        loja: &Loja
-    ) -> Result<(), String> {
+        loja_uuid: Uuid,
+        nome: String,
+        username: String,
+        email: String,
+        senha: String,
+        celular: String,
+        // telefone: Option<String>,
+    ) -> Result<Cliente, String> {
 
-        let cliente: Cliente = Cliente::new(usuario.uuid, loja.uuid);
+        // 1. Cria o usuário com classe "cliente"
+        let senha_hash = bcrypt::hash(senha, bcrypt::DEFAULT_COST)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
 
-        println!("cliente: {:?}", cliente);
+        let usuario = Usuario::new(
+            nome,
+            username,
+            email.clone(),
+            senha_hash,
+            celular,
+            "email".to_string(),
+            ClasseUsuario::Cliente,
+        );
 
-        let _ = self.cliente_repo.criar(&cliente).await;
+        self.usuario_repo.criar(&usuario).await?;
 
-        Ok(())
+        // 2. Vincula o cliente à loja
+        let cliente = Cliente::new(usuario.uuid, loja_uuid);
+        self.cliente_repo.criar(&cliente).await?;
+
+        Ok(cliente)
     }
 
     pub async fn adicionar_entregador(

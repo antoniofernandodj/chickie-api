@@ -22,7 +22,7 @@ pub struct CreateEnderecoEntregaRequest {
 pub async fn criar_para_pedido(
     State(state): State<Arc<AppState>>,
     Path((pedido_uuid, loja_uuid)): Path<(Uuid, Uuid)>,
-    Extension(usuario): Extension<Usuario>,
+    Extension(_): Extension<Usuario>,
     Json(p): Json<CreateEnderecoEntregaRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 

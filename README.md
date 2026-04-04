@@ -76,35 +76,56 @@ docker run -p 3000:3000 \
 
 Todos os endpoints vivem sob `/api`.
 
-### Autenticação
+### Autenticação (sem auth)
 
-| Método | Rota              | Descrição        | Auth |
-|--------|-------------------|------------------|------|
-| `POST` | `/api/auth/signup`| Cadastro de usuário | ❌  |
-| `POST` | `/api/auth/login` | Login (gera JWT)    | ❌  |
+| Método | Rota              | Descrição        | Auth | Classe |
+|--------|-------------------|------------------|------|--------|
+| `POST` | `/api/auth/signup`| Cadastro de usuário | ❌  | — |
+| `POST` | `/api/auth/login` | Login (gera JWT)    | ❌  | — |
 
-### Lojas
+### Usuários (auth required)
 
-| Método  | Rota                | Descrição        | Auth | Classe |
-|---------|---------------------|------------------|------|--------|
-| `POST`  | `/api/admin/lojas`  | Criar loja       | ✅   | Admin  |
-| `GET`   | `/api/lojas/`       | Listar lojas     | ❌   | —      |
+| Método  | Rota            | Descrição        | Auth |
+|---------|-----------------|------------------|------|
+| `GET`   | `/api/usuarios/`| Listar usuários  | ✅   |
 
-### Produtos
+### Lojas Públicas
+
+| Método  | Rota           | Descrição        | Auth |
+|---------|----------------|------------------|------|
+| `GET`   | `/api/lojas/`  | Listar lojas     | ❌   |
+
+### Administração (auth required, apenas admin)
+
+| Método  | Rota                                     | Descrição            | Auth | Classe |
+|---------|------------------------------------------|----------------------|------|--------|
+| `POST`  | `/api/admin/lojas`                       | Criar loja           | ✅   | Admin  |
+| `GET`   | `/api/admin/lojas/listar`                | Listar todas as lojas| ✅   | Admin  |
+| `POST`  | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário | ✅ | Admin |
+| `POST`  | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador | ✅  | Admin  |
+
+### Produtos (auth required)
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
 | `POST` | `/api/produtos/`    | Criar produto       | ✅   |
-| `GET`  | `/api/produtos/`    | Listar produtos     | ❌   |
+| `GET`  | `/api/produtos/`    | Listar produtos     | ✅   |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |
 
-### Pedidos
+### Catálogo (auth required)
+
+| Método | Rota                                     | Descrição       | Auth |
+|--------|------------------------------------------|-----------------|------|
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais`   | Criar adicional | ✅   |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias`   | Criar categoria | ✅   |
+
+### Pedidos (auth required)
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
 | `POST` | `/api/pedidos/`     | Criar pedido        | ✅   |
 | `GET`  | `/api/pedidos/`     | Listar pedidos      | ✅   |
-| `GET`  | `/api/pedidos/{uuid}` | Buscar pedido    | ✅   |
+| `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
 
 ### Cupons & Avaliações
 
@@ -114,6 +135,32 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/cupons/{codigo}`                  | Validar cupom          | ❌   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-loja`  | Avaliar loja           | ✅   |
 | `POST` | `/api/cupons/{loja_uuid}/avaliar-produto` | Avaliar produto      | ✅   |
+
+### Endereços de Entrega (auth required)
+
+| Método | Rota                                                | Descrição              | Auth |
+|--------|-----------------------------------------------------|------------------------|------|
+| `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | Criar endereço para pedido | ✅ |
+| `GET`  | `/api/enderecos-entrega/{pedido_uuid}`             | Buscar endereço do pedido  | ✅ |
+
+### Endereços de Usuário (auth required)
+
+| Método | Rota                            | Descrição              | Auth |
+|--------|---------------------------------|------------------------|------|
+| `POST` | `/api/enderecos-usuario/`       | Criar endereço         | ✅   |
+| `GET`  | `/api/enderecos-usuario/`       | Listar endereços       | ✅   |
+| `GET`  | `/api/enderecos-usuario/{uuid}` | Buscar endereço        | ✅   |
+| `PUT`  | `/api/enderecos-usuario/{uuid}` | Atualizar endereço     | ✅   |
+| `DELETE`| `/api/enderecos-usuario/{uuid}`| Deletar endereço       | ✅   |
+
+### Lojas Favoritas (auth required)
+
+| Método | Rota                            | Descrição              | Auth |
+|--------|---------------------------------|------------------------|------|
+| `POST` | `/api/favoritos/{loja_uuid}`    | Adicionar às favoritas | ✅   |
+| `DELETE` | `/api/favoritos/{loja_uuid}`  | Remover das favoritas  | ✅   |
+| `GET`  | `/api/favoritos/minhas`         | Listar minhas favoritas| ✅   |
+| `GET`  | `/api/favoritos/{loja_uuid}/verificar` | Verificar se é favorita | ✅ |
 
 ### Administração
 
@@ -167,6 +214,10 @@ src/
     ├── pedido/             # Handlers de pedido
     ├── produto/            # Handlers de produto
     ├── cupom/              # Handlers de cupom
+    ├── catalogo/           # Handlers de catálogo
+    ├── endereco_entrega/   # Handlers de endereço de entrega
+    ├── endereco_usuario/   # Handlers de endereço de usuário
+    ├── loja_favorita/      # Handlers de lojas favoritas
     └── marketing/          # Handlers de avaliação
 ```
 
@@ -193,7 +244,7 @@ A API usa **JWT (JSON Web Token)** para autenticação e **classe de usuário** 
 | Classe | Descrição |
 |--------|-----------|
 | `cliente` | Padrão. Pode navegar lojas, fazer pedidos e avaliar. |
-| `administrador` | Pode criar lojas e gerenciar catálogos. |
+| `administrador` | Pode criar lojas, gerenciar catálogos, funcionários e entregadores. |
 
 ### Fluxo
 
@@ -230,16 +281,18 @@ POST /api/auth/signup
 }
 ```
 
-### Endpoints Protegidos por Classe
+### Serviços Disponíveis
 
-| Endpoint | Auth | Classe |
-|----------|------|--------|
-| `POST /api/admin/lojas` | ✅ JWT | `administrador` |
-| `POST /api/pedidos` | ✅ JWT | Qualquer |
-| `POST /api/produtos` | ✅ JWT | Qualquer |
-| `POST /api/cupons` | ✅ JWT | Qualquer |
-| `POST /api/cupons/{loja_uuid}/avaliar-loja` | ✅ JWT | Qualquer |
-| `GET /api/lojas` | ❌ | — |
+| Serviço | Responsabilidade |
+|---------|-----------------|
+| `UsuarioService` | Registro, autenticação, listagem |
+| `LojaService` | Criação de loja, funcionários, entregadores, clientes |
+| `CatalogoService` | Produtos, categorias, adicionais |
+| `PedidoService` | Criação, busca, listagem de pedidos |
+| `MarketingService` | Cupons, promoções, avaliações |
+| `EnderecoEntregaService` | Endereços de entrega vinculados a pedidos |
+| `EnderecoUsuarioService` | CRUD de endereços de usuários |
+| `LojaFavoritaService` | Favoritar/desfavoritar lojas, listar favoritas |
 
 ---
 

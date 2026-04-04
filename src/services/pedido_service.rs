@@ -118,9 +118,10 @@ impl PedidoService {
 
     pub async fn buscar_completo(
         &self,
-        pedido_uuid: uuid::Uuid
+        pedido_uuid: uuid::Uuid,
+        loja_uuid: uuid::Uuid,
     ) -> Result<Option<Pedido>, String> {
-        self.pedido_repo.buscar_completo(pedido_uuid).await
+        self.pedido_repo.buscar_completo(pedido_uuid, loja_uuid).await
     }
 
     pub async fn listar(&self) -> Result<Vec<Pedido>, String> {
@@ -270,7 +271,7 @@ impl PedidoService {
 
         if let Some(cod) = codigo {
             // Busca cupom pelo código
-            if let Some(cupom) = self.cupom_repo.buscar_por_codigo(&cod).await? {
+            if let Some(cupom) = self.cupom_repo.buscar_por_codigo(&cod, pedido.loja_uuid).await? {
 
                 // Validações básicas
                 if cupom.loja_uuid != pedido.loja_uuid {
@@ -336,9 +337,10 @@ impl PedidoService {
     pub async fn buscar_pedido_com_entrega(
         &self,
         pedido_uuid: Uuid,
+        loja_uuid: uuid::Uuid
     ) -> Result<PedidoComEntrega, String> {
         
-        let pedido = self.pedido_repo.buscar_completo(pedido_uuid).await?
+        let pedido = self.pedido_repo.buscar_completo(pedido_uuid, loja_uuid).await?
             .ok_or("Pedido não encontrado")?;
 
         let endereco_entrega = self.endereco_entrega_repo

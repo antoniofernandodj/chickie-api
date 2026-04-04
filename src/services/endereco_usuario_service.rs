@@ -108,17 +108,17 @@ impl EnderecoUsuarioService {
         self.repo.deletar(uuid).await
     }
 
-    /// Define um endereço como "padrão" para o usuário
-    /// (Requer campo `padrao: bool` no modelo - se não tiver, ignore este método)
-    pub async fn definir_como_padrao(
-        &self,
-        endereco_uuid: Uuid,
-        usuario_uuid: Uuid,
-    ) -> Result<(), String> {
-        // Se o modelo tiver campo `padrao`, desmarca outros e marca este
-        // Exemplo conceitual:
-        // 1. UPDATE enderecos_usuario SET padrao = false WHERE usuario_uuid = ?
-        // 2. UPDATE enderecos_usuario SET padrao = true WHERE uuid = ? AND usuario_uuid = ?
-        unimplemented!("Requer campo 'padrao' no modelo EnderecoUsuario")
-    }
+    // /// Define um endereço como "padrão" para o usuário
+    // /// (Requer campo `padrao: bool` no modelo - se não tiver, ignore este método)
+    // pub async fn definir_como_padrao(
+    //     &self,
+    //     endereco_uuid: Uuid,
+    //     usuario_uuid: Uuid,
+    // ) -> Result<(), String> {
+    //     // Se o modelo tiver campo `padrao`, desmarca outros e marca este
+    //     // Exemplo conceitual:
+    //     // 1. UPDATE enderecos_usuario SET padrao = false WHERE usuario_uuid = ?
+    //     // 2. UPDATE enderecos_usuario SET padrao = true WHERE uuid = ? AND usuario_uuid = ?
+    //     unimplemented!("Requer campo 'padrao' no modelo EnderecoUsuario")
+    // }
 }

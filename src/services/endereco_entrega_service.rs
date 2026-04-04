@@ -2,7 +2,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::EnderecoEntrega;
-use crate::repositories::{EnderecoEntregaRepository, Repository as _};
+use crate::repositories::{EnderecoEntregaRepository};
 
 #[derive(Clone)]
 pub struct EnderecoEntregaService {

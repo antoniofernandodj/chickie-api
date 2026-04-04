@@ -1,23 +1,32 @@
 use axum::{
     Json, extract::{Path, State}, response::IntoResponse
 };
+use serde::Deserialize;
 use uuid::Uuid;
-
-
 use std::sync::Arc;
-use crate::{api::dto::AppError, models::Cupom};
-use crate::api::AppState;
+use crate::api::{AppState, dto::AppError};
 
+
+#[derive(Deserialize)]
+pub struct CriarCupomRequest {
+    pub codigo: String,
+    pub descricao: String,
+    pub tipo_desconto: String,
+    pub valor_desconto: Option<f64>,
+    pub valor_minimo: Option<f64>,
+    pub data_validade: String,
+    pub limite_uso: Option<i32>,
+}
 
 
 pub async fn criar_cupom(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    Json(p): Json<Cupom>,
+    Json(p): Json<CriarCupomRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
     let cupom = state.marketing_service.criar_cupom(
-        p.loja_uuid,
+        loja_uuid,
         p.codigo,
         p.descricao,
         p.tipo_desconto,

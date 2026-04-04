@@ -15,6 +15,7 @@ mod produto;
 mod promocoes;
 mod horarios_de_funcionamento;
 mod parte_de_pedido;
+mod loja_favorita;
 
 pub use model::Model;
 
@@ -53,3 +54,5 @@ pub use promocoes::{
 pub use horarios_de_funcionamento::{
     HorarioFuncionamento
 };
+
+pub use loja_favorita::LojaFavorita;

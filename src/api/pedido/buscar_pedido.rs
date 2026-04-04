@@ -16,7 +16,7 @@ pub async fn buscar_pedido(
 
     let pedido = state
         .pedido_repo
-        .buscar_completo(uuid)
+        .buscar_completo(uuid, loja_uuid)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?
         .ok_or_else(|| AppError::NotFound("Pedido não encontrado".to_string()))?;
