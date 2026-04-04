@@ -22,7 +22,19 @@ use crate::api::{
     atualizar_produto,
     wipe_database,
     avaliar_loja,
-    avaliar_produto
+    avaliar_produto,
+    adicionar_funcionario,
+    adicionar_entregador,
+    listar_lojas_admin,
+    criar_adicional,
+    criar_categoria,
+    criar_para_pedido,
+    buscar_por_pedido,
+    criar_endereco,
+    listar_enderecos,
+    buscar_endereco,
+    atualizar_endereco,
+    deletar_endereco
 };
 
 
@@ -45,6 +57,9 @@ pub fn loja_routes() -> Router<Arc<AppState>> {
 pub fn loja_admin_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_loja))
+        .route("/listar", get(listar_lojas_admin))
+        .route("/{loja_uuid}/funcionarios", post(adicionar_funcionario))
+        .route("/{loja_uuid}/entregadores", post(adicionar_entregador))
 }
 
 pub fn pedido_routes() -> Router<Arc<AppState>> {
@@ -55,7 +70,29 @@ pub fn pedido_routes() -> Router<Arc<AppState>> {
 }
 
 
-// Rotas de Catálogo / Produtos
+// Rotas de Catálogo
+pub fn catalogo_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{loja_uuid}/adicionais", post(criar_adicional))
+        .route("/{loja_uuid}/categorias", post(criar_categoria))
+}
+
+// Rotas de Endereço de Entrega
+pub fn endereco_entrega_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/{pedido_uuid}/{loja_uuid}", post(criar_para_pedido))
+        .route("/{pedido_uuid}", get(buscar_por_pedido))
+}
+
+// Rotas de Endereço de Usuário
+pub fn endereco_usuario_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/", post(criar_endereco))
+        .route("/", get(listar_enderecos))
+        .route("/{uuid}", get(buscar_endereco))
+        .route("/{uuid}", put(atualizar_endereco))
+        .route("/{uuid}", delete(deletar_endereco))
+}
 pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_produto))
@@ -80,6 +117,9 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/lojas", loja_routes())
         .nest("/produtos", produto_routes())
         .nest("/cupons", marketing_routes())
+        .nest("/catalogo", catalogo_routes())
+        .nest("/enderecos-entrega", endereco_entrega_routes())
+        .nest("/enderecos-usuario", endereco_usuario_routes())
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())

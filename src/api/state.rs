@@ -14,6 +14,7 @@ use crate::{
         ConfiguracaoPedidosLojaRepository,
         CupomRepository,
         EnderecoEntregaRepository,
+        EnderecoUsuarioRepository,
         EntregadorRepository,
         FuncionarioRepository,
         HorarioFuncionamentoRepository,
@@ -25,6 +26,8 @@ use crate::{
     },
     services::{
         CatalogoService,
+        EnderecoEntregaService,
+        EnderecoUsuarioService,
         LojaService,
         MarketingService,
         PedidoService,
@@ -38,6 +41,8 @@ pub struct AppState {
     pub catalogo_service: CatalogoService,
     pub pedido_service: PedidoService,
     pub marketing_service: MarketingService,
+    pub endereco_entrega_service: EnderecoEntregaService,
+    pub endereco_usuario_service: EnderecoUsuarioService,
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
     pub cupom_repo: Arc<CupomRepository>,
@@ -86,6 +91,8 @@ impl AppState {
             Arc::new(ClienteRepository::new(pool.clone()));
         let endereco_entrega_repo =
             Arc::new(EnderecoEntregaRepository::new(pool.clone()));
+        let endereco_usuario_repo =
+            Arc::new(EnderecoUsuarioRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
         let usuario_service = UsuarioService::new(
@@ -122,6 +129,14 @@ impl AppState {
             Arc::clone(&avaliacoes_de_produto_repo)
         );
 
+        let endereco_entrega_service = EnderecoEntregaService::new(
+            Arc::clone(&endereco_entrega_repo)
+        );
+
+        let endereco_usuario_service = EnderecoUsuarioService::new(
+            Arc::clone(&endereco_usuario_repo)
+        );
+
 
         // 4. Estado compartilhado
         let s = Arc::new(AppState {
@@ -130,6 +145,8 @@ impl AppState {
             catalogo_service,
             pedido_service,
             marketing_service,
+            endereco_entrega_service,
+            endereco_usuario_service,
             pedido_repo: Arc::clone(&pedido_repo),
             cupom_repo: Arc::clone(&cupom_repo),
             usuario_repo: Arc::clone(&usuario_repo),
