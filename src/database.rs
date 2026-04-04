@@ -46,23 +46,34 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Executa o arquivo de migração completo, dividindo em statements individuais
+/// Executa os arquivos de migração em ordem, dividindo em statements individuais
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    let sql = std::fs::read_to_string("migrations/0001_criar_tabelas.sql")
-        .or_else(|_| std::fs::read_to_string("src/../migrations/0001_criar_tabelas.sql"))
-        .map_err(|e| format!("Não foi possível ler o arquivo de migração: {}", e))?;
+    let migration_files = [
+        "migrations/0001_criar_tabelas.sql",
+        "migrations/0002_add_promocao_escopo.sql",
+    ];
 
-    // Split into individual statements, respecting $$ blocks and comments
-    let statements = split_sql_statements(&sql)?;
+    for migration_path in &migration_files {
+        let sql = match std::fs::read_to_string(migration_path) {
+            Ok(content) => content,
+            Err(_) => match std::fs::read_to_string(format!("src/../{}", migration_path)) {
+                Ok(content) => content,
+                Err(e) => return Err(format!("Não foi possível ler o arquivo de migração {}: {}", migration_path, e)),
+            },
+        };
 
-    for (i, stmt) in statements.iter().enumerate() {
-        sqlx::query(stmt)
-            .execute(pool)
-            .await
-            .map_err(|e| format!("Falha no statement #{}: {}", i + 1, e))?;
+        let statements = split_sql_statements(&sql)?;
+
+        for (i, stmt) in statements.iter().enumerate() {
+            sqlx::query(stmt)
+                .execute(pool)
+                .await
+                .map_err(|e| format!("Falha no statement #{} em {}: {}", i + 1, migration_path, e))?;
+        }
+
+        tracing::info!("   {} -> {} statements executados", migration_path, statements.len());
     }
 
-    tracing::info!("   {} statements executados", statements.len());
     Ok(())
 }
 

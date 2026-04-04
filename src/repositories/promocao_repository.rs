@@ -45,8 +45,8 @@ impl Repository<Promocao> for PromocaoRepository {
 
     async fn criar(&self, item: &Promocao) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO promocoes (uuid, loja_uuid, nome, descricao, tipo_desconto, valor_desconto, data_inicio, data_fim, prioridade, status, criado_em)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+            INSERT INTO promocoes (uuid, loja_uuid, nome, descricao, tipo_desconto, valor_desconto, valor_minimo, data_inicio, data_fim, dias_semana_validos, tipo_escopo, produto_uuid, categoria_uuid, prioridade, status, criado_em)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16);
         ")
         .bind(&item.uuid)
         .bind(&item.loja_uuid)
@@ -54,8 +54,13 @@ impl Repository<Promocao> for PromocaoRepository {
         .bind(&item.descricao)
         .bind(&item.tipo_desconto)
         .bind(&item.valor_desconto)
+        .bind(&item.valor_minimo)
         .bind(&item.data_inicio)
         .bind(&item.data_fim)
+        .bind(&item.dias_semana_validos)
+        .bind(&item.tipo_escopo)
+        .bind(&item.produto_uuid)
+        .bind(&item.categoria_uuid)
         .bind(&item.prioridade)
         .bind(item.status.to_string())
         .bind(&item.criado_em)
@@ -69,16 +74,21 @@ impl Repository<Promocao> for PromocaoRepository {
     async fn atualizar(&self, item: Promocao) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE promocoes SET loja_uuid = $1, nome = $2, descricao = $3, tipo_desconto = $4, valor_desconto = $5, data_inicio = $6, data_fim = $7, prioridade = $8, status = $9
-            WHERE uuid = $10
+            UPDATE promocoes SET loja_uuid = $1, nome = $2, descricao = $3, tipo_desconto = $4, valor_desconto = $5, valor_minimo = $6, data_inicio = $7, data_fim = $8, dias_semana_validos = $9, tipo_escopo = $10, produto_uuid = $11, categoria_uuid = $12, prioridade = $13, status = $14
+            WHERE uuid = $15
         ")
         .bind(item.loja_uuid)
         .bind(&item.nome)
         .bind(&item.descricao)
         .bind(item.tipo_desconto.to_string())
         .bind(item.valor_desconto)
+        .bind(item.valor_minimo)
         .bind(item.data_inicio)
         .bind(item.data_fim)
+        .bind(&item.dias_semana_validos)
+        .bind(&item.tipo_escopo)
+        .bind(&item.produto_uuid)
+        .bind(&item.categoria_uuid)
         .bind(item.prioridade)
         .bind(item.status.to_string())
         .bind(uuid)

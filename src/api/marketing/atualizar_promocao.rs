@@ -21,6 +21,9 @@ pub struct AtualizarPromocaoRequest {
     pub data_inicio: String,
     pub data_fim: String,
     pub dias_semana_validos: Option<Vec<u8>>,
+    pub tipo_escopo: String,
+    pub produto_uuid: Option<Uuid>,
+    pub categoria_uuid: Option<Uuid>,
     pub prioridade: i32,
 }
 
@@ -47,6 +50,9 @@ pub async fn atualizar_promocao(
         p.data_inicio,
         p.data_fim,
         p.dias_semana_validos,
+        p.tipo_escopo,
+        p.produto_uuid,
+        p.categoria_uuid,
         p.prioridade,
     ).await?;
 

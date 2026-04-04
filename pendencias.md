@@ -13,9 +13,7 @@
 
 ## 🟡 Bugs Conhecidos
 
-| # | Bug | Detalhe | Arquivo(s) |
-|---|-----|---------|------------|
-| 3 | **`Promocao` aplica para toda a loja** | Modelo atual não suporta promoção por produto ou categoria. | `src/models/promocoes.rs` |
+_(nenhum bug conhecido)_
 
 ## 🟢 Melhorias de Código
 
@@ -60,9 +58,9 @@
 | Prioridade | Count | Itens |
 |------------|-------|-------|
 | 🔴 Crítico | 2 | 1, 2 |
-| 🟡 Bugs | 1 | 3 |
-| 🟢 Melhorias | 4 | 4, 5, 6, 7 |
-| 📋 Features | 14 | 8–21 |
-| 📝 Docs | 3 | 22, 23, 24 |
+| 🟡 Bugs | 0 | — |
+| 🟢 Melhorias | 4 | 3, 4, 5, 6 |
+| 📋 Features | 14 | 7–20 |
+| 📝 Docs | 3 | 21, 22, 23 |
 
-**Total: 24 pendências**
+**Total: 23 pendências**

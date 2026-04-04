@@ -68,6 +68,9 @@ impl MarketingService {
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
+        tipo_escopo: String,
+        produto_uuid: Option<Uuid>,
+        categoria_uuid: Option<Uuid>,
         prioridade: i32,
     ) -> Result<Promocao, String> {
 
@@ -81,10 +84,13 @@ impl MarketingService {
             data_inicio,
             data_fim,
             dias_semana_validos,
+            tipo_escopo,
+            produto_uuid,
+            categoria_uuid,
             prioridade
         );
 
-        let _ = self.promocao_repo.criar(&promocao).await;
+        self.promocao_repo.criar(&promocao).await?;
 
         Ok(promocao)
     }
@@ -153,6 +159,9 @@ impl MarketingService {
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
+        tipo_escopo: String,
+        produto_uuid: Option<Uuid>,
+        categoria_uuid: Option<Uuid>,
         prioridade: i32,
     ) -> Result<(), String> {
         let mut promocao = Promocao::new(
@@ -165,6 +174,9 @@ impl MarketingService {
             data_inicio,
             data_fim,
             dias_semana_validos,
+            tipo_escopo,
+            produto_uuid,
+            categoria_uuid,
             prioridade
         );
         promocao.uuid = uuid;

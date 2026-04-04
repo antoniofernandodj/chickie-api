@@ -1,7 +1,9 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{
+    Extension, Json, extract::{Path, State}, response::IntoResponse
+};
 use serde::Deserialize;
-use std::sync::Arc;
 use uuid::Uuid;
+use std::sync::Arc;
 
 use crate::{
     api::{dto::AppError, AppState},
@@ -19,6 +21,9 @@ pub struct CriarPromocaoRequest {
     pub data_inicio: String,
     pub data_fim: String,
     pub dias_semana_validos: Option<Vec<u8>>,
+    pub tipo_escopo: String,
+    pub produto_uuid: Option<Uuid>,
+    pub categoria_uuid: Option<Uuid>,
     pub prioridade: i32,
 }
 
@@ -44,6 +49,9 @@ pub async fn criar_promocao(
         p.data_inicio,
         p.data_fim,
         p.dias_semana_validos,
+        p.tipo_escopo,
+        p.produto_uuid,
+        p.categoria_uuid,
         p.prioridade
     ).await?;
 

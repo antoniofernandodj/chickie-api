@@ -4,6 +4,66 @@ use sqlx::FromRow;
 
 use crate::{models::Model, utils::agora};
 
+// --- TipoEscopoPromocao ---
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum TipoEscopoPromocao {
+    Loja,
+    Produto,
+    Categoria,
+}
+
+impl TipoEscopoPromocao {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Loja => "loja",
+            Self::Produto => "produto",
+            Self::Categoria => "categoria",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Result<Self, String> {
+        match s {
+            "loja" => Ok(Self::Loja),
+            "produto" => Ok(Self::Produto),
+            "categoria" => Ok(Self::Categoria),
+            other => Err(format!("Escopo inválido: '{}'", other)),
+        }
+    }
+}
+
+impl std::fmt::Display for TipoEscopoPromocao {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+impl<'r> sqlx::Decode<'r, sqlx::Postgres> for TipoEscopoPromocao {
+    fn decode(value: sqlx::postgres::PgValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
+        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
+        Self::from_str(s).map_err(|e| e.into())
+    }
+}
+
+impl sqlx::Type<sqlx::Postgres> for TipoEscopoPromocao {
+    fn type_info() -> sqlx::postgres::PgTypeInfo {
+        sqlx::postgres::PgTypeInfo::with_name("TEXT")
+    }
+}
+
+impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoEscopoPromocao {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
+        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
+    }
+
+    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
+        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
+    }
+}
+
 // --- StatusCupom ---
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -198,12 +258,15 @@ pub struct Promocao {
     pub loja_uuid: Uuid,
     pub nome: String,
     pub descricao: String,
-    pub tipo_desconto: String,       // "percentual", "valor_fixo", "frete_gratis"
+    pub tipo_desconto: String,
     pub valor_desconto: Option<f64>,
     pub valor_minimo: Option<f64>,
     pub data_inicio: String,
     pub data_fim: String,
-    pub dias_semana_validos: Option<String>, // "0,1,2,3,4,5,6" serializado como CSV
+    pub dias_semana_validos: Option<Vec<i32>>,
+    pub tipo_escopo: String,
+    pub produto_uuid: Option<Uuid>,
+    pub categoria_uuid: Option<Uuid>,
     pub status: StatusCupom,
     pub prioridade: i32,
     pub criado_em: String,
@@ -220,6 +283,9 @@ impl Promocao {
         data_inicio: String,
         data_fim: String,
         dias_semana_validos: Option<Vec<u8>>,
+        tipo_escopo: String,
+        produto_uuid: Option<Uuid>,
+        categoria_uuid: Option<Uuid>,
         prioridade: i32,
     ) -> Self {
         Self {
@@ -232,11 +298,23 @@ impl Promocao {
             valor_minimo,
             data_inicio,
             data_fim,
-            dias_semana_validos: dias_semana_validos
-                .map(|d| d.iter().map(|n| n.to_string()).collect::<Vec<_>>().join(",")),
+            dias_semana_validos: dias_semana_validos.map(|d| d.iter().map(|&n| n as i32).collect()),
+            tipo_escopo,
+            produto_uuid,
+            categoria_uuid,
             status: StatusCupom::Ativo,
             prioridade,
             criado_em: agora()
+        }
+    }
+
+    /// Verifica se a promoção é aplicável a um determinado produto/categoria
+    pub fn eh_aplicavel_a_entidade(&self, produto_uuid: Option<Uuid>, categoria_uuid: Option<Uuid>) -> bool {
+        match self.tipo_escopo.as_str() {
+            "loja" => true,
+            "produto" => self.produto_uuid == produto_uuid,
+            "categoria" => self.categoria_uuid == categoria_uuid,
+            _ => false,
         }
     }
 
@@ -252,12 +330,9 @@ impl Promocao {
                 return false;
             }
         }
-        if let Some(ref dias_str) = self.dias_semana_validos {
-            let dias: Vec<u8> = dias_str
-                .split(',')
-                .filter_map(|s| s.parse().ok())
-                .collect();
-            if !dias.contains(&dia_semana) {
+        if let Some(ref dias) = self.dias_semana_validos {
+            let dia_atual = dia_semana as i32;
+            if !dias.contains(&dia_atual) {
                 return false;
             }
         }
