@@ -12,7 +12,7 @@ impl ClienteRepository {
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -20,7 +20,7 @@ impl ClienteRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -31,25 +31,17 @@ impl ClienteRepository {
                 WHERE loja_uuid = $1;
             ")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Cliente> for ClienteRepository {
-    fn table_name(&self) -> String { "clientes".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Cliente>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Cliente>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Cliente> for ClienteRepository {
+    fn table_name(&self) -> &'static str { "clientes" }
+    fn entity_name(&self) -> &'static str { "Cliente" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Cliente) -> Result<Uuid, String> {
         sqlx::query("
@@ -60,7 +52,7 @@ impl<'a> Repository<Cliente> for ClienteRepository {
         .bind(item.usuario_uuid)
         .bind(item.loja_uuid)
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -75,42 +67,21 @@ impl<'a> Repository<Cliente> for ClienteRepository {
         .bind(item.usuario_uuid)
         .bind(item.loja_uuid)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Cliente no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM clientes WHERE uuid = $1")
-            .bind(uuid)
-            .execute(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Cliente no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Cliente>, String> {
-        sqlx::query_as::<_, Cliente>("SELECT * FROM clientes;")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Cliente>, String> {
         sqlx::query_as::<_, Cliente>("SELECT * FROM clientes WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

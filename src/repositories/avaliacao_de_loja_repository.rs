@@ -13,7 +13,7 @@ impl AvaliacaoDeLojaRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -21,7 +21,7 @@ impl AvaliacaoDeLojaRepository {
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -29,7 +29,7 @@ impl AvaliacaoDeLojaRepository {
     pub async fn calcular_media(&self, loja_uuid: Uuid) -> Result<f64, String> {
         let result = sqlx::query("SELECT AVG(nota) as media FROM avaliacoes_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_one(&*self.pool)
+        .fetch_one(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -39,18 +39,11 @@ impl AvaliacaoDeLojaRepository {
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
-    fn table_name(&self) -> String { "avaliacoes_loja".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<AvaliacaoDeLoja>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, AvaliacaoDeLoja>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
+    fn table_name(&self) -> &'static str { "avaliacoes_loja" }
+    fn entity_name(&self) -> &'static str { "Avaliação" }
+    fn entity_gender_suffix(&self) -> &'static str { "a" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &AvaliacaoDeLoja) -> Result<Uuid, String> {
         sqlx::query("
@@ -63,7 +56,7 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
         .bind(item.nota)
         .bind(&item.comentario)
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -81,42 +74,21 @@ impl<'a> Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
         .bind(item.nota)
         .bind(&item.comentario)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Avaliacao no encontrada".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM avaliacoes_loja WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Avaliacao no encontrada".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<AvaliacaoDeLoja>, String> {
-        sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

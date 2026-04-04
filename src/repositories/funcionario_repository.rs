@@ -12,7 +12,7 @@ impl FuncionarioRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -21,7 +21,7 @@ impl FuncionarioRepository {
         sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1 AND cargo = $2")
         .bind(loja_uuid)
         .bind(cargo)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -29,25 +29,17 @@ impl FuncionarioRepository {
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE email = $1")
         .bind(email)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Funcionario> for FuncionarioRepository {
-    fn table_name(&self) -> String { "funcionarios".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Funcionario>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Funcionario>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Funcionario> for FuncionarioRepository {
+    fn table_name(&self) -> &'static str { "funcionarios" }
+    fn entity_name(&self) -> &'static str { "Funcionário" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Funcionario) -> Result<Uuid, String> {
         sqlx::query("
@@ -62,7 +54,7 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
         .bind(item.salario)
         .bind(&item.data_admissao.to_string())
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -82,42 +74,21 @@ impl<'a> Repository<Funcionario> for FuncionarioRepository {
         .bind(item.salario)
         .bind(item.data_admissao)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Funcionario no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM funcionarios WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Funcionario no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Funcionario>, String> {
-        sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
         sqlx::query_as::<_, Funcionario>("SELECT * FROM funcionarios WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

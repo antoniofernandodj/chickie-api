@@ -15,7 +15,7 @@ impl CategoriaProdutosRepository {
     ) -> Result<Vec<CategoriaProdutos>, String> {
         sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -24,25 +24,18 @@ impl CategoriaProdutosRepository {
         sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1 AND nome = $2")
         .bind(loja_uuid)
         .bind(nome)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
-    fn table_name(&self) -> String { "categorias_produtos".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<CategoriaProdutos>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, CategoriaProdutos>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<CategoriaProdutos> for CategoriaProdutosRepository {
+    fn table_name(&self) -> &'static str { "categorias_produtos" }
+    fn entity_name(&self) -> &'static str { "Categoria" }
+    fn entity_gender_suffix(&self) -> &'static str { "a" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &CategoriaProdutos) -> Result<Uuid, String> {
         sqlx::query("
@@ -55,7 +48,7 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
         .bind(&item.descricao)
         .bind(item.ordem)
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -73,42 +66,21 @@ impl<'a> Repository<CategoriaProdutos> for CategoriaProdutosRepository {
         .bind(&item.descricao)
         .bind(item.ordem)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Categoria no encontrada".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM categorias_produtos WHERE uuid = $1")
-            .bind(uuid)
-            .execute(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Categoria no encontrada".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<CategoriaProdutos>, String> {
-        sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<CategoriaProdutos>, String> {
         sqlx::query_as::<_, CategoriaProdutos>("SELECT * FROM categorias_produtos WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

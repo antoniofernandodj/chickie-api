@@ -16,7 +16,7 @@ impl ConfiguracaoPedidosLojaRepository {
     ) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
         sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -44,7 +44,7 @@ impl ConfiguracaoPedidosLojaRepository {
         .bind(config.tipo_calculo.to_string())
         .bind(&config.criado_em)
         .bind(&config.atualizado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -67,7 +67,7 @@ impl ConfiguracaoPedidosLojaRepository {
         .bind(config.tipo_calculo.to_string())
         .bind(&config.criado_em)
         .bind(&config.atualizado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -88,7 +88,7 @@ impl ConfiguracaoPedidosLojaRepository {
         .bind(novo_tipo.to_string())
         .bind(agora())
         .bind(loja_uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -115,7 +115,7 @@ impl ConfiguracaoPedidosLojaRepository {
         .bind(novo_max)
         .bind(agora())
         .bind(loja_uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -128,18 +128,10 @@ impl ConfiguracaoPedidosLojaRepository {
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository {
-    fn table_name(&self) -> String { "configuracoes_pedidos_loja".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository {
+    fn table_name(&self) -> &'static str { "configuracoes_pedidos_loja" }
+    fn entity_name(&self) -> &'static str { "Configuracao de pedidos" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &ConfiguracaoDePedidosLoja) -> Result<Uuid, String> {
         sqlx::query("
@@ -152,7 +144,7 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
         .bind(item.tipo_calculo.to_string())
         .bind(&item.criado_em)
         .bind(&item.atualizado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -163,55 +155,29 @@ impl<'a> Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaReposi
         let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE configuracoes_pedidos_loja SET loja_uuid = $1, max_partes = $2, tipo_calculo = $3, atualizado_em = $4
-            WHERE uuid = $1
+            WHERE uuid = $5
         ")
         .bind(item.loja_uuid)
         .bind(item.max_partes)
         .bind(item.tipo_calculo.to_string())
         .bind(&item.atualizado_em)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Configuracao de pedidos no encontrada".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM configuracoes_pedidos_loja WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Configuracao de pedidos no encontrada".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
-        let query = format!(
-            "SELECT * FROM {};",
-            self.table_name()
-        );
-
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>(&query)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
         // Como ha apenas 1 configuracao por loja, retorna Vec com 0 ou 1 elemento
         sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }

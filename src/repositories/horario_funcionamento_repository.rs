@@ -13,7 +13,7 @@ impl HorarioFuncionamentoRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 ORDER BY dia_semana ASC")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -27,7 +27,7 @@ impl HorarioFuncionamentoRepository {
         sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 AND dia_semana = $2")
         .bind(loja_uuid)
         .bind(dia_semana)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -36,7 +36,7 @@ impl HorarioFuncionamentoRepository {
     pub async fn buscar_ativos(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1 AND ativo = TRUE ORDER BY dia_semana ASC")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -59,7 +59,7 @@ impl HorarioFuncionamentoRepository {
         .bind(&horario.fechamento)
         .bind(horario.ativo)
         .bind(&horario.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -94,7 +94,7 @@ impl HorarioFuncionamentoRepository {
         .bind(&horario.fechamento)
         .bind(horario.ativo)
         .bind(&horario.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -116,7 +116,7 @@ impl HorarioFuncionamentoRepository {
         .bind(ativo)
         .bind(loja_uuid)
         .bind(dia_semana)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -138,7 +138,7 @@ impl HorarioFuncionamentoRepository {
         ")
         .bind(loja_uuid)
         .bind(dia_semana)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -151,18 +151,10 @@ impl HorarioFuncionamentoRepository {
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
-    fn table_name(&self) -> String { "horarios_funcionamento".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<HorarioFuncionamento>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, HorarioFuncionamento>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
+    fn table_name(&self) -> &'static str { "horarios_funcionamento" }
+    fn entity_name(&self) -> &'static str { "Horário" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &HorarioFuncionamento) -> Result<Uuid, String> {
         self.adicionar_sem_sobrescrever(item).await?;
@@ -178,42 +170,21 @@ impl<'a> Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
         .bind(&item.fechamento)
         .bind(item.ativo)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Horario no encontrado".into())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM horarios_funcionamento WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Horario no encontrado".into())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<HorarioFuncionamento>, String> {
-        sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento ORDER BY loja_uuid, dia_semana")
-        .fetch_all(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<HorarioFuncionamento>, String> {
         sqlx::query_as::<_, HorarioFuncionamento>("SELECT * FROM horarios_funcionamento WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

@@ -13,7 +13,7 @@ impl UsoCupomRepository {
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE usuario_uuid = $1")
         .bind(usuario_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -21,7 +21,7 @@ impl UsoCupomRepository {
     pub async fn buscar_por_cupom(&self, cupom_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE cupom_uuid = $1")
         .bind(cupom_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -30,7 +30,7 @@ impl UsoCupomRepository {
         let result = sqlx::query("SELECT COUNT(*) as count FROM uso_cupons WHERE usuario_uuid = $1 AND cupom_uuid = $2")
         .bind(usuario_uuid)
         .bind(cupom_uuid)
-        .fetch_one(&*self.pool)
+        .fetch_one(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -39,18 +39,10 @@ impl UsoCupomRepository {
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<UsoCupom> for UsoCupomRepository {
-    fn table_name(&self) -> String { "uso_cupons".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<UsoCupom>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, UsoCupom>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<UsoCupom> for UsoCupomRepository {
+    fn table_name(&self) -> &'static str { "uso_cupons" }
+    fn entity_name(&self) -> &'static str { "Uso de cupom" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &UsoCupom) -> Result<Uuid, String> {
         sqlx::query("
@@ -62,7 +54,7 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
         .bind(item.usuario_uuid)
         .bind(item.pedido_uuid)
         .bind(&item.usado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -80,42 +72,21 @@ impl<'a> Repository<UsoCupom> for UsoCupomRepository {
         .bind(item.pedido_uuid)
         .bind(item.usado_em)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Uso de cupom no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM uso_cupons WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Uso de cupom no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<UsoCupom>, String> {
-        sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<UsoCupom>, String> {
         sqlx::query_as::<_, UsoCupom>("SELECT * FROM uso_cupons WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

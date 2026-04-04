@@ -12,32 +12,25 @@ impl LojaRepository {
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Loja>, String> {
         sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE email = $1")
         .bind(email)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 
     pub async fn listar_ativas(&self) -> Result<Vec<Loja>, String> {
         sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE ativa = true")
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Loja> for LojaRepository {
-    fn table_name(&self) -> String { "lojas".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Loja>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Loja> for LojaRepository {
+    fn table_name(&self) -> &'static str { "lojas" }
+    fn entity_name(&self) -> &'static str { "Loja" }
+    fn entity_gender_suffix(&self) -> &'static str { "a" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Loja) -> Result<Uuid, String> {
         sqlx::query("
@@ -62,7 +55,7 @@ impl<'a> Repository<Loja> for LojaRepository {
         .bind(item.raio_entrega_km)
         .bind(&item.criado_em)
         .bind(&item.atualizado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -94,36 +87,15 @@ impl<'a> Repository<Loja> for LojaRepository {
         .bind(item.raio_entrega_km)
         .bind(item.atualizado_em)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Loja não encontrada".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM lojas WHERE uuid = $1")
-            .bind(uuid)
-            .execute(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Loja não encontrada".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Loja>, String> {
-        sqlx::query_as::<_, Loja>("SELECT * FROM lojas;")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Loja>, String> {

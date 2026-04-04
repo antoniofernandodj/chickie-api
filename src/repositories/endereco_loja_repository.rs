@@ -12,25 +12,17 @@ impl EnderecoLojaRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
         sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
-    fn table_name(&self) -> String { "enderecos_loja".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<EnderecoLoja>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, EnderecoLoja>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<EnderecoLoja> for EnderecoLojaRepository {
+    fn table_name(&self) -> &'static str { "enderecos_loja" }
+    fn entity_name(&self) -> &'static str { "Endereço" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &EnderecoLoja) -> Result<Uuid, String> {
         let uuid = item.get_uuid();
@@ -49,7 +41,7 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
         .bind(&item.estado)
         .bind(item.latitude)
         .bind(item.longitude)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -73,42 +65,21 @@ impl<'a> Repository<EnderecoLoja> for EnderecoLojaRepository {
         .bind(item.latitude)
         .bind(item.longitude)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Endereco no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM enderecos_loja WHERE uuid = $1")
-            .bind(uuid)
-            .execute(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Endereco no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<EnderecoLoja>, String> {
-        sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoLoja>, String> {
         sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

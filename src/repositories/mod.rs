@@ -1,17 +1,61 @@
 // Repository trait definition
 use std::sync::Arc;
 
+use sqlx::postgres::{PgPool, PgRow};
 use uuid::Uuid;
+use crate::models::Model;
 
 #[async_trait::async_trait]
-pub trait Repository<T> {
+pub trait Repository<T>: Send + Sync
+where
+    T: Model + Send + Sync + Unpin + for<'r> sqlx::FromRow<'r, PgRow>,
+{
+    fn table_name(&self) -> &'static str;
+    fn entity_name(&self) -> &'static str;
+    fn pool(&self) -> &PgPool;
+
+    // Default implementation - reusable across all repos
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<T>, String> {
+        let query = format!("SELECT * FROM {} WHERE uuid = $1", self.table_name());
+        sqlx::query_as::<_, T>(&query)
+            .bind(uuid)
+            .fetch_optional(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    // Default implementation - reusable across all repos
+    async fn listar_todos(&self) -> Result<Vec<T>, String> {
+        let query = format!("SELECT * FROM {}", self.table_name());
+        sqlx::query_as::<_, T>(&query)
+            .fetch_all(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    // Default implementation - reusable across all repos
+    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
+        let query = format!("DELETE FROM {} WHERE uuid = $1", self.table_name());
+        let result = sqlx::query(&query)
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
+        } else {
+            Ok(())
+        }
+    }
+
+    // Helper for Portuguese gender in error messages (defaults to "o")
+    fn entity_gender_suffix(&self) -> &'static str { "o" }
+
+    // These remain abstract - column-specific
     async fn criar(&self, item: &T) -> Result<Uuid, String>;
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<T>, String>;
     async fn atualizar(&self, item: T) -> Result<(), String>;
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String>;
-    async fn listar_todos(&self) -> Result<Vec<T>, String>;
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<T>, String>;
-    fn table_name(&self) -> String;
 }
 
 // Repository modules

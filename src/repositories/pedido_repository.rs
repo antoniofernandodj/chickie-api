@@ -212,18 +212,10 @@ impl PedidoRepository {
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Pedido> for PedidoRepository {
-    fn table_name(&self) -> String { "pedidos".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Pedido>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Pedido>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Pedido> for PedidoRepository {
+    fn table_name(&self) -> &'static str { "pedidos" }
+    fn entity_name(&self) -> &'static str { "Pedido" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(
         &self,
@@ -351,42 +343,21 @@ impl<'a> Repository<Pedido> for PedidoRepository {
         .bind(item.tempo_estimado_min)
         .bind(item.atualizado_em)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Pedido no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM pedidos WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Pedido no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos;")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
         sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

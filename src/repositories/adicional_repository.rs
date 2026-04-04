@@ -12,7 +12,7 @@ impl AdicionalRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>("SELECT * FROM adicionais WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -22,25 +22,17 @@ impl AdicionalRepository {
             "SELECT * FROM adicionais WHERE loja_uuid = $1 AND disponivel = true"
         )
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Adicional> for AdicionalRepository {
-    fn table_name(&self) -> String { "adicionais".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Adicional>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Adicional>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Adicional> for AdicionalRepository {
+    fn table_name(&self) -> &'static str { "adicionais" }
+    fn entity_name(&self) -> &'static str { "Adicional" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Adicional) -> Result<Uuid, String> {
         sqlx::query("
@@ -54,7 +46,7 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
         .bind(item.preco)
         .bind(item.disponivel)
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e: sqlx::Error| e.to_string())?;
 
@@ -73,42 +65,21 @@ impl<'a> Repository<Adicional> for AdicionalRepository {
         .bind(item.preco)
         .bind(item.disponivel)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Adicional no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM adicionais WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Adicional no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Adicional>, String> {
-        sqlx::query_as::<_, Adicional>("SELECT * FROM adicionais")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
         sqlx::query_as::<_, Adicional>("SELECT * FROM adicionais WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

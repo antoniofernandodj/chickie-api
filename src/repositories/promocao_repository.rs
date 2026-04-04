@@ -12,7 +12,7 @@ impl PromocaoRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -21,7 +21,7 @@ impl PromocaoRepository {
         sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1 AND status = $2")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -30,25 +30,18 @@ impl PromocaoRepository {
         sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1 AND status = $2 ORDER BY prioridade DESC")
         .bind(loja_uuid)
         .bind(StatusCupom::Ativo.to_string())
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Promocao> for PromocaoRepository {
-    fn table_name(&self) -> String { "promocoes".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Promocao>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Promocao>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Promocao> for PromocaoRepository {
+    fn table_name(&self) -> &'static str { "promocoes" }
+    fn entity_name(&self) -> &'static str { "Promoção" }
+    fn entity_gender_suffix(&self) -> &'static str { "o" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Promocao) -> Result<Uuid, String> {
         sqlx::query("
@@ -66,7 +59,7 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
         .bind(&item.prioridade)
         .bind(item.status.to_string())
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -89,42 +82,21 @@ impl<'a> Repository<Promocao> for PromocaoRepository {
         .bind(item.prioridade)
         .bind(item.status.to_string())
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Promocao no encontrada".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM promocoes WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Promocao no encontrada".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Promocao>, String> {
-        sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
         sqlx::query_as::<_, Promocao>("SELECT * FROM promocoes WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }

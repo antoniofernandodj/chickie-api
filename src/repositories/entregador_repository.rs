@@ -12,7 +12,7 @@ impl EntregadorRepository {
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -20,7 +20,7 @@ impl EntregadorRepository {
     pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1 AND disponivel = true")
         .bind(loja_uuid)
-        .fetch_all(&*self.pool)
+        .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
@@ -28,25 +28,17 @@ impl EntregadorRepository {
     pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE telefone = $1")
         .bind(telefone)
-        .fetch_optional(&*self.pool)
+        .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl<'a> Repository<Entregador> for EntregadorRepository {
-    fn table_name(&self) -> String { "entregadores".to_string() }
-
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Entregador>, String> {
-        let t = self.table_name();
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", t);
-        sqlx::query_as::<_, Entregador>(&query)
-            .bind(uuid)
-            .fetch_optional(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
-    }
+impl Repository<Entregador> for EntregadorRepository {
+    fn table_name(&self) -> &'static str { "entregadores" }
+    fn entity_name(&self) -> &'static str { "Entregador" }
+    fn pool(&self) -> &PgPool { &*self.pool }
 
     async fn criar(&self, item: &Entregador) -> Result<Uuid, String> {
         sqlx::query("
@@ -61,7 +53,7 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
         .bind(&item.placa)
         .bind(item.disponivel)
         .bind(&item.criado_em)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -81,42 +73,21 @@ impl<'a> Repository<Entregador> for EntregadorRepository {
         .bind(&item.placa)
         .bind(item.disponivel)
         .bind(uuid)
-        .execute(&*self.pool)
+        .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Entregador no encontrado".to_string())
+            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
         } else {
             Ok(())
         }
-    }
-
-    async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("DELETE FROM entregadores WHERE uuid = $1")
-        .bind(uuid)
-        .execute(&*self.pool)
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Entregador no encontrado".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    async fn listar_todos(&self) -> Result<Vec<Entregador>, String> {
-        sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores")
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
         sqlx::query_as::<_, Entregador>("SELECT * FROM entregadores WHERE loja_uuid = $1")
             .bind(loja_uuid)
-            .fetch_all(&*self.pool)
+            .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
     }
