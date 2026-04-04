@@ -20,6 +20,7 @@ pub struct MarketingService {
     avaliacao_prod_repo: Arc<AvaliacaoDeProdutoRepository>,
 }
 
+#[allow(dead_code)]
 impl MarketingService {
     pub fn new(
         cupom_repo: Arc<CupomRepository>,
@@ -147,7 +148,7 @@ impl MarketingService {
     pub async fn atualizar_cupom(
         &self,
         uuid: Uuid,
-        loja_uuid: Uuid,
+        _loja_uuid: Uuid,
         codigo: String,
         descricao: String,
         tipo_desconto: String,

@@ -31,6 +31,7 @@ pub struct CreateLojaRequest {
     pub max_partes: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct CreatePedidoRequest {
     // pub loja_uuid: Uuid,
@@ -47,6 +48,7 @@ pub struct CreatePedidoRequest {
 
 
 /// Dados de entrada para o endereço de entrega (snapshot no momento do pedido)
+#[allow(dead_code)]
 #[derive(Deserialize, Clone)]
 pub struct DadosEnderecoEntregaRequest {
     pub cep: Option<String>,
@@ -60,6 +62,7 @@ pub struct DadosEnderecoEntregaRequest {
     // pub longitude: Option<f64>,
 }
 
+#[allow(dead_code)]
 impl DadosEnderecoEntregaRequest {
     /// Converte para o modelo de domínio EnderecoEntrega
     pub fn to_endereco_entrega(
@@ -84,6 +87,7 @@ impl DadosEnderecoEntregaRequest {
 }
 
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct ItemPedidoRequest {
     pub quantidade: i32,
@@ -91,6 +95,7 @@ pub struct ItemPedidoRequest {
     pub partes: Vec<ParteItemRequest>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct ParteItemRequest {
     pub produto_uuid: Uuid,

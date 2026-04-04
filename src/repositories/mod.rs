@@ -1,5 +1,5 @@
 // Repository trait definition
-use std::sync::Arc;
+// use std::sync::Arc;
 
 use sqlx::postgres::{PgPool, PgRow};
 use uuid::Uuid;
@@ -91,17 +91,17 @@ pub use categoria_produtos_repository::CategoriaProdutosRepository;
 pub use pedido_repository::PedidoRepository;
 pub use adicional_repository::AdicionalRepository;
 pub use ingrediente_repository::IngredienteRepository;
-pub use endereco_loja_repository::EnderecoLojaRepository;
+// pub use endereco_loja_repository::EnderecoLojaRepository;
 pub use entregador_repository::EntregadorRepository;
 pub use funcionario_repository::FuncionarioRepository;
 pub use avaliacao_de_loja_repository::AvaliacaoDeLojaRepository;
 pub use avaliacao_de_produto_repository::AvaliacaoDeProdutoRepository;
 pub use cupom_repository::CupomRepository;
-pub use uso_cupom_repository::UsoCupomRepository;
+// pub use uso_cupom_repository::UsoCupomRepository;
 pub use promocao_repository::PromocaoRepository;
 pub use horario_funcionamento_repository::HorarioFuncionamentoRepository;
 pub use configuracao_pedidos_loja_repository::ConfiguracaoPedidosLojaRepository;
-pub use parte_de_item_pedido_repository::ParteDeItemPedidoRepository;
+// pub use parte_de_item_pedido_repository::ParteDeItemPedidoRepository;
 pub use endereco_usuario_repository::EnderecoUsuarioRepository;
 pub use endereco_entrega_repository::EnderecoEntregaRepository;
 pub use loja_favorita_repository::LojaFavoritaRepository;

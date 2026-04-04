@@ -8,6 +8,7 @@ use crate::models::Model;
 
 // --- TipoEscopoPromocao ---
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TipoEscopoPromocao {
     Loja,
@@ -156,6 +157,7 @@ pub struct Cupom {
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
+#[allow(dead_code)]
 impl Cupom {
     pub fn new(
         loja_uuid: Uuid,
@@ -225,6 +227,7 @@ fn valor_desconto_com_limite(desconto: Decimal, maximo: Option<Decimal>) -> Deci
 
 // --- UsoCupom ---
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, FromRow)]
 pub struct UsoCupom {
     pub uuid: Uuid,
@@ -235,6 +238,7 @@ pub struct UsoCupom {
     pub usado_em: String,
 }
 
+#[allow(dead_code)]
 impl UsoCupom {
     pub fn new(
         cupom_uuid: Uuid,
@@ -274,6 +278,7 @@ pub struct Promocao {
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
+#[allow(dead_code)]
 impl Promocao {
     pub fn new(
         loja_uuid: Uuid,

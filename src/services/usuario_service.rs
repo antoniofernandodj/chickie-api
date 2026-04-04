@@ -7,6 +7,7 @@ pub struct UsuarioService {
     repo: Arc<UsuarioRepository>,
 }
 
+#[allow(dead_code)]
 impl UsuarioService {
     pub fn new(repo: Arc<UsuarioRepository>) -> Self { Self { repo } }
     pub async fn registrar(

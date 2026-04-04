@@ -7,19 +7,19 @@ use crate::services::EnderecoEntregaService;
 
 pub struct ListarEnderecosEntregaPorLojaUsecase {
     pub endereco_entrega_service: Arc<EnderecoEntregaService>,
-    pub usuario: Usuario,
+    pub _usuario: Usuario,
     pub loja_uuid: Uuid,
 }
 
 impl ListarEnderecosEntregaPorLojaUsecase {
     pub fn new(
         endereco_entrega_service: Arc<EnderecoEntregaService>,
-        usuario: Usuario,
+        _usuario: Usuario,
         loja_uuid: Uuid,
     ) -> Self {
         Self {
             endereco_entrega_service,
-            usuario,
+            _usuario,
             loja_uuid,
         }
     }

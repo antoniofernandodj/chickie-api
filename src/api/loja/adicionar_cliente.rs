@@ -1,11 +1,10 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Json, extract::{Path, State}, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
     api::{AppState, auth::AdminPermission, dto::AppError},
-    models::Usuario
 };
 
 #[derive(Deserialize)]
@@ -21,7 +20,7 @@ pub struct AdicionarClienteRequest {
 pub async fn adicionar_cliente(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-    AdminPermission(usuario): AdminPermission,
+    AdminPermission(_): AdminPermission,
     Json(p): Json<AdicionarClienteRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 

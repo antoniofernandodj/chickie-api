@@ -21,10 +21,11 @@ pub struct AdminUsecase {
     funcionario_service: Arc<FuncionarioService>,
     entregador_service: Arc<EntregadorService>,
     marketing_service: Arc<MarketingService>,
-    pub usuario: Usuario,
+    pub _usuario: Usuario,
     pub loja_uuid: Uuid,
 }
 
+#[allow(dead_code)]
 impl AdminUsecase {
     pub fn new(
         ingrediente_service: Arc<IngredienteService>,
@@ -33,7 +34,7 @@ impl AdminUsecase {
         funcionario_service: Arc<FuncionarioService>,
         entregador_service: Arc<EntregadorService>,
         marketing_service: Arc<MarketingService>,
-        usuario: Usuario,
+        _usuario: Usuario,
         loja_uuid: Uuid,
     ) -> Self {
         Self {
@@ -43,7 +44,7 @@ impl AdminUsecase {
             funcionario_service,
             entregador_service,
             marketing_service,
-            usuario,
+            _usuario,
             loja_uuid,
         }
     }

@@ -119,6 +119,7 @@ pub struct ParteDeItemPedido {
     pub adicionais: Vec<AdicionalDeItemDePedido>
 }
 
+#[allow(dead_code)]
 impl ParteDeItemPedido {
     pub fn new(
         produto: &Produto,

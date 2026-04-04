@@ -11,6 +11,7 @@ pub struct FuncionarioService {
     usuario_repo: Arc<UsuarioRepository>,
 }
 
+#[allow(dead_code)]
 impl FuncionarioService {
     pub fn new(repo: Arc<FuncionarioRepository>, usuario_repo: Arc<UsuarioRepository>) -> Self {
         Self { repo, usuario_repo }

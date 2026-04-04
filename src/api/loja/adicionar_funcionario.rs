@@ -1,4 +1,4 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Json, extract::{Path, State}, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -6,7 +6,6 @@ use rust_decimal::Decimal;
 
 use crate::{
     api::{AppState, auth::AdminPermission, dto::AppError},
-    models::Usuario
 };
 
 #[derive(Deserialize)]

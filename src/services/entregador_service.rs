@@ -10,6 +10,7 @@ pub struct EntregadorService {
     usuario_repo: Arc<UsuarioRepository>,
 }
 
+#[allow(dead_code)]
 impl EntregadorService {
     pub fn new(repo: Arc<EntregadorRepository>, usuario_repo: Arc<UsuarioRepository>) -> Self {
         Self { repo, usuario_repo }

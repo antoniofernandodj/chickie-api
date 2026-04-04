@@ -7,6 +7,7 @@ use crate::{models::{UsoCupom, Model}, repositories::Repository};
 
 pub struct UsoCupomRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl UsoCupomRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 

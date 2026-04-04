@@ -4,11 +4,13 @@ use uuid::Uuid;
 use crate::models::{ConfiguracaoDePedidosLoja, TipoCalculoPedido};
 use crate::repositories::{ConfiguracaoPedidosLojaRepository};
 
+
 #[derive(Clone)]
 pub struct ConfiguracaoPedidosLojaService {
     repo: Arc<ConfiguracaoPedidosLojaRepository>,
 }
 
+#[allow(dead_code)]
 impl ConfiguracaoPedidosLojaService {
     pub fn new(repo: Arc<ConfiguracaoPedidosLojaRepository>) -> Self {
         Self { repo }

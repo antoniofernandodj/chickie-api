@@ -6,6 +6,7 @@ use crate::{models::{Usuario, Model}, repositories::Repository};
 
 pub struct UsuarioRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl UsuarioRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 

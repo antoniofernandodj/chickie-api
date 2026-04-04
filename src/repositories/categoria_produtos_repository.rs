@@ -6,6 +6,7 @@ use crate::{models::{CategoriaProdutos, Model}, repositories::Repository};
 
 pub struct CategoriaProdutosRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl CategoriaProdutosRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 

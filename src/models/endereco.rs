@@ -24,6 +24,7 @@ pub struct EnderecoLoja {
     pub longitude: Option<Decimal>,
 }
 
+#[allow(dead_code)]
 impl EnderecoLoja {
 
     pub fn new(

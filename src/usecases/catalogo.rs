@@ -34,7 +34,7 @@ pub struct CreateProdutoRequest {
 pub struct CatalogoUsecase {
     pub catalogo_service: Arc<CatalogoService>,
     pub loja_uuid: Uuid,
-    pub usuario: Usuario,
+    pub _usuario: Usuario,
 }
 
 
@@ -42,9 +42,9 @@ impl CatalogoUsecase {
     pub fn new(
         catalogo_service: Arc<CatalogoService>,
         loja_uuid: Uuid,
-        usuario: Usuario
+        _usuario: Usuario
     ) -> Self {
-        Self { catalogo_service, loja_uuid, usuario }
+        Self { catalogo_service, loja_uuid, _usuario }
     }
 
     pub async fn listar_produtos(&self) -> Result<Vec<Produto>, String> {

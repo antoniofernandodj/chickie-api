@@ -1,6 +1,5 @@
-use async_trait::async_trait;
 use axum::{
-    Extension, Json, extract::{FromRequest, FromRequestParts, Request, State}, http::{StatusCode, header, request::Parts}, middleware::Next, response::Response
+    Extension, Json, extract::{FromRequestParts, Request, State}, http::{StatusCode, header, request::Parts}, middleware::Next, response::Response
 };
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde_json::json;

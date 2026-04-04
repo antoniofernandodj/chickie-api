@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
-use crate::{models::{ConfiguracaoDePedidosLoja, Model, TipoCalculoPedido}, repositories::Repository, utils::agora};
+use crate::{models::{ConfiguracaoDePedidosLoja, Model, TipoCalculoPedido}, repositories::Repository};
 
 pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl ConfiguracaoPedidosLojaRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 

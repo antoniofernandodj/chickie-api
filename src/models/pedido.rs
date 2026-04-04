@@ -90,6 +90,7 @@ impl std::fmt::Display for EstadoDePedido {
     }
 }
 
+#[allow(dead_code)]
 impl EstadoDePedido {
     pub fn as_str(&self) -> &str {
         match self {
@@ -206,6 +207,7 @@ pub struct Pedido {
     pub partes: Vec<ParteDeItemPedido>
 }
 
+#[allow(dead_code)]
 impl Pedido {
     pub fn new(
         usuario_uuid: Uuid,

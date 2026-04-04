@@ -10,6 +10,7 @@ pub struct IngredienteService {
     repo: Arc<IngredienteRepository>,
 }
 
+#[allow(dead_code)]
 impl IngredienteService {
     pub fn new(repo: Arc<IngredienteRepository>) -> Self {
         Self { repo }

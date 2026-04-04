@@ -30,6 +30,7 @@ pub struct DadosEnderecoEntrega {
     // pub longitude: Option<f64>,
 }
 
+#[allow(dead_code)]
 impl DadosEnderecoEntrega {
     pub fn to_endereco_entrega(
         self,

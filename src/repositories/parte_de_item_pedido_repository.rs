@@ -13,6 +13,7 @@ use crate::{
 /// Ele possui apenas metodos especificos para o dominio.
 pub struct ParteDeItemPedidoRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl ParteDeItemPedidoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 

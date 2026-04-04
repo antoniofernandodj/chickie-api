@@ -6,6 +6,7 @@ use crate::{models::{Model, Pedido, EstadoDePedido, ItemPedido, AdicionalDeItemD
 
 pub struct PedidoRepository { pool: Arc<PgPool> }
 
+#[allow(dead_code)]
 impl PedidoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
