@@ -32,7 +32,7 @@ pub struct CreateLojaRequest {
 
 #[derive(Deserialize)]
 pub struct CreatePedidoRequest {
-    pub loja_uuid: Uuid,
+    // pub loja_uuid: Uuid,
     // pub usuario_uuid: Uuid,
     pub taxa_entrega: f64,
     pub forma_pagamento: String,

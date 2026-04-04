@@ -1,5 +1,5 @@
 use axum::{
-    Extension, Json, extract::State, response::{IntoResponse, Response}
+    Extension, Json, extract::{Path, State}, response::{IntoResponse, Response}
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -14,11 +14,10 @@ use crate::api::AppState;
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
     Extension(usuario_logado): Extension<Usuario>,
+    Path(loja_uuid): Path<Uuid>,
     Json(payload): Json<CreatePedidoRequest>,
 ) -> Response {
 
-    let loja_uuid = payload.loja_uuid;
-    let usuario_uuid = usuario_logado.uuid;
 
     // 2. Buscar produtos e montar as partes do pedido (validação de existência)
     let mut partes_por_item: Vec<Vec<ParteDeItemPedido>> = Vec::new();
