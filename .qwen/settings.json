@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(cargo check)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(cp *)"
     ]
   },
   "$version": 3
