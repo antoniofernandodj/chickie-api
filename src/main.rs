@@ -103,12 +103,8 @@ pub async fn handler_404() -> impl IntoResponse {
 
 #[tokio::test]
 async fn test_handler_ok() {
-
     assert_eq!("OLA MUNDO", "OLA MUNDO");
-
 }
-
-
 
 
 
@@ -137,10 +133,6 @@ async fn test_handler_ok() {
 //     let users: Vec<User> = serde_json::from_slice(&body).unwrap();
 //     assert!(users.is_empty()); // ou faça asserções específicas
 // }
-
-
-
-
 
 
 // use sqlx::{PgPool, Row};
