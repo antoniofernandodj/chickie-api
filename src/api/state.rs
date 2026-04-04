@@ -44,6 +44,8 @@ pub struct AppState {
     pub usuario_repo: Arc<UsuarioRepository>,
     pub loja_repo: Arc<LojaRepository>,
     pub produto_repo: Arc<ProdutoRepository>,
+    // Raw pool for administrative operations (e.g. wipe database)
+    pub db: Arc<PgPool>,
 }
 
 
@@ -133,6 +135,7 @@ impl AppState {
             usuario_repo: Arc::clone(&usuario_repo),
             loja_repo: Arc::clone(&loja_repo),
             produto_repo: Arc::clone(&produto_repo),
+            db: pool,
         });
 
         s

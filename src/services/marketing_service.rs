@@ -83,7 +83,7 @@ impl MarketingService {
             prioridade
         );
 
-        self.promocao_repo.criar(&promocao).await;
+        let _ = self.promocao_repo.criar(&promocao).await;
 
         Ok(promocao)
     }

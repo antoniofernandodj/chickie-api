@@ -8,6 +8,7 @@ mod cupom;
 mod routers;
 mod auth;
 mod usecases;
+mod wipe;
 
 pub use routers::api_routes;
 
@@ -55,3 +56,5 @@ pub use cupom::{
     criar_cupom,
     validar_cupom, // listar_cupons, buscar_cupom
 };
+
+pub use wipe::wipe_database;

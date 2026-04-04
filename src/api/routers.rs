@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use axum::{Json};
-use axum::{Router, middleware::from_fn_with_state, response::IntoResponse, routing::{get, post, put}};
+use axum::{Router, middleware::from_fn_with_state, response::IntoResponse, routing::{get, post, put, delete}};
 use serde_json::json;
 
 use crate::api::{AppState, auth_middleware};
@@ -19,7 +19,8 @@ use crate::api::{
     listar_produtos,
     criar_cupom,
     validar_cupom,
-    atualizar_produto
+    atualizar_produto,
+    wipe_database
 };
 
 
@@ -73,6 +74,8 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/cupons", marketing_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/auth", auth_routes())
+        // ⚠️ Development-only: no auth, wipes ALL data
+        .route("/wipe", delete(wipe_database))
         .route("/ok", get(ok_handler))
 }
 
