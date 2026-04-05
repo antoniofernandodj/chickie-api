@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::Utc;
+use chrono::{Utc, NaiveDate};
 use rust_decimal::Decimal;
 
 use crate::models::Model;
@@ -13,7 +13,7 @@ pub struct Funcionario {
     pub usuario_uuid: Uuid,
     pub cargo: Option<String>,
     pub salario: Option<Decimal>,
-    pub data_admissao: String,
+    pub data_admissao: NaiveDate,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
@@ -23,7 +23,7 @@ impl Funcionario {
         usuario_uuid: Uuid,
         cargo: Option<String>,
         salario: Option<Decimal>,
-        data_admissao: String,
+        data_admissao: NaiveDate,
     ) -> Self {
 
         Self {

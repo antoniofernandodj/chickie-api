@@ -3,6 +3,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::*;
+use chrono::NaiveDate;
 
 use crate::models::{
     Cliente,
@@ -151,7 +152,7 @@ impl LojaService {
         celular: String,
         cargo: Option<String>,
         salario: Option<Decimal>,
-        data_admissao: String,
+        data_admissao: NaiveDate,
     ) -> Result<Funcionario, String> {
 
         // 1. Cria o usuário com classe "funcionario"

@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
+use chrono::NaiveDate;
 
 use crate::{
     api::{AppState, auth::AdminPermission, dto::AppError},
@@ -27,6 +28,9 @@ pub async fn adicionar_funcionario(
     Json(p): Json<AdicionarFuncionarioRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
+    let data_admissao = NaiveDate::parse_from_str(&p.data_admissao, "%Y-%m-%d")
+        .map_err(|e| AppError::BadRequest(format!("Data de admissão inválida. Use o formato YYYY-MM-DD: {}", e)))?;
+
     let funcionario = state.loja_service.adicionar_funcionario(
         loja_uuid,
         p.nome,
@@ -36,7 +40,7 @@ pub async fn adicionar_funcionario(
         p.celular,
         p.cargo,
         p.salario,
-        p.data_admissao
+        data_admissao
     ).await?;
 
     Ok(Json(funcionario))

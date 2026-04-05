@@ -3,6 +3,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
 use rust_decimal::Decimal;
+use chrono::NaiveDate;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
@@ -26,6 +27,9 @@ pub async fn atualizar_funcionario(
     Json(p): Json<AtualizarFuncionarioRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
+    let data_admissao = NaiveDate::parse_from_str(&p.data_admissao, "%Y-%m-%d")
+        .map_err(|e| AppError::BadRequest(format!("Data de admissão inválida. Use o formato YYYY-MM-DD: {}", e)))?;
+
     let uc = AdminUsecase::new(
         state.ingrediente_service.clone(),
         state.horario_funcionamento_service.clone(),
@@ -47,7 +51,7 @@ pub async fn atualizar_funcionario(
         p.telefone,
         p.cargo,
         p.salario,
-        p.data_admissao,
+        data_admissao,
     ).await?;
     Ok(StatusCode::NO_CONTENT)
 }

@@ -52,7 +52,7 @@ impl Repository<Funcionario> for FuncionarioRepository {
         .bind(item.usuario_uuid)
         .bind(&item.cargo)
         .bind(item.salario)
-        .bind(&item.data_admissao.to_string())
+        .bind(item.data_admissao)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

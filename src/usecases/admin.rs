@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use rust_decimal::{Decimal, prelude::FromPrimitive};
 use uuid::Uuid;
+use chrono::NaiveDate;
 
 use crate::{
     models::{Ingrediente, HorarioFuncionamento, ConfiguracaoDePedidosLoja, Funcionario, Entregador, Usuario},
@@ -89,7 +90,7 @@ impl AdminUsecase {
     pub async fn listar_funcionarios(&self) -> Result<Vec<Funcionario>, String> {
         self.funcionario_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<Decimal>, data_admissao: String) -> Result<(), String> {
+    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<Decimal>, data_admissao: NaiveDate) -> Result<(), String> {
         self.funcionario_service.atualizar(uuid, usuario_uuid, nome, email, senha, celular, telefone, cargo, salario, data_admissao).await
     }
     pub async fn funcionario_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
