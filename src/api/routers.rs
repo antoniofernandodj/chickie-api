@@ -216,7 +216,6 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     let mut router = Router::new()
         .nest("/pedidos", pedido_routes(&s))
         .nest("/usuarios", usuario_routes())
-        .nest("/lojas", loja_routes())
         .nest("/produtos", produto_routes())
         .nest("/marketing", marketing_routes(&s))
         .nest("/catalogo", catalogo_routes())
@@ -231,6 +230,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/entregadores", entregador_routes())
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .nest("/lojas", loja_routes())
         .nest("/auth", auth_routes())
         .route("/ok", get(ok_handler));
 
