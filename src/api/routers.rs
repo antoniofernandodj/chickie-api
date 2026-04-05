@@ -116,7 +116,6 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .layer(from_fn_with_state(s.clone(), auth_middleware))
 }
 
-
 // Rotas de Catálogo
 pub fn catalogo_routes() -> Router<Arc<AppState>> {
     Router::new()
@@ -153,6 +152,7 @@ pub fn loja_favorita_routes() -> Router<Arc<AppState>> {
         .route("/minhas", get(listar_minhas_favoritas))
         .route("/{loja_uuid}/verificar", get(verificar_favorita))
 }
+
 pub fn horario_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/{loja_uuid}", get(listar_horarios))
@@ -214,7 +214,6 @@ pub fn marketing_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{loja_uuid}/promocoes/{uuid}", put(atualizar_promocao))
         .route("/{loja_uuid}/promocoes/{uuid}", delete(deletar_promocao))
 }
-
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     let mut router = Router::new()

@@ -119,7 +119,9 @@ where
 
         if !usuario.is_administrador() {
             return Err(AppError::Unauthorized(
-                "Apenas administradores podem realizar essa ação.".to_string(),
+                format!(
+                    "Apenas administradores podem realizar essa ação. classe de usuario: {}", usuario.classe
+                ),
             ));
         }
 
