@@ -95,9 +95,9 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
 name = "aws-config"
-version = "1.5.10"
+version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b49afaa341e8dd8577e1a2200468f98956d6eda50bcf4a53246cc00174ba924"
+checksum = "caf6cfe2881cb1fcbba9ae946fb9a6480d3b7a714ca84c74925014a89ef3387a"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -115,6 +115,7 @@ dependencies = [
  "fastrand",
  "hex",
  "http 0.2.12",
+ "hyper 0.14.32",
  "ring",
  "time",
  "tokio",
@@ -165,9 +166,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-s3"
-version = "1.50.0"
+version = "1.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a56ac112fb11bcf25b4c17d90595c1232bae8841ee811c198e1a55c19789dfe3"
+checksum = "2ecec5514e9d9c76c5e9489ca65ab9055ae0b3c49da3a1afd452c57cb68734fb"
 dependencies = [
  "ahash 0.8.12",
  "aws-credential-types",
