@@ -17,7 +17,8 @@ pub struct AtualizarProdutoRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateProdutoRequest {
-    pub uuid: Uuid,
+    pub uuid: Option<Uuid>,
+    pub loja_uuid: Uuid,
     pub categoria_uuid: Uuid,
     pub nome: String,
     pub descricao: Option<String>,
@@ -26,8 +27,6 @@ pub struct CreateProdutoRequest {
     pub disponivel: bool,
     pub tempo_preparo_min: Option<i32>,
     pub destaque: bool,
-    pub criado_em: String,
-    pub atualizado_em: String,
 }
 
 

@@ -1698,7 +1698,7 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "uuid": "uuid",
+  "loja_uuid": "uuid",
   "categoria_uuid": "uuid",
   "nome": "Pizza Grande",
   "descricao": "string | null",
@@ -1706,9 +1706,7 @@ Content-Type: application/json
   "imagem_url": "string | null",
   "disponivel": true,
   "tempo_preparo_min": 30,
-  "destaque": false,
-  "criado_em": "2026-04-04T00:00:00Z",
-  "atualizado_em": "2026-04-04T00:00:00Z"
+  "destaque": false
 }
 ```
 
