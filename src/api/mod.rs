@@ -56,7 +56,8 @@ pub use usuario::{
 
 pub use loja::{
     criar_loja,
-    listar_lojas, // buscar_loja
+    listar_lojas,
+    buscar_loja,
     adicionar_funcionario,
     adicionar_entregador,
     adicionar_cliente,

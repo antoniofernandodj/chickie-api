@@ -270,4 +270,8 @@ impl LojaService {
     pub async fn pesquisar(&self, termo: &str) -> Result<Vec<Loja>, String> {
         self.loja_repo.pesquisar(termo).await
     }
+
+    pub async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
+        self.loja_repo.buscar_por_uuid(uuid).await
+    }
 }

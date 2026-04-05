@@ -6,6 +6,7 @@ mod listar_lojas_admin;
 mod adicionar_cliente;
 mod listar_minhas_lojas;
 mod pesquisar_lojas;
+mod buscar_loja;
 
 pub use criar_loja::criar_loja;
 pub use listar_lojas::listar_lojas;
@@ -15,3 +16,4 @@ pub use listar_lojas_admin::listar_lojas_admin;
 pub use adicionar_cliente::adicionar_cliente;
 pub use listar_minhas_lojas::listar_minhas_lojas;
 pub use pesquisar_lojas::pesquisar_lojas;
+pub use buscar_loja::buscar_loja;
