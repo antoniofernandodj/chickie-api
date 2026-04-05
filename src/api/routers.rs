@@ -58,6 +58,9 @@ use crate::api::{
     buscar_loja_por_slug,
     criar_adicional,
     criar_categoria,
+    listar_categorias,
+    atualizar_categoria,
+    deletar_categoria,
     listar_adicionais,
     listar_adicionais_disponiveis,
     marcar_indisponivel,
@@ -126,6 +129,9 @@ pub fn catalogo_routes() -> Router<Arc<AppState>> {
         .route("/{loja_uuid}/adicionais/disponiveis", get(listar_adicionais_disponiveis))
         .route("/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel", put(marcar_indisponivel))
         .route("/{loja_uuid}/categorias", post(criar_categoria))
+        .route("/{loja_uuid}/categorias", get(listar_categorias))
+        .route("/{loja_uuid}/categorias/{uuid}", put(atualizar_categoria))
+        .route("/{loja_uuid}/categorias/{uuid}", delete(deletar_categoria))
 }
 
 // Rotas de Endereço de Entrega

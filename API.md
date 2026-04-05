@@ -1295,6 +1295,80 @@ Content-Type: application/json
 
 ---
 
+### 8.6 Listar Categorias
+
+```
+GET /api/catalogo/{loja_uuid}/categorias
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440070",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "Bebidas",
+    "descricao": "Bebidas geladas",
+    "ordem": 1,
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 8.7 Atualizar Categoria
+
+```
+PUT /api/catalogo/{loja_uuid}/categorias/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "nome": "Bebidas Geladas",
+  "descricao": "string | null",
+  "ordem": 2
+}
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440070",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nome": "Bebidas Geladas",
+  "descricao": "Bebidas bem geladas",
+  "ordem": 2,
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+---
+
+### 8.8 Deletar Categoria
+
+```
+DELETE /api/catalogo/{loja_uuid}/categorias/{uuid}
+Authorization: Bearer <token>
+```
+
+> ⚠️ Apenas funciona se a categoria não tiver produtos vinculados.
+
+**Response `204`:** No Content
+
+**Response `400` (categoria com produtos):**
+```json
+{
+  "error": "Não é possível deletar categoria com 3 produto(s). Remova os produtos primeiro."
+}
+```
+
+---
+
 ## 9. Endereços de Entrega (🔒)
 
 ### 9.1 Criar Endereço para Pedido
@@ -1797,22 +1871,25 @@ DELETE /api/wipe
 | 32 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
 | 33 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
 | 34 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 35 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 36 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 37 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 38 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 39 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 40 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 41 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 42 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 43 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 44 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 45 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 46 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 47 | `POST` | `/api/produtos/` | 🔒 | — |
-| 48 | `GET` | `/api/produtos/` | 🔒 | — |
-| 49 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 50 | `GET` | `/api/ok` | — | — |
-| 51 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 35 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 36 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 37 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 38 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 39 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 40 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 41 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 42 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 43 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 44 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 45 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 46 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 47 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 48 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 49 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 50 | `POST` | `/api/produtos/` | 🔒 | — |
+| 51 | `GET` | `/api/produtos/` | 🔒 | — |
+| 52 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 53 | `GET` | `/api/ok` | — | — |
+| 54 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 51 endpoints**
+**Total: 54 endpoints**

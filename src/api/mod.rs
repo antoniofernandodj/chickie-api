@@ -127,8 +127,11 @@ pub use entregador::{
 pub use catalogo::{
     criar_adicional,
     criar_categoria,
+    atualizar_categoria,
+    deletar_categoria,
     listar_adicionais,
     listar_adicionais_disponiveis,
+    listar_categorias,
     marcar_indisponivel
 };
 

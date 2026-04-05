@@ -158,4 +158,58 @@ impl CatalogoService {
         self.adicional_repo.marcar_indisponivel(adicional_uuid).await
     }
 
+    pub async fn listar_categorias(
+        &self,
+        loja_uuid: Uuid,
+    ) -> Result<Vec<CategoriaProdutos>, String> {
+        self.categoria_repo.buscar_por_loja(loja_uuid).await
+    }
+
+    pub async fn atualizar_categoria(
+        &self,
+        uuid: Uuid,
+        loja_uuid: Uuid,
+        nome: String,
+        descricao: Option<String>,
+        ordem: Option<i32>,
+    ) -> Result<CategoriaProdutos, String> {
+        let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid != loja_uuid {
+            return Err("Categoria não pertence a esta loja".to_string());
+        }
+
+        categoria.nome = nome;
+        categoria.descricao = descricao;
+        categoria.ordem = ordem;
+
+        self.categoria_repo.atualizar(categoria.clone()).await?;
+        Ok(categoria)
+    }
+
+    pub async fn deletar_categoria(
+        &self,
+        uuid: Uuid,
+        loja_uuid: Uuid,
+    ) -> Result<(), String> {
+        let categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid != loja_uuid {
+            return Err("Categoria não pertence a esta loja".to_string());
+        }
+
+        // Verificar se a categoria está vazia (sem produtos)
+        let produtos = self.produto_repo.buscar_por_categoria(uuid).await?;
+        if !produtos.is_empty() {
+            return Err(format!(
+                "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
+                produtos.len()
+            ));
+        }
+
+        self.categoria_repo.deletar(uuid).await
+    }
+
 }

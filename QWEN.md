@@ -294,6 +294,9 @@ Cada repositório implementa também:
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
+| `GET` | `/api/catalogo/{loja_uuid}/categorias` | Listar categorias |
+| `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Atualizar categoria |
+| `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Deletar categoria (apenas se vazia) |
 
 #### Pedidos (auth required)
 
