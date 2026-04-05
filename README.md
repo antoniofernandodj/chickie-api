@@ -95,6 +95,7 @@ Todos os endpoints vivem sob `/api`.
 |---------|--------------------|---------------------|------|
 | `GET`   | `/api/lojas/`      | Listar lojas        | ❌   |
 | `GET`   | `/api/lojas/pesquisar` | Pesquisar lojas | ❌   |
+| `GET`   | `/api/lojas/{uuid}` | Buscar loja por UUID | ❌   |
 
 ### Administração (auth required, apenas admin)
 
