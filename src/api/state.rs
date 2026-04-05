@@ -211,16 +211,16 @@ impl AppState {
         );
 
         // S3 configuration from environment (client created lazily in usecase)
-        let bucket = std::env::var("S3_BUCKET_NAME_1").unwrap_or_default();
-        let region = std::env::var("S3_REGION").ok();
-        let endpoint = std::env::var("S3_ENDPOINT").ok();
+        let bucket = std::env::var("S3_BUCKET_NAME_1")
+            .expect("Var env não encontrada: S3_BUCKET_NAME_1");
+        let endpoint = std::env::var("S3_ENDPOINT")
+            .expect("Var env não encontrada: S3_ENDPOINT");
 
         let upload_imagem_usecase = Arc::new(
             UploadImagemUsecase::new(
                 ProdutoRepository::new(pool.clone()),
                 bucket,
                 endpoint.clone(),
-                region,
             )
         );
 

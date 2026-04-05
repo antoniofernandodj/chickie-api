@@ -1,4 +1,4 @@
-use aws_sdk_s3::primitives::ByteStream;
+use aws_sdk_s3::{config::Credentials, primitives::ByteStream};
 use uuid::Uuid;
 
 use crate::{
@@ -9,38 +9,40 @@ use crate::{
 pub struct UploadImagemUsecase {
     produto_repo: ProdutoRepository,
     bucket: String,
-    endpoint: Option<String>,
-    region: Option<String>,
+    endpoint: String,
 }
 
 impl UploadImagemUsecase {
     pub fn new(
         produto_repo: ProdutoRepository,
         bucket: String,
-        endpoint: Option<String>,
-        region: Option<String>,
+        endpoint: String,
     ) -> Self {
         Self {
             produto_repo,
             bucket,
             endpoint,
-            region,
         }
     }
 
     async fn s3_client(&self) -> aws_sdk_s3::Client {
         let access_key = std::env::var("S3_ACCESS_KEY_ID").ok();
         let secret_key = std::env::var("S3_SECRET_ACCESS_KEY").ok();
+        let credentials_provider = Credentials::new(
+            access_key.expect("Var env não encontrada: S3_ACCESS_KEY_ID"),
+            secret_key.expect("Var env não encontrada: S3_SECRET_ACCESS_KEY"),
+            None,
+            None,
+            "static"
+        );
 
-        if access_key.is_some() && secret_key.is_some() {
-            let mut loader = aws_config::defaults(aws_config::BehaviorVersion::latest());
-            if let Some(ref ep) = self.endpoint {
-                loader = loader.endpoint_url(ep);
-            }
-            aws_sdk_s3::Client::new(&loader.load().await)
-        } else {
-            aws_sdk_s3::Client::new(&aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await)
-        }
+  
+        let config = aws_config::defaults(aws_config::BehaviorVersion::latest())
+            .credentials_provider(credentials_provider)
+            .endpoint_url(self.endpoint.clone());
+
+        aws_sdk_s3::Client::new(&config.load().await)
+
     }
 
     pub async fn executar(
@@ -71,11 +73,8 @@ impl UploadImagemUsecase {
             .map_err(|e| format!("Failed to upload to S3: {}", e))?;
 
         // Construir URL do arquivo
-        let file_url = if let Some(ref ep) = self.endpoint {
-            format!("{}/{}/{}", ep.trim_end_matches('/'), self.bucket, object_key)
-        } else {
-            let region = self.region.as_deref().unwrap_or("us-east-1");
-            format!("https://{}.s3.{}.amazonaws.com/{}", self.bucket, region, object_key)
+        let file_url =  {
+            format!("{}/{}/{}", self.endpoint.trim_end_matches('/'), self.bucket, object_key)
         };
 
         Ok(file_url)
