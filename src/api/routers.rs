@@ -98,11 +98,11 @@ pub fn loja_routes() -> Router<Arc<AppState>> {
 pub fn loja_admin_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/lojas", post(criar_loja))
-        .route("/listar", get(listar_lojas_admin))
-        .route("/minhas-lojas", get(listar_minhas_lojas))
-        .route("/{loja_uuid}/funcionarios", post(adicionar_funcionario))
-        .route("/{loja_uuid}/entregadores", post(adicionar_entregador))
-        .route("/{loja_uuid}/clientes", post(adicionar_cliente))
+        .route("/lojas/listar", get(listar_lojas_admin))
+        .route("/lojas/minhas-lojas", get(listar_minhas_lojas))
+        .route("/lojas/{loja_uuid}/funcionarios", post(adicionar_funcionario))
+        .route("/lojas/{loja_uuid}/entregadores", post(adicionar_entregador))
+        .route("/lojas/{loja_uuid}/clientes", post(adicionar_cliente))
 }
 
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {

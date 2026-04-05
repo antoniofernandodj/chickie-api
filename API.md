@@ -464,7 +464,27 @@ Authorization: Bearer <token>
 
 ---
 
-### 5.3 Adicionar Funcionário
+### 5.3 Minhas Lojas (Lojas do Admin)
+
+```
+GET /api/admin/lojas/minhas-lojas
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "Pizzaria do João",
+    "slug": "pizzaria-do-joao"
+  }
+]
+```
+
+---
+
+### 5.4 Adicionar Funcionário
 
 ```
 POST /api/admin/lojas/{loja_uuid}/funcionarios
@@ -501,7 +521,7 @@ Content-Type: application/json
 
 ---
 
-### 5.4 Adicionar Entregador
+### 5.5 Adicionar Entregador
 
 ```
 POST /api/admin/lojas/{loja_uuid}/entregadores
@@ -537,7 +557,7 @@ Content-Type: application/json
 
 ---
 
-### 5.5 Adicionar Cliente
+### 5.6 Adicionar Cliente
 
 ```
 POST /api/admin/lojas/{loja_uuid}/clientes
