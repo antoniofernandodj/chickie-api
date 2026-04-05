@@ -81,10 +81,10 @@ pub fn usuario_routes() -> Router<Arc<AppState>> {
 
 pub fn auth_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .route("/signup", post(criar_usuario))
-        .route("/login", post(login))
         .route("/me", get(me))
-        .layer(from_fn_with_state(s.clone(), auth_middleware))
+            .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .route("/login", post(login))
+        .route("/signup", post(criar_usuario))
 }
 
 pub fn loja_routes() -> Router<Arc<AppState>> {
