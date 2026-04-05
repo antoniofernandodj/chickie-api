@@ -218,6 +218,7 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
         .route("/{uuid}/imagem", post(subir_imagem_produto))
 }
 
+
 // Rotas de Marketing / Cupons / Avaliações
 pub fn marketing_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
@@ -265,7 +266,6 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
 
         router
 }
-
 
 pub async fn ok_handler() -> impl IntoResponse {
     Json(json!({"msg": "ok"}))
