@@ -154,6 +154,7 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                                                    | Descrição                | Auth |
 |--------|---------------------------------------------------------|--------------------------|------|
+| `GET`  | `/api/funcionarios/{loja_uuid}`                         | Listar funcionários      | ✅   |
 | `PUT`  | `/api/funcionarios/{loja_uuid}/{uuid}`                  | Atualizar funcionário    | ✅   |
 | `PUT`  | `/api/funcionarios/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha | ✅   |
 
@@ -161,6 +162,7 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                                                    | Descrição                | Auth |
 |--------|---------------------------------------------------------|--------------------------|------|
+| `GET`  | `/api/entregadores/{loja_uuid}`                         | Listar entregadores      | ✅   |
 | `PUT`  | `/api/entregadores/{loja_uuid}/{uuid}`                  | Atualizar entregador     | ✅   |
 | `PUT`  | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha | ✅   |
 

@@ -273,6 +273,7 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
+| `GET` | `/api/funcionarios/{loja_uuid}` | Listar funcionários |
 | `PUT` | `/api/funcionarios/{loja_uuid}/{uuid}` | Atualizar funcionário (inclui campos de usuário opcionais) |
 | `PUT` | `/api/funcionarios/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 
@@ -280,6 +281,7 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
+| `GET` | `/api/entregadores/{loja_uuid}` | Listar entregadores |
 | `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
 | `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 

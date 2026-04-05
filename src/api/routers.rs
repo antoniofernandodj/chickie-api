@@ -30,8 +30,10 @@ use crate::api::{
     atualizar_cupom,
     deletar_cupom,
     atualizar_funcionario,
+    listar_funcionarios,
     funcionario_trocar_email_senha,
     atualizar_entregador,
+    listar_entregadores,
     entregador_trocar_email_senha,
     listar_usuarios,
     criar_produto,
@@ -183,12 +185,14 @@ pub fn ingrediente_routes() -> Router<Arc<AppState>> {
 
 pub fn funcionario_routes() -> Router<Arc<AppState>> {
     Router::new()
+        .route("/{loja_uuid}", get(listar_funcionarios))
         .route("/{loja_uuid}/{uuid}", put(atualizar_funcionario))
         .route("/{loja_uuid}/usuarios/{usuario_uuid}/credenciais", put(funcionario_trocar_email_senha))
 }
 
 pub fn entregador_routes() -> Router<Arc<AppState>> {
     Router::new()
+        .route("/{loja_uuid}", get(listar_entregadores))
         .route("/{loja_uuid}/{uuid}", put(atualizar_entregador))
         .route("/{loja_uuid}/usuarios/{usuario_uuid}/credenciais", put(entregador_trocar_email_senha))
 }

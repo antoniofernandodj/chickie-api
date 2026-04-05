@@ -114,11 +114,13 @@ pub use config_pedido::{
 
 pub use funcionario::{
     atualizar_funcionario,
+    listar_funcionarios,
     funcionario_trocar_email_senha
 };
 
 pub use entregador::{
     atualizar_entregador,
+    listar_entregadores,
     entregador_trocar_email_senha
 };
 
