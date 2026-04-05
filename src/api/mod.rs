@@ -52,6 +52,7 @@ pub use pedido::{
 pub use usuario::{
     criar_usuario,
     listar_usuarios, // buscar_usuario
+    me
 };
 
 pub use loja::{

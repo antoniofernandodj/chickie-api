@@ -206,6 +206,7 @@ Cada repositório implementa também:
 |--------|------|-----------|
 | `POST` | `/api/auth/signup` | Cadastro de usuário |
 | `POST` | `/api/auth/login` | Login (gera JWT) |
+| `GET` | `/api/auth/me` | Obter usuário autenticado | 🔒 |
 
 #### Usuários (auth required)
 

@@ -3,10 +3,8 @@ use axum::{Json};
 use axum::{Router, middleware::from_fn_with_state, response::IntoResponse, routing::{get, post, put, delete}};
 use serde_json::json;
 
-use crate::api::{AppState, auth_middleware};
-use crate::api::{
-    usuario::login
-};
+use crate::api::{AppState, auth_middleware, me};
+use crate::api::usuario::login;
 use crate::api::{
     buscar_pedido,
     criar_loja,
@@ -81,10 +79,12 @@ pub fn usuario_routes() -> Router<Arc<AppState>> {
         .route("/", get(listar_usuarios))
 }
 
-pub fn auth_routes() -> Router<Arc<AppState>> {
+pub fn auth_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/signup", post(criar_usuario))
         .route("/login", post(login))
+        .route("/me", get(me))
+        .layer(from_fn_with_state(s.clone(), auth_middleware))
 }
 
 pub fn loja_routes() -> Router<Arc<AppState>> {
@@ -234,7 +234,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/admin", loja_admin_routes())
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/lojas", loja_routes())
-        .nest("/auth", auth_routes())
+        .nest("/auth", auth_routes(&s))
         .route("/ok", get(ok_handler));
 
         let mode = std::env::var("MODE").unwrap_or_default();

@@ -82,6 +82,7 @@ Todos os endpoints vivem sob `/api`.
 |--------|-------------------|------------------|------|--------|
 | `POST` | `/api/auth/signup`| Cadastro de usuário | ❌  | — |
 | `POST` | `/api/auth/login` | Login (gera JWT)    | ❌  | — |
+| `GET`  | `/api/auth/me`    | Usuário autenticado | ✅  | — |
 
 ### Usuários (auth required)
 
