@@ -38,11 +38,15 @@ use crate::api::{
     listar_usuarios,
     criar_produto,
     listar_produtos,
+    listar_produtos_por_categoria,
+    buscar_produto_por_uuid,
+    deletar_produto,
+    atualizar_produto,
+    subir_imagem_produto,
     criar_cupom,
     validar_cupom,
     criar_promocao,
     listar_cupons,
-    atualizar_produto,
     wipe_database,
     avaliar_loja,
     avaliar_produto,
@@ -207,7 +211,11 @@ pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_produto))
         .route("/", get(listar_produtos))
+        .route("/categoria/{categoria_uuid}", get(listar_produtos_por_categoria))
+        .route("/{uuid}", get(buscar_produto_por_uuid))
         .route("/{uuid}", put(atualizar_produto))
+        .route("/{uuid}", delete(deletar_produto))
+        .route("/{uuid}/imagem", post(subir_imagem_produto))
 }
 
 // Rotas de Marketing / Cupons / Avaliações

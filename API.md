@@ -1761,7 +1761,63 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.3 Atualizar Produto
+### 12.3 Listar Produtos por Categoria
+
+```
+GET /api/produtos/categoria/{categoria_uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440013",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "categoria_uuid": "550e8400-e29b-41d4-a716-446655440070",
+    "nome": "Pizza Grande",
+    "descricao": "Pizza grande com até 4 sabores",
+    "preco": 49.90,
+    "imagem_url": "https://example.com/pizza.jpg",
+    "disponivel": true,
+    "tempo_preparo_min": 30,
+    "destaque": false,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 12.4 Buscar Produto por UUID
+
+```
+GET /api/produtos/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "categoria_uuid": "550e8400-e29b-41d4-a716-446655440070",
+  "nome": "Pizza Grande",
+  "descricao": "Pizza grande com até 4 sabores",
+  "preco": 49.90,
+  "imagem_url": "https://example.com/pizza.jpg",
+  "disponivel": true,
+  "tempo_preparo_min": 30,
+  "destaque": false,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+---
+
+### 12.5 Atualizar Produto
 
 ```
 PUT /api/produtos/{uuid}
@@ -1796,6 +1852,48 @@ Content-Type: application/json
   "criado_em": "2026-04-04T00:00:00Z",
   "atualizado_em": "2026-04-04T00:00:00Z"
 }
+```
+
+---
+
+### 12.6 Deletar Produto
+
+```
+DELETE /api/produtos/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+---
+
+### 12.7 Subir Imagem do Produto
+
+```
+POST /api/produtos/{uuid}/imagem
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Request Body:** (multipart form-data)
+- `file`: Image file (JPEG, PNG, WebP, etc.)
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "imagem_url": "https://s3.example.com/bucket/produtos/550e8400-...-pizza.jpg",
+  "message": "Imagem enviada com sucesso"
+}
+```
+
+**Environment Variables Required:**
+```bash
+S3_BUCKET_NAME=your-bucket-name
+S3_REGION=us-east-1                 # Optional, default: us-east-1
+S3_ENDPOINT=https://s3.example.com  # Optional, for custom endpoints (rust-fs)
+S3_ACCESS_KEY_ID=your-access-key    # Optional, for custom endpoints
+S3_SECRET_ACCESS_KEY=your-secret-key # Optional, for custom endpoints
 ```
 
 ---
@@ -1888,8 +1986,12 @@ DELETE /api/wipe
 | 49 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
 | 50 | `POST` | `/api/produtos/` | 🔒 | — |
 | 51 | `GET` | `/api/produtos/` | 🔒 | — |
-| 52 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 53 | `GET` | `/api/ok` | — | — |
-| 54 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 52 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 53 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 54 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 55 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 56 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 57 | `GET` | `/api/ok` | — | — |
+| 58 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 54 endpoints**
+**Total: 58 endpoints**

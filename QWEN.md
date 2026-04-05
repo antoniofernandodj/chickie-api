@@ -235,7 +235,11 @@ Cada repositório implementa também:
 |--------|------|-----------|
 | `POST` | `/api/produtos/` | Criar produto |
 | `GET` | `/api/produtos/` | Listar produtos |
+| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
+| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
 | `PUT` | `/api/produtos/{uuid}` | Atualizar product |
+| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
+| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto (S3) |
 
 #### Horários de Funcionamento (🔒)
 

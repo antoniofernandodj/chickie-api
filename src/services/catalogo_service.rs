@@ -212,4 +212,26 @@ impl CatalogoService {
         self.categoria_repo.deletar(uuid).await
     }
 
+    pub async fn buscar_produto_por_uuid(
+        &self,
+        uuid: Uuid,
+    ) -> Result<Produto, String> {
+        self.produto_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Produto não encontrado".to_string())
+    }
+
+    pub async fn listar_produtos_por_categoria(
+        &self,
+        categoria_uuid: Uuid,
+    ) -> Result<Vec<Produto>, String> {
+        self.produto_repo.buscar_por_categoria(categoria_uuid).await
+    }
+
+    pub async fn deletar_produto(
+        &self,
+        uuid: Uuid,
+    ) -> Result<(), String> {
+        self.produto_repo.deletar(uuid).await
+    }
+
 }

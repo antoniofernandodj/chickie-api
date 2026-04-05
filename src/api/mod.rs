@@ -70,8 +70,12 @@ pub use loja::{
 
 pub use produto::{
     criar_produto,
-    listar_produtos, // buscar_produto
-    atualizar_produto
+    listar_produtos,
+    listar_produtos_por_categoria,
+    buscar_produto_por_uuid,
+    deletar_produto,
+    atualizar_produto,
+    subir_imagem_produto
 };
 
 pub use cupom::{

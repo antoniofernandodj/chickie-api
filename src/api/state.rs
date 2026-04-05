@@ -40,7 +40,8 @@ use crate::{
         MarketingService,
         PedidoService,
         UsuarioService
-    }
+    },
+    usecases::UploadImagemUsecase
 };
 
 pub struct AppState {
@@ -58,6 +59,7 @@ pub struct AppState {
     pub config_pedido_service: Arc<ConfiguracaoPedidosLojaService>,
     pub funcionario_service: Arc<FuncionarioService>,
     pub entregador_service: Arc<EntregadorService>,
+    pub upload_imagem_usecase: Arc<UploadImagemUsecase>,
 
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
@@ -208,6 +210,20 @@ impl AppState {
             )
         );
 
+        // S3 configuration from environment (client created lazily in usecase)
+        let bucket = std::env::var("S3_BUCKET_NAME_1").unwrap_or_default();
+        let region = std::env::var("S3_REGION").ok();
+        let endpoint = std::env::var("S3_ENDPOINT").ok();
+
+        let upload_imagem_usecase = Arc::new(
+            UploadImagemUsecase::new(
+                ProdutoRepository::new(pool.clone()),
+                bucket,
+                endpoint.clone(),
+                region,
+            )
+        );
+
 
         // 4. Estado compartilhado
         let s = Arc::new(
@@ -225,6 +241,7 @@ impl AppState {
                 config_pedido_service,
                 funcionario_service,
                 entregador_service,
+                upload_imagem_usecase,
 
                 pedido_repo: Arc::clone(&pedido_repo),
                 cupom_repo: Arc::clone(&cupom_repo),
