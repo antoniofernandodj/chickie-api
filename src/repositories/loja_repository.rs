@@ -18,6 +18,14 @@ impl LojaRepository {
         .map_err(|e| e.to_string())
     }
 
+    pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
+        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE slug = $1")
+        .bind(slug)
+        .fetch_optional(self.pool())
+        .await
+        .map_err(|e| e.to_string())
+    }
+
     pub async fn listar_ativas(&self) -> Result<Vec<Loja>, String> {
         sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE ativa = true")
         .fetch_all(self.pool())

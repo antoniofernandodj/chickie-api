@@ -23,4 +23,11 @@ impl LojaUsecase {
             .await?
             .ok_or_else(|| "Loja não encontrada".to_string())
     }
+
+    pub async fn buscar_loja_por_slug(&self, slug: &str) -> Result<Loja, String> {
+        self.loja_service
+            .buscar_por_slug(slug)
+            .await?
+            .ok_or_else(|| "Loja não encontrada".to_string())
+    }
 }

@@ -55,6 +55,7 @@ use crate::api::{
     listar_lojas_admin,
     listar_minhas_lojas,
     pesquisar_lojas,
+    buscar_loja_por_slug,
     criar_adicional,
     criar_categoria,
     listar_adicionais,
@@ -91,6 +92,7 @@ pub fn loja_routes() -> Router<Arc<AppState>> {
         .route("/", get(listar_lojas))
         .route("/pesquisar", get(pesquisar_lojas))
         .route("/{uuid}", get(buscar_loja))
+        .route("/slug/{slug}", get(buscar_loja_por_slug))
 }
 
 pub fn loja_admin_routes() -> Router<Arc<AppState>> {

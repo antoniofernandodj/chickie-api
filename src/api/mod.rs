@@ -63,7 +63,8 @@ pub use loja::{
     adicionar_cliente,
     listar_lojas_admin,
     listar_minhas_lojas,
-    pesquisar_lojas
+    pesquisar_lojas,
+    buscar_loja_por_slug
 };
 
 pub use produto::{

@@ -274,4 +274,8 @@ impl LojaService {
     pub async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
         self.loja_repo.buscar_por_uuid(uuid).await
     }
+
+    pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
+        self.loja_repo.buscar_por_slug(slug).await
+    }
 }
