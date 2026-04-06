@@ -279,4 +279,9 @@ impl LojaService {
     pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
         self.loja_repo.buscar_por_slug(slug).await
     }
+
+    pub async fn verificar_slug_disponivel(&self, slug: &str) -> Result<bool, String> {
+        let existente = self.loja_repo.buscar_por_slug(slug).await?;
+        Ok(existente.is_none())
+    }
 }

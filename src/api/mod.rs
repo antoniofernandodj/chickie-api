@@ -67,7 +67,8 @@ pub use loja::{
     listar_lojas_admin,
     listar_minhas_lojas,
     pesquisar_lojas,
-    buscar_loja_por_slug
+    buscar_loja_por_slug,
+    verificar_slug_disponivel
 };
 
 pub use produto::{

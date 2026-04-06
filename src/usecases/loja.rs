@@ -30,4 +30,8 @@ impl LojaUsecase {
             .await?
             .ok_or_else(|| "Loja não encontrada".to_string())
     }
+
+    pub async fn verificar_slug_disponivel(&self, slug: &str) -> Result<bool, String> {
+        self.loja_service.verificar_slug_disponivel(slug).await
+    }
 }
