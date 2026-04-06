@@ -14,7 +14,8 @@
       "Bash(make *)",
       "Bash(cargo update *)",
       "Bash(cargo tree *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cargo run)"
     ]
   },
   "$version": 3
