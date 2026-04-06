@@ -4,12 +4,13 @@ use sqlx::FromRow;
 use chrono::Utc;
 use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
 use rust_decimal::Decimal;
+use utoipa::ToSchema;
 
 // ---------------------------------------------------------------------------
 // TipoCalculoPedido — como o preço é calculado quando há múltiplos sabores
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub enum TipoCalculoPedido {
     MediaPonderada, // média simples: soma dos preços / qtd de sabores
     MaisCaro,       // preço = o sabor mais caro
@@ -71,7 +72,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
 // Uma loja pode ter apenas uma configuração ativa.
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct ConfiguracaoDePedidosLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -106,7 +107,7 @@ impl ConfiguracaoDePedidosLoja {
 // Cada linha = 1 parte escolhida pelo cliente para aquele item.
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct ParteDeItemPedido {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

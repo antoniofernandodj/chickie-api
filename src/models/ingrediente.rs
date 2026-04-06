@@ -3,9 +3,10 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
 use rust_decimal::Decimal;
+use utoipa::ToSchema;
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Ingrediente {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

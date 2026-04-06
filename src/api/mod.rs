@@ -18,6 +18,7 @@ mod horario;
 mod config_pedido;
 mod funcionario;
 mod entregador;
+mod openapi;
 
 // Re-export usecases from the top-level module
 // pub use crate::usecases::{
@@ -26,6 +27,7 @@ mod entregador;
 // };
 
 pub use routers::api_routes;
+pub use openapi::swagger_router;
 
 pub use auth::{
     auth_middleware,

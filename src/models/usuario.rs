@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 use chrono::Utc;
+use utoipa::ToSchema;
 
 use crate::models::Model;
 
@@ -9,7 +10,7 @@ use crate::models::Model;
 // ClasseUsuario — define o papel do usuário no sistema
 // ===========================================================================
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub enum ClasseUsuario {
     Cliente,
     Administrador,
@@ -51,7 +52,7 @@ impl std::fmt::Display for ClasseUsuario {
 // Usuario
 // ===========================================================================
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Usuario {
     pub nome: String,
     pub username: String,

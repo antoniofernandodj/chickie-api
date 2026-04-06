@@ -3,8 +3,9 @@ use sqlx::FromRow;
 use crate::models::Model;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
+use utoipa::ToSchema;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct CategoriaProdutos {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

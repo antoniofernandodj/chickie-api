@@ -48,13 +48,15 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
 
 /// Executa os arquivos de migração em ordem, dividindo em statements individuais
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    let migration_files = [
-        "migrations/0001_criar_tabelas.sql",
-        "migrations/0002_add_promocao_escopo.sql",
-        "migrations/0003_add_criado_por_lojas.sql"
+    let migration_files: [&str; 3] = [
+        "0001_criar_tabelas.sql",
+        "0002_add_promocao_escopo.sql",
+        "0003_add_criado_por_lojas.sql"
     ];
 
-    for migration_path in &migration_files {
+    for migration_path in
+        &migration_files.map(|f: &str| format!("migrations/{}", f))
+    {
         let sql = match std::fs::read_to_string(migration_path) {
             Ok(content) => content,
             Err(_) => match std::fs::read_to_string(format!("src/../{}", migration_path)) {

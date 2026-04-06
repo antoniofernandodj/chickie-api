@@ -3,13 +3,14 @@ use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
 use rust_decimal::Decimal;
+use utoipa::ToSchema;
 
 use crate::models::Model;
 
 // --- TipoEscopoPromocao ---
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub enum TipoEscopoPromocao {
     Loja,
     Produto,
@@ -69,7 +70,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoEscopoPromocao {
 
 // --- StatusCupom ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub enum StatusCupom {
     Ativo,
     Inativo,
@@ -141,7 +142,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for StatusCupom {
 // tipo_desconto: "percentual", "valor_fixo", "frete_gratis"
 // valor_desconto: o valor/percentual (NULL para frete_gratis)
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Cupom {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -228,7 +229,7 @@ fn valor_desconto_com_limite(desconto: Decimal, maximo: Option<Decimal>) -> Deci
 // --- UsoCupom ---
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, FromRow)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct UsoCupom {
     pub uuid: Uuid,
     pub cupom_uuid: Uuid,
@@ -252,13 +253,13 @@ impl UsoCupom {
             usuario_uuid,
             pedido_uuid,
             valor_desconto,
-            usado_em: Utc::now().to_rfc3339(),
+            usado_em: Utc::now().to_rfc3339().to_owned(),
         }
     }
 }
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Promocao {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

@@ -24,3 +24,5 @@ jsonwebtoken = { version = "10.3", features = ["rust_crypto"] }
 dotenvy = "0.15.7"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid", "decimal"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }

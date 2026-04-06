@@ -59,8 +59,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 4 | 14, 15, 16, 17, 18 |
+| ✅ Concluídas | 5 | 14, 15, 16, 17, 18, 19 |
 | 📋 Features | 7 | 5–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 13 pendências ativas, 4 concluídas recentemente**
+**Total: 13 pendências ativas, 5 concluídas recentemente**

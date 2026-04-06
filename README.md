@@ -72,6 +72,23 @@ docker run -p 3000:3000 \
 
 ---
 
+## 📚 Documentação da API
+
+### Swagger / OpenAPI
+
+A API possui documentação interativa via Swagger/OpenAPI com todos os 58+ endpoints documentados.
+
+- **Swagger UI:** `http://localhost:3000/api/docs/swagger-ui`
+- **OpenAPI JSON:** `http://localhost:3000/api/docs/openapi.json`
+
+**Recursos:**
+- Documentação completa de todos os endpoints com request/response schemas
+- Teste de requisições e respostas diretamente pelo navegador
+- Suporte a autenticação JWT: clique no cadeado no topo da página para inserir seu token
+- Explore schemas de todos os models (Usuario, Loja, Pedido, Produto, etc.)
+
+---
+
 ## 📡 Endpoints da API
 
 Todos os endpoints vivem sob `/api`.

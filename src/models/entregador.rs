@@ -2,9 +2,10 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 use chrono::Utc;
+use utoipa::ToSchema;
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Entregador {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

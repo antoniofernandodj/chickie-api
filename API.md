@@ -4,6 +4,38 @@
 
 ---
 
+## Interactive API Documentation (Swagger/OpenAPI)
+
+This API provides interactive documentation powered by **utoipa** with automatic OpenAPI specification generation.
+
+### Quick Access
+
+| Resource | URL |
+|----------|-----|
+| **Swagger UI** | `http://localhost:3000/api/docs/swagger-ui` |
+| **OpenAPI JSON Spec** | `http://localhost:3000/api/docs/openapi.json` |
+
+### Features
+
+- **Interactive Testing**: Execute API requests directly from the browser
+- **Complete Schema Documentation**: View all request/response models
+- **Authentication Support**: Configure JWT tokens for testing protected endpoints
+- **Real-time Validation**: See parameter requirements and data constraints
+
+### Using Swagger UI
+
+1. Navigate to `http://localhost:3000/api/docs/swagger-ui`
+2. Browse endpoints organized by tags
+3. Click on any endpoint to expand details
+4. Click **"Try it out"** to enable request testing
+5. Fill in required parameters
+6. Click **"Execute"** to send the request
+7. View response body and headers
+
+> **Note**: For protected endpoints (🔒), authenticate first by clicking the **Authorize** button and entering your JWT token as `Bearer <token>`.
+
+---
+
 ## Informações Gerais
 
 | Item | Valor |

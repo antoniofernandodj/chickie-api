@@ -3,10 +3,11 @@ use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 use chrono::{Utc, NaiveTime};
 use rust_decimal::Decimal;
+use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Loja {
     pub uuid: Uuid,
     pub nome: String,

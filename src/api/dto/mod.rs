@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use rust_decimal::Decimal;
+use utoipa::{IntoResponses, ToSchema};
 
 
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct CreateUsuarioRequest {
     pub nome: String,
     pub username: String,
@@ -11,10 +12,11 @@ pub struct CreateUsuarioRequest {
     pub email: String,
     pub telefone: String,
     pub auth_method: String,
+    #[schema(example = "cliente")]
     pub classe: Option<String>,  // "cliente" (default) | "administrador"
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, ToSchema)]
 pub struct CreateLojaRequest {
     pub nome: String,
     pub slug: String,
@@ -32,7 +34,7 @@ pub struct CreateLojaRequest {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct CreatePedidoRequest {
     // pub loja_uuid: Uuid,
     // pub usuario_uuid: Uuid,
@@ -49,7 +51,7 @@ pub struct CreatePedidoRequest {
 
 /// Dados de entrada para o endereço de entrega (snapshot no momento do pedido)
 #[allow(dead_code)]
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, ToSchema)]
 pub struct DadosEnderecoEntregaRequest {
     pub cep: Option<String>,
     pub logradouro: String,
@@ -88,7 +90,7 @@ impl DadosEnderecoEntregaRequest {
 
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ItemPedidoRequest {
     pub quantidade: i32,
     pub observacoes: Option<String>,
@@ -96,7 +98,7 @@ pub struct ItemPedidoRequest {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct ParteItemRequest {
     pub produto_uuid: Uuid,
     pub posicao: i32,
@@ -109,10 +111,15 @@ use axum::{
 };
 use serde_json::json;
 
+#[derive(IntoResponses)]
 pub enum AppError {
+    #[response(status = 404)]
     NotFound(String),
+    #[response(status = 500)]
     Internal(String),
+    #[response(status = 400)]
     BadRequest(String),
+    #[response(status = 403)]
     Unauthorized(String),
 }
 
@@ -147,26 +154,26 @@ impl From<&str> for AppError {
 }
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, ToSchema)]
 pub struct Claims {
     pub sub: String,    // Geralmente o UUID do usuário em formato String
     pub exp: usize,     // Timestamp de expiração
     pub iat: usize,     // Timestamp de quando foi emitido (opcional)
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct LoginRequest {
     pub email: String,
     pub senha: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct AvaliarLojaRequest {
     pub nota: Decimal,
     pub comentario: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, ToSchema)]
 pub struct AvaliarProdutoRequest {
     pub produto_uuid: Uuid,
     pub nota: Decimal,

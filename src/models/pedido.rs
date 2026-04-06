@@ -4,10 +4,11 @@ use crate::models::{Model, ParteDeItemPedido};
 use chrono::Utc;
 use sqlx::FromRow;
 use rust_decimal::Decimal;
+use utoipa::ToSchema;
 
 // --- AdicionalDeItemDePedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct AdicionalDeItemDePedido {
     pub uuid: Uuid,
     pub item_uuid: Uuid,
@@ -38,7 +39,7 @@ impl AdicionalDeItemDePedido {
 
 // --- ItemPedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct ItemPedido {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -73,7 +74,7 @@ impl ItemPedido {
 
 // --- EstadoDePedido ---
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize, ToSchema)]
 pub enum EstadoDePedido {
     Criado,
     AguardandoConfirmacaoDeLoja,
@@ -186,7 +187,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for EstadoDePedido {
 }
 // --- Pedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Pedido {
     pub uuid: Uuid,
     pub usuario_uuid: Uuid,

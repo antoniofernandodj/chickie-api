@@ -2,10 +2,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use uuid::Uuid;
 use chrono::{Utc, NaiveTime};
+use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct HorarioFuncionamento {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

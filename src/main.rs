@@ -52,10 +52,12 @@ async fn main() {
     let s: Arc<AppState> = AppState::new(pool);
 
     let api_routes = api::api_routes(&s);
+    let swagger_routes = api::swagger_router(&s);
 
     let app = Router::new()
         .route("/", get(handler_ok))
         .nest("/api", api_routes) // Tudo agora começa com /api
+        .merge(swagger_routes) // Swagger UI documentation
         .fallback(handler_404)
         .layer(CorsLayer::permissive())
         .with_state(s);
