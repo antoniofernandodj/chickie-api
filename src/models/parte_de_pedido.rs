@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use sqlx::FromRow;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
@@ -39,47 +38,20 @@ impl std::fmt::Display for TipoCalculoPedido {
     }
 }
 
-impl<'r> sqlx::Decode<'r, sqlx::Postgres> for TipoCalculoPedido {
-    fn decode(value: sqlx::postgres::PgValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
-        let s = <String as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Self::from_str(&s).map_err(|e| e.into())
-    }
-}
-
-impl sqlx::Type<sqlx::Postgres> for TipoCalculoPedido {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        <String as sqlx::Type<sqlx::Postgres>>::type_info()
-    }
-}
-
-impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        // ✅ Encode como TEXT (string) no PostgreSQL
-        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
-    }
-
-    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
-        Some(sqlx::postgres::PgTypeInfo::with_name("TEXT"))
-    }
-}
-
 // ---------------------------------------------------------------------------
 // ConfiguracaoSaboresLoja — configuração POR LOJA
 // Define quantos sabores são permitidos por padrão e qual cálculo usar.
 // Uma loja pode ter apenas uma configuração ativa.
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct ConfiguracaoDePedidosLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub max_partes: i32,               // máximo de sabores por item (ex: 4)
     pub tipo_calculo: TipoCalculoPedido, // como calcular o preço final
-    pub criado_em: chrono::DateTime<chrono::Utc>,
-    pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
+    pub atualizado_em: DateTime<Utc>,
 }
 
 impl ConfiguracaoDePedidosLoja {
@@ -107,7 +79,7 @@ impl ConfiguracaoDePedidosLoja {
 // Cada linha = 1 parte escolhida pelo cliente para aquele item.
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct ParteDeItemPedido {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -116,7 +88,6 @@ pub struct ParteDeItemPedido {
     pub produto_uuid: Uuid,
     pub preco_unitario: Decimal,
     pub posicao: i32,
-    #[sqlx(skip)]
     pub adicionais: Vec<AdicionalDeItemDePedido>
 }
 

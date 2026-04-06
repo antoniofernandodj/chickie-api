@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::models::LojaFavorita;
+use crate::entities::loja_favorita::Model as LojaFavorita;
 use crate::repositories::{LojaFavoritaRepository, Repository as _};
 
 #[derive(Clone)]
@@ -26,7 +26,12 @@ impl LojaFavoritaService {
             return Err("Loja já está na lista de favoritas".to_string());
         }
 
-        let favorita = LojaFavorita::new(usuario_uuid, loja_uuid);
+        let favorita = LojaFavorita {
+            uuid: Uuid::new_v4(),
+            usuario_uuid,
+            loja_uuid,
+            criado_em: chrono::Utc::now(),
+        };
         self.repo.criar(&favorita).await?;
         Ok(favorita)
     }
@@ -48,11 +53,6 @@ impl LojaFavoritaService {
     pub async fn listar_favoritas(&self, usuario_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
         self.repo.buscar_por_usuario(usuario_uuid).await
     }
-
-    // /// Lista todos os usuários que favoritaram uma loja
-    // pub async fn listar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
-    //     self.repo.buscar_por_loja(loja_uuid).await
-    // }
 
     /// Verifica se uma loja é favorita para um usuário
     pub async fn eh_favorita(&self, usuario_uuid: Uuid, loja_uuid: Uuid) -> Result<bool, String> {

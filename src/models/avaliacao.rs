@@ -1,21 +1,20 @@
 use uuid::Uuid;
-use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
 use crate::models::Model;
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct AvaliacaoDeLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub usuario_uuid: Uuid,
     pub nota: Decimal,
     pub comentario: Option<String>,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 impl AvaliacaoDeLoja {
@@ -37,7 +36,7 @@ impl AvaliacaoDeLoja {
 }
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct AvaliacaoDeProduto {
     pub usuario_uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -46,7 +45,7 @@ pub struct AvaliacaoDeProduto {
     pub nota: Decimal,
     pub descricao: String,
     pub uuid: Uuid,
-    pub criado_em: chrono::DateTime<chrono::Utc>
+    pub criado_em: DateTime<Utc>
 }
 
 impl AvaliacaoDeProduto {

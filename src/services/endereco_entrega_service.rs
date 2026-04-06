@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::models::EnderecoEntrega;
+use crate::entities::endereco_entrega::Model as EnderecoEntrega;
 use crate::repositories::{EnderecoEntregaRepository};
 
 #[derive(Clone)]
@@ -29,8 +29,9 @@ impl EnderecoEntregaService {
         // latitude: Option<f64>,
         // longitude: Option<f64>,
     ) -> Result<EnderecoEntrega, String> {
-        
-        let endereco = EnderecoEntrega::new(
+
+        let endereco = EnderecoEntrega {
+            uuid: Uuid::new_v4(),
             pedido_uuid,
             loja_uuid,
             cep,
@@ -40,9 +41,9 @@ impl EnderecoEntregaService {
             bairro,
             cidade,
             estado,
-            // latitude,
-            // longitude,
-        );
+            latitude: None,
+            longitude: None,
+        };
 
         self.repo.criar_para_pedido(&endereco, pedido_uuid, loja_uuid).await?;
         Ok(endereco)

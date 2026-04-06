@@ -1,13 +1,12 @@
 use rust_decimal::Decimal;
 use uuid::Uuid;
-use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use utoipa::ToSchema;
 use crate::models::Model;
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Adicional {
     pub uuid: Uuid,
     pub nome: String,
@@ -15,7 +14,7 @@ pub struct Adicional {
     pub disponivel: bool,
     pub descricao: String,
     pub preco: Decimal,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 impl Adicional {

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use bcrypt::{DEFAULT_COST, hash, verify};
-use crate::models::{Usuario, ClasseUsuario};
+use crate::entities::usuario::Model;
 use crate::repositories::{UsuarioRepository, Repository as _};
 
 pub struct UsuarioService {
@@ -19,7 +19,7 @@ impl UsuarioService {
         telefone: String,
         auth_method: String,
         classe: Option<String>,
-    ) -> Result<Usuario, String> {
+    ) -> Result<Model, String> {
 
         // Dentro do registrar...
         let senha_hash = hash(senha, DEFAULT_COST)
@@ -27,18 +27,24 @@ impl UsuarioService {
 
         // Parse classe: default = "cliente"
         let classe_str = classe.as_deref().unwrap_or("cliente");
-        let classe = ClasseUsuario::from_str(classe_str)
+        let classe_enum = crate::models::ClasseUsuario::from_str(classe_str)
             .map_err(|e| format!("Classe de usuário inválida: {}", e))?;
 
-        let usuario = Usuario::new(
+        let usuario = Model {
+            uuid: uuid::Uuid::new_v4(),
             nome,
             username,
             email,
             senha_hash,
-            telefone,
-            auth_method,
-            classe
-        );
+            celular: telefone,
+            telefone: None,
+            classe: format!("{:?}", classe_enum),
+            ativo: true,
+            passou_pelo_primeiro_acesso: false,
+            modo_de_cadastro: auth_method,
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.repo.criar(&usuario).await?;
 
@@ -57,10 +63,10 @@ impl UsuarioService {
         &self,
         email: String,
         senha_plana: String,
-    ) -> Result<Usuario, String> {
+    ) -> Result<Model, String> {
 
         // 1. Busca o usuário pelo email
-        let usuario: Usuario = self.repo
+        let usuario: Model = self.repo
             .buscar_por_email(&email)
             .await?
             .ok_or_else(|| "Usuário não encontrado".to_string())?;
@@ -78,7 +84,7 @@ impl UsuarioService {
         Ok(usuario)
     }
 
-    pub async fn listar(&self) -> Result<Vec<Usuario>, String> {
+    pub async fn listar(&self) -> Result<Vec<Model>, String> {
         self.repo.listar_todos().await
     }
 }

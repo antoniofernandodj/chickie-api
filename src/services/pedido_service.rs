@@ -4,12 +4,13 @@ use chrono::Datelike;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
+use crate::entities::pedido::Model as Pedido;
+use crate::entities::endereco_entrega::Model as EnderecoEntrega;
+
+use crate::models::{EstadoDePedido, StatusCupom, calcular_preco_por_partes, TipoCalculoPedido};
 use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
 use crate::utils::agora;
 
-
-use crate::models::EnderecoEntrega;
 
 /// DTO para retorno de pedido com endereço de entrega
 pub struct PedidoComEntrega {
@@ -37,19 +38,20 @@ impl DadosEnderecoEntrega {
         pedido_uuid: Uuid,
         loja_uuid: Uuid,
     ) -> EnderecoEntrega {
-        EnderecoEntrega::new(
+        EnderecoEntrega {
+            uuid: Uuid::new_v4(),
             pedido_uuid,
             loja_uuid,
-            self.cep,
-            self.logradouro,
-            self.numero,
-            self.complemento,
-            self.bairro,
-            self.cidade,
-            self.estado,
-            // self.latitude,
-            // self.longitude,
-        )
+            cep: self.cep,
+            logradouro: self.logradouro,
+            numero: self.numero,
+            complemento: self.complemento,
+            bairro: self.bairro,
+            cidade: self.cidade,
+            estado: self.estado,
+            latitude: None,
+            longitude: None,
+        }
     }
 }
 
@@ -74,7 +76,8 @@ impl PedidoService {
     }
 
     pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
-        self.pedido_repo.criar(pedido).await
+        let model = self.pedido_repo.criar(pedido).await?;
+        Ok(model.uuid)
     }
 
     // TODO: Depois verificar como integrara logica de descontos e cupons
@@ -210,21 +213,22 @@ impl PedidoService {
     pub async fn criar_pedido_com_entrega(
         &self,
         pedido: &mut Pedido,
-        mut endereco_entrega: crate::models::EnderecoEntrega,  // <-- Modelo, não Request
+        mut endereco_entrega: EnderecoEntrega,  // <-- Modelo, não Request
         codigo_cupom: Option<String>,
     ) -> Result<Uuid, String> {
-        
+
         // 1. Processar preços e descontos (lógica existente)
         self.__processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
 
         // 2. Salvar o pedido no banco (retorna UUID)
-        let pedido_uuid = self.pedido_repo.criar(pedido).await?;
+        let pedido_model = self.pedido_repo.criar(pedido).await?;
+        let pedido_uuid = pedido_model.uuid;
 
         // 3. Atualizar o endereço com os UUIDs reais antes de salvar
         endereco_entrega.uuid = Uuid::new_v4();
         endereco_entrega.pedido_uuid = pedido_uuid;
         endereco_entrega.loja_uuid = pedido.loja_uuid;
-        
+
         // 4. Criar endereço de entrega vinculado ao pedido (snapshot imutável)
         self.endereco_entrega_repo
             .criar(&endereco_entrega)  // Usa o método padrão do trait Repository
@@ -240,7 +244,7 @@ impl PedidoService {
         pedido_uuid: Uuid,
         loja_uuid: uuid::Uuid
     ) -> Result<PedidoComEntrega, String> {
-        
+
         let pedido = self.pedido_repo.buscar_completo(pedido_uuid, loja_uuid).await?
             .ok_or("Pedido não encontrado")?;
 
@@ -278,7 +282,7 @@ impl PedidoService {
             // Soma o preço base do item (calculado pela regra de sabores)
             let preco_item = calcular_preco_por_partes(
                 &item.partes,
-                &config_loja.tipo_calculo
+                &TipoCalculoPedido::MaisCaro
             );
 
             // Soma adicionais
@@ -350,7 +354,8 @@ impl PedidoService {
         let mut pedido = self.pedido_repo.buscar_por_uuid(pedido_uuid).await?
             .ok_or("Pedido não encontrado")?;
 
-        let status_atual = pedido.status.clone();
+        let status_atual = EstadoDePedido::from_str(&pedido.status)
+            .map_err(|e| format!("Estado inválido no banco: {}", e))?;
 
         if !status_atual.pode_transicionar_para(&novo_status) {
             return Err(format!(
@@ -359,7 +364,7 @@ impl PedidoService {
             ));
         }
 
-        pedido.status = novo_status.clone();
+        pedido.status = format!("{:?}", novo_status);
         self.pedido_repo.atualizar(pedido.clone()).await?;
 
         tracing::info!(

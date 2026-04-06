@@ -1,13 +1,12 @@
 use uuid::Uuid;
-use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::{Utc, NaiveDate};
+use chrono::{DateTime, Utc, NaiveDate};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Funcionario {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -15,7 +14,7 @@ pub struct Funcionario {
     pub cargo: Option<String>,
     pub salario: Option<Decimal>,
     pub data_admissao: NaiveDate,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 impl Funcionario {

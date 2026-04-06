@@ -1,109 +1,73 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait, QueryOrder};
 use uuid::Uuid;
-use crate::{models::{Produto, Model}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::produto::{self, Entity, Model},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct ProdutoRepository { pool: Arc<PgPool> }
+pub struct ProdutoRepository {
+    db: Arc<DatabaseConnection>
+}
 
 #[allow(dead_code)]
 impl ProdutoRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
-
-    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE loja_uuid = $1")
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+        Self { db }
     }
 
-    pub async fn buscar_por_categoria(&self, categoria_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE categoria_uuid = $1")
-        .bind(categoria_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        produto::Entity::find()
+            .filter(produto::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE loja_uuid = $1 AND disponivel = true")
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_categoria(&self, categoria_uuid: Uuid) -> Result<Vec<Model>, String> {
+        produto::Entity::find()
+            .filter(produto::Column::CategoriaUuid.eq(SeaUuid::from(categoria_uuid)))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_nome(&self, nome: &str, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE loja_uuid = $1 AND nome LIKE $2")
-        .bind(loja_uuid)
-        .bind(format!("%{}%", nome))
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        produto::Entity::find()
+            .filter(produto::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .filter(produto::Column::Disponivel.eq(true))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_por_nome(&self, nome: &str, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        // Filter in memory as sea-orm doesn't have native LIKE support
+        let all_produtos = self.buscar_por_loja(loja_uuid).await?;
+        let nome_lower = nome.to_lowercase();
+        let filtrados = all_produtos.into_iter()
+            .filter(|p| p.nome.to_lowercase().contains(&nome_lower))
+            .collect();
+        Ok(filtrados)
     }
 }
 
 #[async_trait::async_trait]
-impl Repository<Produto> for ProdutoRepository {
-    fn table_name(&self) -> &'static str { "produtos" }
-    fn entity_name(&self) -> &'static str { "Produto" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &Produto) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO produtos (uuid, loja_uuid, categoria_uuid, nome, descricao, preco, imagem_url, disponivel, tempo_preparo_min, destaque)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        ")
-        .bind(item.uuid)
-        .bind(item.loja_uuid)
-        .bind(item.categoria_uuid)
-        .bind(&item.nome)
-        .bind(&item.descricao)
-        .bind(item.preco)
-        .bind(&item.imagem_url)
-        .bind(item.disponivel)
-        .bind(item.tempo_preparo_min)
-        .bind(item.destaque)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        Ok(item.uuid)
+impl Repository<Entity> for ProdutoRepository {
+    fn db(&self) -> &DatabaseConnection {
+        &*self.db
     }
 
-    async fn atualizar(&self, item: Produto) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE produtos SET loja_uuid = $1, categoria_uuid = $2, nome = $3, descricao = $4, preco = $5, imagem_url = $6, disponivel = $7, tempo_preparo_min = $8, destaque = $9
-            WHERE uuid = $10
-        ")
-        .bind(item.loja_uuid)
-        .bind(item.categoria_uuid)
-        .bind(&item.nome)
-        .bind(&item.descricao)
-        .bind(item.preco)
-        .bind(&item.imagem_url)
-        .bind(item.disponivel)
-        .bind(item.tempo_preparo_min)
-        .bind(item.destaque)
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity(&self) -> Entity {
+        produto::Entity
     }
 
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE loja_uuid = $1")
-            .bind(loja_uuid)
-            .fetch_all(self.pool())
-            .await
-            .map_err(|e| e.to_string())
+    fn entity_name(&self) -> &'static str {
+        "Produto"
+    }
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        self.buscar_por_loja(loja_uuid).await
     }
 }

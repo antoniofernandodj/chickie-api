@@ -1,4 +1,5 @@
 mod models;
+mod entities;
 mod database;
 mod utils;
 mod repositories;
@@ -7,7 +8,7 @@ mod usecases;
 mod api;
 
 use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
-
+use sea_orm::DatabaseConnection;
 use std::{env, net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 use tracing::{info, debug};
@@ -38,18 +39,16 @@ async fn main() {
 
     info!("[MAIN] Starting on port {}...", port);
 
-    let pool = Arc::new(
-        database::criar_pool()
+    let db = database::criar_conexao()
         .await
-        .expect("Falha ao criar pool")
-    );
+        .expect("Falha ao criar conexão com banco");
 
     // Aplica migrações (com drop se MODE=DEVELOPMENT)
-    database::aplicar_migrations(&pool)
+    database::aplicar_migrations(&db)
         .await
         .expect("Falha ao aplicar migrações");
 
-    let s: Arc<AppState> = AppState::new(pool);
+    let s: Arc<AppState> = AppState::new(db);
 
     let api_routes = api::api_routes(&s);
     let swagger_routes = api::swagger_router(&s);

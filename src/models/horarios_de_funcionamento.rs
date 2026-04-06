@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
-use sqlx::prelude::FromRow;
 use uuid::Uuid;
-use chrono::{Utc, NaiveTime};
+use chrono::{DateTime, Utc, NaiveTime};
 use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct HorarioFuncionamento {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -14,7 +13,7 @@ pub struct HorarioFuncionamento {
     pub abertura: NaiveTime,  // "HH:MM"
     pub fechamento: NaiveTime, // "HH:MM"
     pub ativo: bool,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 impl HorarioFuncionamento {

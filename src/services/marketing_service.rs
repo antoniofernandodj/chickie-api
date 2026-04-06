@@ -3,7 +3,11 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Cupom, Promocao, AvaliacaoDeLoja, AvaliacaoDeProduto};
+use crate::entities::cupom::Model as Cupom;
+use crate::entities::promocao::Model as Promocao;
+use crate::entities::avaliacao_loja::Model as AvaliacaoDeLoja;
+use crate::entities::avaliacao_produto::Model as AvaliacaoDeProduto;
+
 use crate::repositories::{
     CupomRepository,
     PromocaoRepository,
@@ -43,16 +47,20 @@ impl MarketingService {
         limite_uso: Option<i32>,
     ) -> Result<Cupom, String> {
 
-        let cupom = Cupom::new(
+        let cupom = Cupom {
+            uuid: Uuid::new_v4(),
             loja_uuid,
-            codigo,
+            codigo: codigo.to_uppercase(),
             descricao,
             tipo_desconto,
             valor_desconto,
             valor_minimo,
             data_validade,
-            limite_uso
-        );
+            limite_uso,
+            uso_atual: 0,
+            status: "Ativo".to_string(),
+            criado_em: chrono::Utc::now(),
+        };
 
         self.cupom_repo.criar(&cupom).await?;
 
@@ -76,7 +84,10 @@ impl MarketingService {
         prioridade: i32,
     ) -> Result<Promocao, String> {
 
-        let promocao = Promocao::new(
+        let dias_semana_i32 = dias_semana_validos.map(|v| v.into_iter().map(|d| d as i32).collect());
+
+        let promocao = Promocao {
+            uuid: Uuid::new_v4(),
             loja_uuid,
             nome,
             descricao,
@@ -85,12 +96,14 @@ impl MarketingService {
             valor_minimo,
             data_inicio,
             data_fim,
-            dias_semana_validos,
+            dias_semana_validos: dias_semana_i32,
             tipo_escopo,
             produto_uuid,
             categoria_uuid,
-            prioridade
-        );
+            status: "Ativo".to_string(),
+            prioridade,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.promocao_repo.criar(&promocao).await?;
 
@@ -105,12 +118,14 @@ impl MarketingService {
         comentario: Option<String>,
     ) -> Result<AvaliacaoDeLoja, String> {
 
-        let avaliacao: AvaliacaoDeLoja = AvaliacaoDeLoja::new(
+        let avaliacao = AvaliacaoDeLoja {
+            uuid: Uuid::new_v4(),
             loja_uuid,
             usuario_uuid,
             nota,
-            comentario
-        );
+            comentario,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.avaliacao_loja_repo.criar(&avaliacao).await?;
 
@@ -127,20 +142,22 @@ impl MarketingService {
         descricao: String,
     ) -> Result<AvaliacaoDeProduto, String> {
 
-        let avaliacao: AvaliacaoDeProduto = AvaliacaoDeProduto::new(
+        let avaliacao = AvaliacaoDeProduto {
+            uuid: Uuid::new_v4(),
             usuario_uuid,
             loja_uuid,
             produto_uuid,
-            comentario,
             nota,
-            descricao
-        );
+            descricao,
+            comentario,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.avaliacao_prod_repo.criar(&avaliacao).await?;
 
         Ok(avaliacao)
     }
-    
+
     pub async fn listar_cupons(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
         self.cupom_repo.listar_todos_por_loja(loja_uuid).await
     }
@@ -194,7 +211,10 @@ impl MarketingService {
         categoria_uuid: Option<Uuid>,
         prioridade: i32,
     ) -> Result<(), String> {
-        let mut promocao = Promocao::new(
+        let dias_semana_i32 = dias_semana_validos.map(|v| v.into_iter().map(|d| d as i32).collect());
+
+        let mut promocao = Promocao {
+            uuid,
             loja_uuid,
             nome,
             descricao,
@@ -203,13 +223,14 @@ impl MarketingService {
             valor_minimo,
             data_inicio,
             data_fim,
-            dias_semana_validos,
+            dias_semana_validos: dias_semana_i32,
             tipo_escopo,
             produto_uuid,
             categoria_uuid,
-            prioridade
-        );
-        promocao.uuid = uuid;
+            status: "Ativo".to_string(),
+            prioridade,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.promocao_repo.atualizar(promocao).await
     }

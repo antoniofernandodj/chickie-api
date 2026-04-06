@@ -1,131 +1,69 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection,EntityTrait,QueryFilter,ColumnTrait,QueryOrder,ActiveModelTrait,Set};
 use uuid::Uuid;
-use crate::{models::{EnderecoEntrega, Model}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::endereco_entrega::{self, Entity, Model, ActiveModel},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct EnderecoEntregaRepository { pool: Arc<PgPool> }
+pub struct EnderecoEntregaRepository {
+    db: Arc<DatabaseConnection>
+}
 
 impl EnderecoEntregaRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { pool }
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+        Self { db }
     }
 
     /// Busca o endereco de entrega vinculado a um pedido especifico
-    pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Option<EnderecoEntrega>, String> {
-        sqlx::query_as::<_, EnderecoEntrega>("SELECT * FROM enderecos_entrega WHERE pedido_uuid = $1")
-        .bind(pedido_uuid)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> Result<Option<Model>, String> {
+        endereco_entrega::Entity::find()
+            .filter(endereco_entrega::Column::PedidoUuid.eq(SeaUuid::from(pedido_uuid)))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
     /// Busca enderecos de entrega por loja (util para relatorios/auditoria)
-    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
-        sqlx::query_as::<_, EnderecoEntrega>("SELECT * FROM enderecos_entrega WHERE loja_uuid = $1 ORDER BY criado_em DESC")
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        endereco_entrega::Entity::find()
+            .filter(endereco_entrega::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .order_by_desc(endereco_entrega::Column::CriadoEm)
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
     /// Cria um endereco de entrega vinculado a um pedido (uso interno no fluxo de checkout)
-    pub async fn criar_para_pedido(
-        &self,
-        endereco: &EnderecoEntrega,
-        pedido_uuid: Uuid,
-        loja_uuid: Uuid
-    ) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO enderecos_entrega (
-                uuid, loja_uuid, pedido_uuid, cep, logradouro,
-                numero, complemento, bairro, cidade, estado, latitude, longitude
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
-        ")
-        .bind(endereco.uuid)
-        .bind(loja_uuid)
-        .bind(pedido_uuid)
-        .bind(&endereco.cep)
-        .bind(&endereco.logradouro)
-        .bind(&endereco.numero)
-        .bind(&endereco.complemento)
-        .bind(&endereco.bairro)
-        .bind(&endereco.cidade)
-        .bind(&endereco.estado)
-        .bind(endereco.latitude)
-        .bind(endereco.longitude)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-        Ok(endereco.uuid)
+    pub async fn criar_para_pedido(&self, endereco: &Model, pedido_uuid: Uuid, loja_uuid: Uuid) -> Result<Model, String> {
+        let mut active: ActiveModel = endereco.clone().into();
+        active.pedido_uuid = Set(SeaUuid::from(pedido_uuid));
+        active.loja_uuid = Set(SeaUuid::from(loja_uuid));
+
+        active.insert(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl Repository<EnderecoEntrega> for EnderecoEntregaRepository {
-    fn table_name(&self) -> &'static str { "enderecos_entrega" }
-    fn entity_name(&self) -> &'static str { "Endereco de entrega" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &EnderecoEntrega) -> Result<Uuid, String> {
-        // Nota: criar diretamente sem pedido_uuid pode nao fazer sentido no dominio
-        // Use `criar_para_pedido` para o fluxo normal
-        sqlx::query("
-            INSERT INTO enderecos_entrega (
-                uuid, loja_uuid, pedido_uuid, cep, logradouro,
-                numero, complemento, bairro, cidade, estado, latitude, longitude
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
-        ")
-        .bind(item.uuid)
-        .bind(item.loja_uuid)
-        .bind(item.pedido_uuid)
-        .bind(&item.cep)
-        .bind(&item.logradouro)
-        .bind(&item.numero)
-        .bind(&item.complemento)
-        .bind(&item.bairro)
-        .bind(&item.cidade)
-        .bind(&item.estado)
-        .bind(item.latitude)
-        .bind(item.longitude)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-        Ok(item.uuid)
+impl Repository<Entity> for EnderecoEntregaRepository {
+    fn db(&self) -> &DatabaseConnection {
+        &*self.db
     }
 
-    async fn atualizar(&self, item: EnderecoEntrega) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE enderecos_entrega SET loja_uuid = $1, pedido_uuid = $2, cep = $3, logradouro = $4, numero = $5, complemento = $6, bairro = $7, cidade = $8, estado = $9, latitude = $10, longitude = $11
-            WHERE uuid = $12
-        ")
-        .bind(item.loja_uuid)
-        .bind(item.pedido_uuid)
-        .bind(&item.cep)
-        .bind(&item.logradouro)
-        .bind(&item.numero)
-        .bind(&item.complemento)
-        .bind(&item.bairro)
-        .bind(&item.cidade)
-        .bind(&item.estado)
-        .bind(item.latitude)
-        .bind(item.longitude)
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity(&self) -> Entity {
+        endereco_entrega::Entity
     }
 
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
+    fn entity_name(&self) -> &'static str {
+        "Endereco de entrega"
+    }
+
+
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
         self.buscar_por_loja(loja_uuid).await
     }
 }

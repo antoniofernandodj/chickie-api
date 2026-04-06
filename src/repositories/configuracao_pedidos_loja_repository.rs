@@ -1,121 +1,81 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection,EntityTrait,QueryFilter,ColumnTrait,ConnectionTrait};
 use uuid::Uuid;
-use crate::{models::{ConfiguracaoDePedidosLoja, Model, TipoCalculoPedido}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::configuracoes_pedidos_loja::{self, Entity, Model},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<PgPool> }
+pub struct ConfiguracaoPedidosLojaRepository { 
+    db: Arc<DatabaseConnection> 
+}
 
 #[allow(dead_code)]
 impl ConfiguracaoPedidosLojaRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
+    pub fn new(db: Arc<DatabaseConnection>) -> Self { 
+        Self { db } 
+    }
 
     /// Busca a configuracao de pedidos da loja (unica por loja)
-    pub async fn buscar_por_loja(
-        &self,
-        loja_uuid: Uuid,
-    ) -> Result<Option<ConfiguracaoDePedidosLoja>, String> {
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
-        .bind(loja_uuid)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Option<Model>, String> {
+        configuracoes_pedidos_loja::Entity::find()
+            .filter(configuracoes_pedidos_loja::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
-    /// Salva (insert) a configuracao. Retorna erro se ja existir uma.
-    /// Use `salvar` se quiser upsert.
-    pub async fn criar_configuracao(
-        &self,
-        config: &ConfiguracaoDePedidosLoja,
-    ) -> Result<(), String> {
-        let existe = self.buscar_por_loja(config.loja_uuid).await?;
-        if existe.is_some() {
-            return Err(
-                "Essa loja ja possui uma configuracao de pedidos. Use salvar.".into()
-            );
-        }
-
-        sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
-            VALUES ($1, $2, $3, $4);
-        ")
-        .bind(config.uuid)
-        .bind(config.loja_uuid)
-        .bind(config.max_partes)
-        .bind(config.tipo_calculo.to_string())
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        Ok(())
-    }
-
-    /// Upsert: cria se nao existir, atualiza se ja existir.
-    pub async fn salvar(
-        &self,
-        config: &ConfiguracaoDePedidosLoja,
-    ) -> Result<(), String> {
-        sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (loja_uuid) DO UPDATE SET max_partes = excluded.max_partes, tipo_calculo = excluded.tipo_calculo;
-        ")
-        .bind(config.uuid)
-        .bind(config.loja_uuid)
-        .bind(config.max_partes)
-        .bind(config.tipo_calculo.to_string())
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        Ok(())
+    /// Upsert: cria se nao existir, atualiza se ja existir
+    pub async fn salvar(&self, config: &Model) -> Result<(), String> {
+        let sql = format!(
+            "INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
+             VALUES ('{}', '{}', {}, '{}')
+             ON CONFLICT (loja_uuid) DO UPDATE SET max_partes = excluded.max_partes, tipo_calculo = excluded.tipo_calculo",
+            config.uuid, config.loja_uuid, config.max_partes, config.tipo_calculo
+        );
+        
+        self.db.execute_unprepared(&sql)
+            .await
+            .map_err(|e| e.to_string())
+            .map(|_| ())
     }
 
     /// Troca apenas o tipo de calculo sem recriar toda a config
-    pub async fn alterar_tipo_calculo(
-        &self,
-        loja_uuid: Uuid,
-        novo_tipo: TipoCalculoPedido,
-    ) -> Result<(), String> {
-        let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja
-            SET tipo_calculo = $1
-            WHERE loja_uuid = $2;
-        ")
-        .bind(novo_tipo.to_string())
-        .bind(loja_uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
+    pub async fn alterar_tipo_calculo(&self, loja_uuid: Uuid, novo_tipo: String) -> Result<(), String> {
+        let sql = format!(
+            "UPDATE configuracoes_pedidos_loja SET tipo_calculo = '{}' WHERE loja_uuid = '{}'",
+            novo_tipo, loja_uuid
+        );
+        
+        let result = self.db.execute_unprepared(&sql)
+            .await
+            .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Configuracao no encontrada para essa loja".into())
+            Err("Configuracao nao encontrada para essa loja".into())
         } else {
             Ok(())
         }
     }
 
     /// Troca apenas o maximo de partes
-    pub async fn alterar_max_partes(
-        &self,
-        loja_uuid: Uuid,
-        novo_max: i32,
-    ) -> Result<(), String> {
+    pub async fn alterar_max_partes(&self, loja_uuid: Uuid, novo_max: i32) -> Result<(), String> {
         if novo_max < 1 {
             return Err("max_partes deve ser >= 1".into());
         }
 
-        let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja SET max_partes = $1 WHERE loja_uuid = $2;
-        ")
-        .bind(novo_max)
-        .bind(loja_uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
+        let sql = format!(
+            "UPDATE configuracoes_pedidos_loja SET max_partes = {} WHERE loja_uuid = '{}'",
+            novo_max, loja_uuid
+        );
+        
+        let result = self.db.execute_unprepared(&sql)
+            .await
+            .map_err(|e| e.to_string())?;
 
         if result.rows_affected() == 0 {
-            Err("Configuracao no encontrada para essa loja".into())
+            Err("Configuracao nao encontrada para essa loja".into())
         } else {
             Ok(())
         }
@@ -123,54 +83,26 @@ impl ConfiguracaoPedidosLojaRepository {
 }
 
 #[async_trait::async_trait]
-impl Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository {
-    fn table_name(&self) -> &'static str { "configuracoes_pedidos_loja" }
-    fn entity_name(&self) -> &'static str { "Configuracao de pedidos" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &ConfiguracaoDePedidosLoja) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO configuracoes_pedidos_loja (uuid, loja_uuid, max_partes, tipo_calculo)
-            VALUES ($1, $2, $3, $4);
-        ")
-        .bind(item.uuid)
-        .bind(item.loja_uuid)
-        .bind(item.max_partes)
-        .bind(item.tipo_calculo.to_string())
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        Ok(item.uuid)
+impl Repository<Entity> for ConfiguracaoPedidosLojaRepository {
+    fn db(&self) -> &DatabaseConnection { 
+        &*self.db 
+    }
+    
+    fn entity(&self) -> Entity { 
+        configuracoes_pedidos_loja::Entity 
     }
 
-    async fn atualizar(&self, item: ConfiguracaoDePedidosLoja) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE configuracoes_pedidos_loja SET loja_uuid = $1, max_partes = $2, tipo_calculo = $3
-            WHERE uuid = $4
-        ")
-        .bind(item.loja_uuid)
-        .bind(item.max_partes)
-        .bind(item.tipo_calculo.to_string())
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity_name(&self) -> &'static str { 
+        "Configuracao de pedidos" 
     }
 
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<ConfiguracaoDePedidosLoja>, String> {
-        // Como ha apenas 1 configuracao por loja, retorna Vec com 0 ou 1 elemento
-        sqlx::query_as::<_, ConfiguracaoDePedidosLoja>("SELECT * FROM configuracoes_pedidos_loja WHERE loja_uuid = $1")
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        configuracoes_pedidos_loja::Entity::find()
+            .filter(configuracoes_pedidos_loja::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 }

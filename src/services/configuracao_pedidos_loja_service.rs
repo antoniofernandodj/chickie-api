@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::models::{ConfiguracaoDePedidosLoja, TipoCalculoPedido};
+use crate::entities::configuracoes_pedidos_loja::Model as ConfiguracaoDePedidosLoja;
 use crate::repositories::{ConfiguracaoPedidosLojaRepository};
 
 
@@ -24,7 +24,7 @@ impl ConfiguracaoPedidosLojaService {
         self.repo.salvar(config).await
     }
 
-    pub async fn alterar_tipo_calculo(&self, loja_uuid: Uuid, novo_tipo: TipoCalculoPedido) -> Result<(), String> {
+    pub async fn alterar_tipo_calculo(&self, loja_uuid: Uuid, novo_tipo: String) -> Result<(), String> {
         self.repo.alterar_tipo_calculo(loja_uuid, novo_tipo).await
     }
 

@@ -1,6 +1,6 @@
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sea_orm::{Database, DatabaseConnection, DbErr, ConnectionTrait};
 
-pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
+pub async fn criar_conexao() -> Result<DatabaseConnection, DbErr> {
     if let Err(e) = dotenvy::from_filename("database.secrets.env") {
         tracing::error!("⚠️ Aviso: Não foi possível carregar database.secrets.env: {}", e);
         tracing::error!("   Certifique-se de que a variável DATABASE_URL está definida no ambiente.");
@@ -9,45 +9,32 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL não encontrado");
 
+    let db = Database::connect(&database_url).await?;
 
-    let pool = PgPoolOptions::new()
-        .max_connections(10)
-        .min_connections(2)
-        .acquire_timeout(std::time::Duration::from_secs(30))
-        .idle_timeout(std::time::Duration::from_secs(600))
-        .max_lifetime(std::time::Duration::from_secs(1800))
-        .after_connect(|conn, _meta| Box::pin(async move {
-            sqlx::query("SET timezone = 'America/Sao_Paulo'")
-                .execute(conn)
-                .await?;
-            Ok(())
-        }))
-        .connect(&database_url)
-        .await?;
-
-    Ok(pool)
+    tracing::info!("✅ Conexão com banco estabelecido");
+    Ok(db)
 }
 
 /// Aplica as migrações no banco de dados.
 /// Se `MODE == DEVELOPMENT`, dropa todas as tabelas antes de reaplicar.
-pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
+pub async fn aplicar_migrations(db: &DatabaseConnection) -> Result<(), String> {
     let mode = std::env::var("MODE").unwrap_or_default();
     let is_dev = mode.eq_ignore_ascii_case("development");
 
     if is_dev {
         tracing::info!("🧹 MODE=DEVELOPMENT — limpando banco de dados antes de migrar");
-        drop_all_tables(pool).await?;
+        drop_all_tables(db).await?;
     }
 
     tracing::info!("📦 Aplicando migrações...");
-    run_migrations(pool).await?;
+    run_migrations(db).await?;
     tracing::info!("✅ Migrações aplicadas com sucesso");
 
     Ok(())
 }
 
 /// Executa os arquivos de migração em ordem, dividindo em statements individuais
-async fn run_migrations(pool: &PgPool) -> Result<(), String> {
+async fn run_migrations(db: &DatabaseConnection) -> Result<(), String> {
     let migration_files: [&str; 3] = [
         "0001_criar_tabelas.sql",
         "0002_add_promocao_escopo.sql",
@@ -68,10 +55,12 @@ async fn run_migrations(pool: &PgPool) -> Result<(), String> {
         let statements = split_sql_statements(&sql)?;
 
         for (i, stmt) in statements.iter().enumerate() {
-            sqlx::query(stmt)
-                .execute(pool)
-                .await
-                .map_err(|e| format!("Falha no statement #{} em {}: {}", i + 1, migration_path, e))?;
+            db.execute(sea_orm::Statement::from_string(
+                sea_orm::DatabaseBackend::Postgres,
+                stmt.to_string(),
+            ))
+            .await
+            .map_err(|e| format!("Falha no statement #{} em {}: {}", i + 1, migration_path, e))?;
         }
 
         tracing::info!("   {} -> {} statements executados", migration_path, statements.len());
@@ -80,7 +69,7 @@ async fn run_migrations(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Divide SQL em statements individuais, respeitando blocos $$ e ignorando comentários
+/// Divide SQL em statements individuais, respeutando blocos $$ e ignorando comentários
 fn split_sql_statements(sql: &str) -> Result<Vec<String>, String> {
     let mut statements = Vec::new();
     let mut current = String::new();
@@ -138,7 +127,7 @@ fn split_sql_statements(sql: &str) -> Result<Vec<String>, String> {
 }
 
 /// Dropa todas as tabelas do schema public usando CASCADE
-async fn drop_all_tables(pool: &PgPool) -> Result<(), String> {
+async fn drop_all_tables(db: &DatabaseConnection) -> Result<(), String> {
     // Gera e executa DROP CASCADE para todas as tabelas
     let drop_sql = "
         DO $$ DECLARE
@@ -150,10 +139,12 @@ async fn drop_all_tables(pool: &PgPool) -> Result<(), String> {
         END $$;
     ";
 
-    sqlx::query(drop_sql)
-        .execute(pool)
-        .await
-        .map_err(|e| format!("Falha ao dropar tabelas: {}", e))?;
+    db.execute(sea_orm::Statement::from_string(
+        sea_orm::DatabaseBackend::Postgres,
+        drop_sql.to_string(),
+    ))
+    .await
+    .map_err(|e| format!("Falha ao dropar tabelas: {}", e))?;
 
     tracing::info!("🗑️ Todas as tabelas foram removidas");
     Ok(())

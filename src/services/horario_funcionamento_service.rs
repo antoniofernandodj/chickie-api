@@ -1,7 +1,8 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use chrono::NaiveTime;
 
-use crate::models::HorarioFuncionamento;
+use crate::entities::horarios_funcionamento::Model as HorarioFuncionamento;
 use crate::repositories::{HorarioFuncionamentoRepository};
 
 #[derive(Clone)]
@@ -20,6 +21,26 @@ impl HorarioFuncionamentoService {
 
     pub async fn criar_ou_atualizar(&self, horario: &HorarioFuncionamento) -> Result<(), String> {
         self.repo.adicionar_ou_atualizar(horario).await
+    }
+
+    pub async fn criar_horario(
+        &self,
+        loja_uuid: Uuid,
+        dia_semana: i32,
+        abertura: NaiveTime,
+        fechamento: NaiveTime,
+    ) -> Result<HorarioFuncionamento, String> {
+        let horario = HorarioFuncionamento {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
+            dia_semana,
+            abertura,
+            fechamento,
+            ativo: true,
+            criado_em: chrono::Utc::now(),
+        };
+        self.repo.adicionar_sem_sobrescrever(&horario).await?;
+        Ok(horario)
     }
 
     pub async fn definir_ativo(&self, loja_uuid: Uuid, dia_semana: i32, ativo: bool) -> Result<(), String> {

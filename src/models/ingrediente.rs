@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use sqlx::FromRow;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Ingrediente {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -14,8 +13,8 @@ pub struct Ingrediente {
     pub unidade_medida: Option<String>,
     pub quantidade: Decimal,
     pub preco_unitario: Decimal,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
-    pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
+    pub atualizado_em: DateTime<Utc>,
 }
 
 impl Ingrediente {

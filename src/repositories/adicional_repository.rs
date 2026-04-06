@@ -1,99 +1,70 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection,EntityTrait,QueryFilter,ColumnTrait,ActiveModelTrait,Set};
 use uuid::Uuid;
-use crate::{models::{Adicional, Model}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::adicional::{self, Entity, Model, ActiveModel},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct AdicionalRepository { pool: Arc<PgPool> }
+pub struct AdicionalRepository { 
+    db: Arc<DatabaseConnection> 
+}
 
 impl AdicionalRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
-
-    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
-        sqlx::query_as::<_, Adicional>("SELECT * FROM adicionais WHERE loja_uuid = $1")
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub fn new(db: Arc<DatabaseConnection>) -> Self { 
+        Self { db } 
     }
 
-    pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
-        sqlx::query_as::<_, Adicional>(
-            "SELECT * FROM adicionais WHERE loja_uuid = $1 AND disponivel = true"
-        )
-        .bind(loja_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        adicional::Entity::find()
+            .filter(adicional::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        adicional::Entity::find()
+            .filter(adicional::Column::LojaUuid.eq(SeaUuid::from(loja_uuid)))
+            .filter(adicional::Column::Disponivel.eq(true))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
     pub async fn marcar_indisponivel(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("UPDATE adicionais SET disponivel = false WHERE uuid = $1")
-            .bind(uuid)
-            .execute(self.pool())
+        let model = self.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Adicional não encontrado".to_string())?;
+        
+        let mut active: ActiveModel = model.into();
+        active.disponivel = Set(false);
+        
+        active.update(&*self.db)
             .await
-            .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err("Adicional não encontrado".to_string())
-        } else {
-            Ok(())
-        }
+            .map_err(|e| e.to_string())
+            .map(|_| ())
     }
 }
 
 #[async_trait::async_trait]
-impl Repository<Adicional> for AdicionalRepository {
-    fn table_name(&self) -> &'static str { "adicionais" }
-    fn entity_name(&self) -> &'static str { "Adicional" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &Adicional) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO adicionais (uuid, loja_uuid, nome, descricao, preco, disponivel)
-            VALUES ($1, $2, $3, $4, $5, $6);
-        ")
-        .bind(item.uuid)
-        .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.descricao)
-        .bind(item.preco)
-        .bind(item.disponivel)
-        .execute(self.pool())
-        .await
-        .map_err(|e: sqlx::Error| e.to_string())?;
-
-        Ok(item.uuid)
+impl Repository<Entity> for AdicionalRepository {
+    fn db(&self) -> &DatabaseConnection { 
+        &*self.db 
+    }
+    
+    fn entity(&self) -> Entity { 
+        adicional::Entity 
     }
 
-    async fn atualizar(&self, item: Adicional) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE adicionais SET loja_uuid = $1, nome = $2, descricao = $3, preco = $4, disponivel = $5
-            WHERE uuid = $6
-        ")
-        .bind(item.loja_uuid)
-        .bind(&item.nome)
-        .bind(&item.descricao)
-        .bind(item.preco)
-        .bind(item.disponivel)
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity_name(&self) -> &'static str { 
+        "Adicional" 
     }
 
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Adicional>, String> {
-        sqlx::query_as::<_, Adicional>("SELECT * FROM adicionais WHERE loja_uuid = $1")
-            .bind(loja_uuid)
-            .fetch_all(self.pool())
-            .await
-            .map_err(|e| e.to_string())
+
+
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Model>, String> {
+        self.buscar_por_loja(loja_uuid).await
     }
 }

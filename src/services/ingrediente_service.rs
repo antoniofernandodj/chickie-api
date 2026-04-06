@@ -2,7 +2,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::Ingrediente;
+use crate::entities::ingrediente::Model as Ingrediente;
 use crate::repositories::{IngredienteRepository, Repository as _};
 
 #[derive(Clone)]
@@ -24,12 +24,16 @@ impl IngredienteService {
         // quantidade: f64,
         preco_unitario: Decimal,
     ) -> Result<Ingrediente, String> {
-        let ingrediente = Ingrediente::new(
-            nome,
+        let ingrediente = Ingrediente {
+            uuid: Uuid::new_v4(),
             loja_uuid,
+            nome,
             unidade_medida,
+            quantidade: Decimal::ZERO,
             preco_unitario,
-        );
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
         self.repo.criar(&ingrediente).await?;
         Ok(ingrediente)
     }

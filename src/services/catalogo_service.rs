@@ -3,9 +3,9 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{
-    Adicional, CategoriaProdutos, Produto
-};
+use crate::entities::adicional::Model as Adicional;
+use crate::entities::categoria_produtos::Model as CategoriaProdutos;
+use crate::entities::produto::Model as Produto;
 
 use crate::repositories::{
     ProdutoRepository,
@@ -38,12 +38,15 @@ impl CatalogoService {
         preco: Decimal,
     ) -> Result<Adicional, String> {
 
-        let adicional = Adicional::new(
+        let adicional = Adicional {
+            uuid: Uuid::new_v4(),
             nome,
             loja_uuid,
+            disponivel: true,
             descricao,
-            preco
-        );
+            preco,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.adicional_repo.criar(&adicional).await?;
 
@@ -58,12 +61,14 @@ impl CatalogoService {
         ordem: Option<i32>,
     ) -> Result<CategoriaProdutos, String> {
 
-        let categoria: CategoriaProdutos = CategoriaProdutos::new(
+        let categoria = CategoriaProdutos {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
             nome,
             descricao,
-            loja_uuid,
-            ordem
-        );
+            ordem,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.categoria_repo.criar(&categoria).await?;
 
@@ -80,20 +85,26 @@ impl CatalogoService {
         tempo_preparo_min: Option<i32>,
     ) -> Result<Produto, String> {
 
-        let produto = Produto::new(
+        let produto = Produto {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
+            categoria_uuid,
             nome,
             descricao,
             preco,
-            categoria_uuid,
-            loja_uuid,
-            tempo_preparo_min
-        );
+            imagem_url: None,
+            disponivel: true,
+            tempo_preparo_min,
+            destaque: false,
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.produto_repo.criar(&produto).await?;
 
         Ok(produto)
     }
-    
+
     pub async fn listar_produtos_de_loja(
         &self,
         loja_uuid: Uuid

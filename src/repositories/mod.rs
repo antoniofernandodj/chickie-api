@@ -1,61 +1,70 @@
-// Repository trait definition
-// use std::sync::Arc;
-
-use sqlx::postgres::{PgPool, PgRow};
+use sea_orm::{DatabaseConnection, EntityTrait, ActiveModelTrait, ActiveModelBehavior, ModelTrait, DbErr, Set};
 use uuid::Uuid;
-use crate::models::Model;
+use sea_orm::prelude::Uuid as SeaUuid;
 
 #[async_trait::async_trait]
-pub trait Repository<T>: Send + Sync
+pub trait Repository<E>: Send + Sync
 where
-    T: Model + Send + Sync + Unpin + for<'r> sqlx::FromRow<'r, PgRow>,
+    E: EntityTrait + Sync,
+    E::Model: Send + Sync + Into<E::ActiveModel>,
+    E::ActiveModel: ActiveModelTrait<Entity = E> + ActiveModelBehavior + Send,
 {
-    fn table_name(&self) -> &'static str;
-    fn entity_name(&self) -> &'static str;
-    fn pool(&self) -> &PgPool;
+    /// Returns the database connection
+    fn db(&self) -> &DatabaseConnection;
 
-    // Default implementation - reusable across all repos
-    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<T>, String> {
-        let query = format!("SELECT * FROM {} WHERE uuid = $1", self.table_name());
-        sqlx::query_as::<_, T>(&query)
-            .bind(uuid)
-            .fetch_optional(self.pool())
+    /// Returns the entity being operated on
+    fn entity(&self) -> E;
+
+    /// Default: Find by UUID
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<E::Model>, String> {
+        self.entity().find_by_id(SeaUuid::from(uuid))
+            .one(self.db())
             .await
             .map_err(|e| e.to_string())
     }
 
-    // Default implementation - reusable across all repos
-    async fn listar_todos(&self) -> Result<Vec<T>, String> {
-        let query = format!("SELECT * FROM {}", self.table_name());
-        sqlx::query_as::<_, T>(&query)
-            .fetch_all(self.pool())
+    /// Default: List all
+    async fn listar_todos(&self) -> Result<Vec<E::Model>, String> {
+        self.entity().find()
+            .all(self.db())
             .await
             .map_err(|e| e.to_string())
     }
 
-    // Default implementation - reusable across all repos
+    /// Default: Delete by UUID
     async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        let query = format!("DELETE FROM {} WHERE uuid = $1", self.table_name());
-        let result = sqlx::query(&query)
-            .bind(uuid)
-            .execute(self.pool())
-            .await
-            .map_err(|e| e.to_string())?;
+        let model = self.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))?;
 
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+        model.delete(self.db())
+            .await
+            .map_err(|e| e.to_string())
+            .map(|_| ())
     }
 
-    // Helper for Portuguese gender in error messages (defaults to "o")
+    /// Helper for Portuguese gender in error messages (defaults to "o")
+    fn entity_name(&self) -> &'static str { "Entidade" }
     fn entity_gender_suffix(&self) -> &'static str { "o" }
 
-    // These remain abstract - column-specific
-    async fn criar(&self, item: &T) -> Result<Uuid, String>;
-    async fn atualizar(&self, item: T) -> Result<(), String>;
-    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<T>, String>;
+    /// Create a new record from a Model reference (converts to ActiveModel internally)
+    async fn criar(&self, model: &E::Model) -> Result<E::Model, String> {
+        let active: E::ActiveModel = model.clone().into();
+        active.insert(self.db())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    /// Update an existing record from a Model reference (converts to ActiveModel internally)
+    async fn atualizar(&self, model: E::Model) -> Result<E::Model, String> {
+        let active: E::ActiveModel = model.clone().into();
+        active.update(self.db())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    /// List all by loja_uuid (for entities that belong to a store)
+    async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<E::Model>, String>;
 }
 
 // Repository modules

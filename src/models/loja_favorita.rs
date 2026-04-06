@@ -1,17 +1,16 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use sqlx::FromRow;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct LojaFavorita {
     pub usuario_uuid: Uuid,
     pub loja_uuid: Uuid,
     pub uuid: Uuid,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 impl LojaFavorita {

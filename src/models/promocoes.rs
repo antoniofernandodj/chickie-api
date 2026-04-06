@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use sqlx::FromRow;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
@@ -42,32 +41,6 @@ impl std::fmt::Display for TipoEscopoPromocao {
     }
 }
 
-impl<'r> sqlx::Decode<'r, sqlx::Postgres> for TipoEscopoPromocao {
-    fn decode(value: sqlx::postgres::PgValueRef<'r>) -> Result<Self, sqlx::error::BoxDynError> {
-        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Self::from_str(s).map_err(|e| e.into())
-    }
-}
-
-impl sqlx::Type<sqlx::Postgres> for TipoEscopoPromocao {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        sqlx::postgres::PgTypeInfo::with_name("TEXT")
-    }
-}
-
-impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoEscopoPromocao {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
-    }
-
-    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
-        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
-    }
-}
-
 // --- StatusCupom ---
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -105,44 +78,11 @@ impl std::fmt::Display for StatusCupom {
     }
 }
 
-// ✅ IMPLEMENTAÇÕES PARA POSTGRESQL
-
-impl<'r> sqlx::Decode<'r, sqlx::Postgres> for StatusCupom {
-    fn decode(
-        value: sqlx::postgres::PgValueRef<'r>
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        // PostgreSQL retorna &str para tipo TEXT
-        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Self::from_str(s).map_err(|e| e.into())
-    }
-}
-
-impl sqlx::Type<sqlx::Postgres> for StatusCupom {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        // Mapeia para TEXT no PostgreSQL
-        sqlx::postgres::PgTypeInfo::with_name("TEXT")
-    }
-}
-
-impl<'q> sqlx::Encode<'q, sqlx::Postgres> for StatusCupom {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        // Encode como TEXT usando o encoder nativo de &str
-        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
-    }
-
-    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
-        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
-    }
-}
-
 // --- Cupom ---
 // tipo_desconto: "percentual", "valor_fixo", "frete_gratis"
 // valor_desconto: o valor/percentual (NULL para frete_gratis)
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Cupom {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -155,7 +95,7 @@ pub struct Cupom {
     pub limite_uso: Option<i32>,
     pub uso_atual: i32,
     pub status: StatusCupom,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 #[allow(dead_code)]
@@ -229,7 +169,7 @@ fn valor_desconto_com_limite(desconto: Decimal, maximo: Option<Decimal>) -> Deci
 // --- UsoCupom ---
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, utoipa::ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct UsoCupom {
     pub uuid: Uuid,
     pub cupom_uuid: Uuid,
@@ -259,7 +199,7 @@ impl UsoCupom {
 }
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Promocao {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -276,7 +216,7 @@ pub struct Promocao {
     pub categoria_uuid: Option<Uuid>,
     pub status: StatusCupom,
     pub prioridade: i32,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
 }
 
 #[allow(dead_code)]

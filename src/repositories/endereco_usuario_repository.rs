@@ -1,91 +1,58 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection,EntityTrait,QueryFilter,ColumnTrait};
 use uuid::Uuid;
-use crate::{models::{EnderecoUsuario, Model}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::endereco_usuario::{self, Entity, Model},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct EnderecoUsuarioRepository { pool: Arc<PgPool> }
+pub struct EnderecoUsuarioRepository { 
+    db: Arc<DatabaseConnection> 
+}
 
 impl EnderecoUsuarioRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self {
-        Self { pool }
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+        Self { db }
     }
 
     /// Busca todos os enderecos registrados de um usuario
-    pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
-        sqlx::query_as::<_, EnderecoUsuario>("SELECT * FROM enderecos_usuario WHERE usuario_uuid = $1")
-        .bind(usuario_uuid)
-        .fetch_all(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Model>, String> {
+        endereco_usuario::Entity::find()
+            .filter(endereco_usuario::Column::UsuarioUuid.eq(SeaUuid::from(usuario_uuid)))
+            .all(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
     /// Busca um endereco especifico pelo UUID (helper para validacoes)
-    pub async fn buscar_por_uuid_e_usuario(
-        &self,
-        uuid: Uuid,
-        usuario_uuid: Uuid
-    ) -> Result<Option<EnderecoUsuario>, String> {
-        sqlx::query_as::<_, EnderecoUsuario>("SELECT * FROM enderecos_usuario WHERE uuid = $1 AND usuario_uuid = $2")
-        .bind(uuid)
-        .bind(usuario_uuid)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_uuid_e_usuario(&self, uuid: Uuid, usuario_uuid: Uuid) -> Result<Option<Model>, String> {
+        endereco_usuario::Entity::find()
+            .filter(endereco_usuario::Column::Uuid.eq(SeaUuid::from(uuid)))
+            .filter(endereco_usuario::Column::UsuarioUuid.eq(SeaUuid::from(usuario_uuid)))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
-    fn table_name(&self) -> &'static str { "enderecos_usuario" }
-    fn entity_name(&self) -> &'static str { "Endereco de usuario" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &EnderecoUsuario) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO enderecos_usuario (
-                uuid, usuario_uuid, cep, logradouro, numero,
-                complemento, bairro, cidade, estado, latitude, longitude
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
-        ")
-        .bind(item.uuid).bind(item.usuario_uuid).bind(&item.cep).bind(&item.logradouro)
-        .bind(&item.numero).bind(&item.complemento).bind(&item.bairro).bind(&item.cidade)
-        .bind(&item.estado).bind(item.latitude).bind(item.longitude)
-        .execute(self.pool()).await
-        .map_err(|e| e.to_string())?;
-        Ok(item.uuid)
+impl Repository<Entity> for EnderecoUsuarioRepository {
+    fn db(&self) -> &DatabaseConnection { 
+        &*self.db 
+    }
+    
+    fn entity(&self) -> Entity { 
+        endereco_usuario::Entity 
     }
 
-    async fn atualizar(&self, item: EnderecoUsuario) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE enderecos_usuario SET usuario_uuid = $1, cep = $2, logradouro = $3, numero = $4, complemento = $5, bairro = $6, cidade = $7, estado = $8, latitude = $9, longitude = $10
-            WHERE uuid = $11
-        ")
-        .bind(item.usuario_uuid)
-        .bind(&item.cep)
-        .bind(&item.logradouro)
-        .bind(&item.numero)
-        .bind(&item.complemento)
-        .bind(&item.bairro)
-        .bind(&item.cidade)
-        .bind(&item.estado)
-        .bind(item.latitude)
-        .bind(item.longitude)
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity_name(&self) -> &'static str { 
+        "Endereco de usuario" 
     }
 
-    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
+
+
+    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Model>, String> {
         Err("nao se aplica - enderecos de usuario nao estao vinculados a lojas".into())
     }
 }

@@ -1,7 +1,8 @@
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::models::Entregador;
+use crate::entities::entregador::Model as Entregador;
+use crate::entities::usuario::Model as Usuario;
 use crate::repositories::{EntregadorRepository, UsuarioRepository, Repository as _};
 
 #[derive(Clone)]

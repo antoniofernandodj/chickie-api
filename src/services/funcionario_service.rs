@@ -3,7 +3,8 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 use chrono::NaiveDate;
 
-use crate::models::Funcionario;
+use crate::entities::funcionario::Model as Funcionario;
+use crate::entities::usuario::Model as Usuario;
 use crate::repositories::{FuncionarioRepository, UsuarioRepository, Repository as _};
 
 #[derive(Clone)]

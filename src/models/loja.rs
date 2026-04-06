@@ -1,13 +1,12 @@
 use uuid::Uuid;
-use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
-use chrono::{Utc, NaiveTime};
+use chrono::{DateTime, Utc, NaiveTime};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
 use crate::models::Model;
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Loja {
     pub uuid: Uuid,
     pub nome: String,
@@ -26,8 +25,8 @@ pub struct Loja {
     pub valor_minimo_pedido: Option<Decimal>,
     pub raio_entrega_km: Option<Decimal>,
     pub criado_por: Option<Uuid>,  // Admin que criou a loja
-    pub criado_em: chrono::DateTime<chrono::Utc>,
-    pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
+    pub atualizado_em: DateTime<Utc>,
 }
 
 impl Loja {

@@ -4,17 +4,19 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::*;
 use chrono::NaiveDate;
+use sea_orm::Set;
+
+use crate::entities::loja::Model as Loja;
+use crate::entities::cliente::Model as Cliente;
+use crate::entities::configuracoes_pedidos_loja::Model as ConfiguracaoDePedidosLoja;
+use crate::entities::entregador::Model as Entregador;
+use crate::entities::funcionario::Model as Funcionario;
+use crate::entities::horarios_funcionamento::Model as HorarioFuncionamento;
+use crate::entities::usuario::Model as Usuario;
 
 use crate::models::{
-    Cliente,
     ClasseUsuario,
-    ConfiguracaoDePedidosLoja,
-    Entregador,
-    Funcionario,
-    HorarioFuncionamento,
-    Loja,
     TipoCalculoPedido,
-    Usuario
 };
 
 use crate::repositories::{
@@ -89,53 +91,67 @@ impl LojaService {
                 .map_err(|e| format!("horario_fechamento inválido '{}': {}", h, e)))
             .transpose()?;
 
-        let loja = Loja::new(
+        let loja = Loja {
+            uuid: Uuid::new_v4(),
             nome,
             slug,
-            email,
             descricao,
+            email,
             telefone,
-            hora_abertura,
-            hora_fechamento,
+            ativa: true,
+            logo_url: None,
+            banner_url: None,
+            horario_abertura: hora_abertura,
+            horario_fechamento: hora_fechamento,
             dias_funcionamento,
             tempo_preparo_min,
-            Decimal::from_f64(taxa_entrega.unwrap_or_default()),
-            Decimal::from_f64(valor_minimo_pedido.unwrap_or_default()),
-            Decimal::from_f64(raio_entrega_km.unwrap_or_default()),
-            Some(criado_por),
-        );
+            taxa_entrega: taxa_entrega.and_then(|v| Decimal::from_f64(v)),
+            valor_minimo_pedido: valor_minimo_pedido.and_then(|v| Decimal::from_f64(v)),
+            raio_entrega_km: raio_entrega_km.and_then(|v| Decimal::from_f64(v)),
+            criado_por: Some(criado_por),
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.loja_repo.criar(&loja).await?;
         tracing::info!("Loja criada: {:?}", loja.nome);
 
         // 2. Configura partes do pedido
-        let config = ConfiguracaoDePedidosLoja::new(
-            loja.uuid,
+        let config = ConfiguracaoDePedidosLoja {
+            uuid: Uuid::new_v4(),
+            loja_uuid: loja.uuid,
             max_partes,
-            tipo_calculo
-        )
-        .expect("Falha ao criar config de pedidos");
+            tipo_calculo: format!("{:?}", tipo_calculo),
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
         self.config_repo.salvar(&config).await?;
 
         // 3. Horários padrão (Seg-Sex)
         for dia in 1..=5 {
-            let horario = HorarioFuncionamento::new(
-                loja.uuid,
-                dia,
-                "08:00".into(),
-                "22:00".into()
-            ).unwrap();
+            let horario = HorarioFuncionamento {
+                uuid: Uuid::new_v4(),
+                loja_uuid: loja.uuid,
+                dia_semana: dia,
+                abertura: chrono::NaiveTime::parse_from_str("08:00", "%H:%M").unwrap(),
+                fechamento: chrono::NaiveTime::parse_from_str("22:00", "%H:%M").unwrap(),
+                ativo: true,
+                criado_em: chrono::Utc::now(),
+            };
 
             self.horario_repo.adicionar_sem_sobrescrever(&horario).await?;
         }
 
         // Sábado
-        let sabado = HorarioFuncionamento::new(
-            loja.uuid,
-            6,
-            "08:00".into(),
-            "14:00".into()
-        ).unwrap();
+        let sabado = HorarioFuncionamento {
+            uuid: Uuid::new_v4(),
+            loja_uuid: loja.uuid,
+            dia_semana: 6,
+            abertura: chrono::NaiveTime::parse_from_str("08:00", "%H:%M").unwrap(),
+            fechamento: chrono::NaiveTime::parse_from_str("14:00", "%H:%M").unwrap(),
+            ativo: true,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.horario_repo.adicionar_sem_sobrescrever(&sabado).await?;
 
@@ -159,26 +175,34 @@ impl LojaService {
         let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
             .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
 
-        let usuario = Usuario::new(
+        let usuario = Usuario {
+            uuid: Uuid::new_v4(),
             nome,
             username,
             email,
             senha_hash,
             celular,
-            "email".to_string(),
-            ClasseUsuario::Funcionario,
-        );
+            telefone: None,
+            classe: "Funcionario".to_string(),
+            ativo: true,
+            passou_pelo_primeiro_acesso: false,
+            modo_de_cadastro: "email".to_string(),
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.usuario_repo.criar(&usuario).await?;
 
         // 2. Vincula o funcionário à loja
-        let funcionario = Funcionario::new(
+        let funcionario = Funcionario {
+            uuid: Uuid::new_v4(),
             loja_uuid,
-            usuario.uuid,
+            usuario_uuid: usuario.uuid,
             cargo,
             salario,
             data_admissao,
-        );
+            criado_em: chrono::Utc::now(),
+        };
 
         self.funcionario_repo.criar(&funcionario).await?;
 
@@ -200,20 +224,31 @@ impl LojaService {
         let senha_hash = bcrypt::hash(senha, bcrypt::DEFAULT_COST)
             .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
 
-        let usuario = Usuario::new(
+        let usuario = Usuario {
+            uuid: Uuid::new_v4(),
             nome,
             username,
-            email.clone(),
+            email,
             senha_hash,
             celular,
-            "email".to_string(),
-            ClasseUsuario::Cliente,
-        );
+            telefone: None,
+            classe: "Cliente".to_string(),
+            ativo: true,
+            passou_pelo_primeiro_acesso: false,
+            modo_de_cadastro: "email".to_string(),
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.usuario_repo.criar(&usuario).await?;
 
         // 2. Vincula o cliente à loja
-        let cliente = Cliente::new(usuario.uuid, loja_uuid);
+        let cliente = Cliente {
+            uuid: Uuid::new_v4(),
+            usuario_uuid: usuario.uuid,
+            loja_uuid,
+            criado_em: chrono::Utc::now(),
+        };
         self.cliente_repo.criar(&cliente).await?;
 
         Ok(cliente)
@@ -235,31 +270,40 @@ impl LojaService {
         let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
             .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
 
-        let usuario = Usuario::new(
+        let usuario = Usuario {
+            uuid: Uuid::new_v4(),
             nome,
             username,
             email,
             senha_hash,
             celular,
-            "email".to_string(),
-            ClasseUsuario::Entregador,
-        );
+            telefone: None,
+            classe: "Entregador".to_string(),
+            ativo: true,
+            passou_pelo_primeiro_acesso: false,
+            modo_de_cadastro: "email".to_string(),
+            criado_em: chrono::Utc::now(),
+            atualizado_em: chrono::Utc::now(),
+        };
 
         self.usuario_repo.criar(&usuario).await?;
 
         // 2. Vincula o entregador à loja
-        let entregador = Entregador::new(
+        let entregador = Entregador {
+            uuid: Uuid::new_v4(),
             loja_uuid,
-            usuario.uuid,
+            usuario_uuid: usuario.uuid,
             veiculo,
             placa,
-        );
+            disponivel: true,
+            criado_em: chrono::Utc::now(),
+        };
 
         self.entregador_repo.criar(&entregador).await?;
 
         Ok(entregador)
     }
-    
+
     pub async fn listar(&self) -> Result<Vec<Loja>, String> {
         self.loja_repo.listar_todos().await
     }

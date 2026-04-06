@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
-use sqlx::FromRow;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
@@ -10,7 +9,7 @@ use crate::models::Model;
 
 
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct EnderecoLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
@@ -58,7 +57,7 @@ impl EnderecoLoja {
 
 // --- EnderecoUsuario (flat, para uso futuro com seu repository) ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct EnderecoUsuario {
     pub uuid: Uuid,
     pub usuario_uuid: Uuid,
@@ -102,7 +101,7 @@ impl EnderecoUsuario {
 
 // --- EnderecoEntrega (flat, para uso futuro com seu repository) ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct EnderecoEntrega {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

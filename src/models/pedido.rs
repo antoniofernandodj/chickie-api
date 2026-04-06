@@ -1,14 +1,13 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::models::{Model, ParteDeItemPedido};
-use chrono::Utc;
-use sqlx::FromRow;
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
 // --- AdicionalDeItemDePedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct AdicionalDeItemDePedido {
     pub uuid: Uuid,
     pub item_uuid: Uuid,
@@ -39,16 +38,14 @@ impl AdicionalDeItemDePedido {
 
 // --- ItemPedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct ItemPedido {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub pedido_uuid: Uuid,
     pub quantidade: i32,
     pub observacoes: Option<String>,
-    #[sqlx(skip)]
     pub adicionais: Vec<AdicionalDeItemDePedido>,
-    #[sqlx(skip)]
     pub partes: Vec<ParteDeItemPedido>,
 }
 
@@ -155,39 +152,9 @@ impl EstadoDePedido {
     }
 }
 
-impl<'r> sqlx::Decode<'r, sqlx::Postgres> for EstadoDePedido {
-    fn decode(
-        value: sqlx::postgres::PgValueRef<'r>
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        // PostgreSQL retorna &str para TEXT
-        let s = <&str as sqlx::Decode<sqlx::Postgres>>::decode(value)?;
-        Self::from_str(s).map_err(|e| e.into())
-    }
-}
-
-impl sqlx::Type<sqlx::Postgres> for EstadoDePedido {
-    fn type_info() -> sqlx::postgres::PgTypeInfo {
-        // Mapeia para TEXT no PostgreSQL
-        sqlx::postgres::PgTypeInfo::with_name("TEXT")
-    }
-}
-
-impl<'q> sqlx::Encode<'q, sqlx::Postgres> for EstadoDePedido {
-    fn encode_by_ref(
-        &self,
-        buf: &mut sqlx::postgres::PgArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        // Encode como TEXT usando o encoder nativo de &str
-        <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
-    }
-
-    fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
-        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
-    }
-}
 // --- Pedido ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Pedido {
     pub uuid: Uuid,
     pub usuario_uuid: Uuid,
@@ -200,11 +167,9 @@ pub struct Pedido {
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub tempo_estimado_min: Option<i32>,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
-    pub atualizado_em: chrono::DateTime<chrono::Utc>,
-    #[sqlx(skip)]
+    pub criado_em: DateTime<Utc>,
+    pub atualizado_em: DateTime<Utc>,
     pub itens: Vec<ItemPedido>,
-    #[sqlx(skip)]
     pub partes: Vec<ParteDeItemPedido>
 }
 

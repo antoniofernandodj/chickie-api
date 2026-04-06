@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
 use uuid::Uuid;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use utoipa::ToSchema;
 
 use crate::models::Model;
@@ -52,14 +51,14 @@ impl std::fmt::Display for ClasseUsuario {
 // Usuario
 // ===========================================================================
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct Usuario {
     pub nome: String,
     pub username: String,
     pub email: String,
     pub celular: String,
-    pub criado_em: chrono::DateTime<chrono::Utc>,
-    pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    pub criado_em: DateTime<Utc>,
+    pub atualizado_em: DateTime<Utc>,
 
     pub modo_de_cadastro: String,
     pub classe: String,  // "cliente" | "administrador"

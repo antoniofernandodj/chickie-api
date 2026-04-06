@@ -2,7 +2,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::EnderecoUsuario;
+use crate::entities::endereco_usuario::Model as EnderecoUsuario;
 use crate::repositories::{EnderecoUsuarioRepository, Repository as _};
 
 #[derive(Clone)]
@@ -29,8 +29,9 @@ impl EnderecoUsuarioService {
         // latitude: Option<f64>,
         // longitude: Option<f64>,
     ) -> Result<EnderecoUsuario, String> {
-        
-        let endereco = EnderecoUsuario::new(
+
+        let endereco = EnderecoUsuario {
+            uuid: Uuid::new_v4(),
             usuario_uuid,
             cep,
             logradouro,
@@ -39,9 +40,9 @@ impl EnderecoUsuarioService {
             bairro,
             cidade,
             estado,
-            // latitude,
-            // longitude,
-        );
+            latitude: None,
+            longitude: None,
+        };
 
         self.repo.criar(&endereco).await?;
         Ok(endereco)
@@ -76,7 +77,7 @@ impl EnderecoUsuarioService {
         latitude: Option<Decimal>,
         longitude: Option<Decimal>,
     ) -> Result<EnderecoUsuario, String> {
-        
+
         // Busca e valida propriedade
         let mut endereco = self.buscar_endereco(uuid, usuario_uuid).await?
             .ok_or("Endereço não encontrado ou não pertence ao usuário")?;
@@ -105,21 +106,7 @@ impl EnderecoUsuarioService {
         // Valida propriedade antes de deletar
         self.buscar_endereco(uuid, usuario_uuid).await?
             .ok_or("Endereço não encontrado ou não pertence ao usuário")?;
-        
+
         self.repo.deletar(uuid).await
     }
-
-    // /// Define um endereço como "padrão" para o usuário
-    // /// (Requer campo `padrao: bool` no modelo - se não tiver, ignore este método)
-    // pub async fn definir_como_padrao(
-    //     &self,
-    //     endereco_uuid: Uuid,
-    //     usuario_uuid: Uuid,
-    // ) -> Result<(), String> {
-    //     // Se o modelo tiver campo `padrao`, desmarca outros e marca este
-    //     // Exemplo conceitual:
-    //     // 1. UPDATE enderecos_usuario SET padrao = false WHERE usuario_uuid = ?
-    //     // 2. UPDATE enderecos_usuario SET padrao = true WHERE uuid = ? AND usuario_uuid = ?
-    //     unimplemented!("Requer campo 'padrao' no modelo EnderecoUsuario")
-    // }
 }

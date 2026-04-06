@@ -1,92 +1,62 @@
-use std::sync::Arc;
-
-use sqlx::postgres::PgPool;
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
 use uuid::Uuid;
-use crate::{models::{Usuario, Model}, repositories::Repository};
+use std::sync::Arc;
+use crate::{
+    entities::usuario::{self, Entity, Model},
+    repositories::Repository,
+};
+use sea_orm::prelude::Uuid as SeaUuid;
 
-pub struct UsuarioRepository { pool: Arc<PgPool> }
+pub struct UsuarioRepository {
+    db: Arc<DatabaseConnection>
+}
 
 #[allow(dead_code)]
 impl UsuarioRepository {
-    pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
-
-    pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE email = $1")
-        .bind(email)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub fn new(db: Arc<DatabaseConnection>) -> Self {
+        Self { db }
     }
 
-    pub async fn buscar_por_username(&self, username: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE username = $1")
-        .bind(username)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Model>, String> {
+        usuario::Entity::find()
+            .filter(usuario::Column::Email.eq(email))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE telefone = $1")
-        .bind(telefone)
-        .fetch_optional(self.pool())
-        .await
-        .map_err(|e| e.to_string())
+    pub async fn buscar_por_username(&self, username: &str) -> Result<Option<Model>, String> {
+        usuario::Entity::find()
+            .filter(usuario::Column::Username.eq(username))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Model>, String> {
+        usuario::Entity::find()
+            .filter(usuario::Column::Telefone.eq(telefone))
+            .one(&*self.db)
+            .await
+            .map_err(|e| e.to_string())
     }
 }
 
 #[async_trait::async_trait]
-impl Repository<Usuario> for UsuarioRepository {
-    fn table_name(&self) -> &'static str { "usuarios" }
-    fn entity_name(&self) -> &'static str { "Usuário" }
-    fn pool(&self) -> &PgPool { &*self.pool }
-
-    async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
-        sqlx::query("
-            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, telefone, celular, classe)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ")
-        .bind(&item.uuid)
-        .bind(&item.nome)
-        .bind(&item.username)
-        .bind(&item.email)
-        .bind(&item.senha_hash)
-        .bind(&item.telefone)
-        .bind(&item.celular)
-        .bind(&item.classe)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        Ok(item.uuid)
+impl Repository<Entity> for UsuarioRepository {
+    fn db(&self) -> &DatabaseConnection {
+        &*self.db
     }
 
-
-    async fn atualizar(&self, item: Usuario) -> Result<(), String> {
-        let uuid = item.get_uuid();
-        let result = sqlx::query("
-            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, telefone = $4, classe = $5, atualizado_em = $6
-            WHERE uuid = $7
-        ")
-        .bind(&item.username)
-        .bind(&item.email)
-        .bind(&item.senha_hash)
-        .bind(&item.telefone)
-        .bind(&item.classe)
-        .bind(&item.atualizado_em)
-        .bind(uuid)
-        .execute(self.pool())
-        .await
-        .map_err(|e| e.to_string())?;
-
-        if result.rows_affected() == 0 {
-            Err(format!("{} não encontrad{}", self.entity_name(), self.entity_gender_suffix()))
-        } else {
-            Ok(())
-        }
+    fn entity(&self) -> Entity {
+        usuario::Entity
     }
 
-    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Usuario>, String> {
+    fn entity_name(&self) -> &'static str {
+        "Usuário"
+    }
+
+    async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Model>, String> {
         Err("não se aplica".into())
     }
 }
