@@ -212,12 +212,12 @@ pub fn entregador_routes() -> Router<Arc<AppState>> {
 pub fn produto_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", post(criar_produto))
-        .route("/", get(listar_produtos))
+        .route("/{loja_uuid}", get(listar_produtos))
         .route("/categoria/{categoria_uuid}", get(listar_produtos_por_categoria))
-        .route("/{uuid}", get(buscar_produto_por_uuid))
-        .route("/{uuid}", put(atualizar_produto))
-        .route("/{uuid}", delete(deletar_produto))
-        .route("/{uuid}/imagem", post(subir_imagem_produto))
+        .route("/{loja_uuid}/{uuid}", get(buscar_produto_por_uuid))
+        .route("/{loja_uuid}/{uuid}", put(atualizar_produto))
+        .route("/{loja_uuid}/{uuid}", delete(deletar_produto))
+        .route("/{loja_uuid}/{uuid}/imagem", post(subir_imagem_produto))
 }
 
 

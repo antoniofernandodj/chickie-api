@@ -5,14 +5,19 @@ use uuid::Uuid;
 use crate::{
     api::{AppState, dto::AppError},
     models::Usuario,
+    usecases::CatalogoUsecase,
 };
 
 pub async fn deletar_produto(
     State(state): State<Arc<AppState>>,
+    Extension(usuario_logado): Extension<Usuario>,
     Path(uuid): Path<Uuid>,
-    Extension(_): Extension<Usuario>,
+    Path(loja_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    state.catalogo_service.deletar_produto(uuid).await?;
+    let usecase = CatalogoUsecase::new(state.catalogo_service.clone(), loja_uuid, usuario_logado);
+    usecase.deletar_produto(uuid).await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+
     Ok(StatusCode::NO_CONTENT)
 }

@@ -107,4 +107,8 @@ impl CatalogoUsecase {
     ) -> Result<(), String> {
         self.catalogo_service.marcar_adicional_indisponivel(adicional_uuid).await
     }
+
+    pub async fn deletar_produto(&self, produto_uuid: Uuid) -> Result<(), String> {
+        self.catalogo_service.deletar_produto(produto_uuid).await
+    }
 }
