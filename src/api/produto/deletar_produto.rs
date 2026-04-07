@@ -12,10 +12,13 @@ pub async fn deletar_produto(
     State(state): State<Arc<AppState>>,
     Extension(usuario_logado): Extension<Usuario>,
     Path(uuid): Path<Uuid>,
-    Path(loja_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    let usecase = CatalogoUsecase::new(state.catalogo_service.clone(), loja_uuid, usuario_logado);
+    let usecase = CatalogoUsecase::new(
+        state.catalogo_service.clone(),
+        uuid,
+        usuario_logado,
+    );
     usecase.deletar_produto(uuid).await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
