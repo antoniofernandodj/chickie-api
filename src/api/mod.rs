@@ -20,6 +20,13 @@ mod funcionario;
 mod entregador;
 mod openapi;
 
+use axum::{Json, response::IntoResponse};
+use serde_json::json;
+
+pub async fn ok_handler() -> impl IntoResponse {
+    Json(json!({"msg": "ok"}))
+}
+
 // Re-export usecases from the top-level module
 // pub use crate::usecases::{
 //     CatalogoUsecase,
