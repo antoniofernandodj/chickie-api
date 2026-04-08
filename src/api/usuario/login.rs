@@ -8,11 +8,11 @@ pub async fn login(
     Json(payload): Json<LoginRequest>,
 ) -> Result<impl IntoResponse, AppError> {
     // 1. Validar as credenciais através do Service
-    // O service deve buscar o usuário e comparar o hash da senha
+    // O service busca o usuário por email, username ou celular e compara a senha
     let usuario = state.usuario_service
-        .autenticar(payload.email, payload.senha)
+        .autenticar(payload.identifier, payload.senha)
         .await
-        .map_err(|_| AppError::BadRequest("Email ou senha inválidos".to_string()))?;
+        .map_err(|_| AppError::BadRequest("Credenciais inválidas".to_string()))?;
 
     // 2. Gerar o token JWT usando a função que criamos
     let token = create_jwt(usuario)

@@ -163,7 +163,8 @@ pub struct Claims {
 
 #[derive(serde::Deserialize, ToSchema)]
 pub struct LoginRequest {
-    pub email: String,
+    /// Email, username ou celular
+    pub identifier: String,
     pub senha: String,
 }
 

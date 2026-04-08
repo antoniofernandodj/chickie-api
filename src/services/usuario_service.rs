@@ -55,18 +55,22 @@ impl UsuarioService {
 
     pub async fn autenticar(
         &self,
-        email: String,
+        identifier: String,
         senha_plana: String,
     ) -> Result<Usuario, String> {
 
-        // 1. Busca o usuário pelo email
-        let usuario: Usuario = self.repo
-            .buscar_por_email(&email)
-            .await?
-            .ok_or_else(|| "Usuário não encontrado".to_string())?;
+        // 1. Busca o usuário por email, username ou celular
+        let usuario = if let Some(u) = self.repo.buscar_por_email(&identifier).await? {
+            u
+        } else if let Some(u) = self.repo.buscar_por_username(&identifier).await? {
+            u
+        } else if let Some(u) = self.repo.buscar_por_telefone(&identifier).await? {
+            u
+        } else {
+            return Err("Usuário não encontrado".to_string());
+        };
 
         // 2. Verifica se a senha enviada condiz com o hash do banco
-        // O campo 'password_hash' deve existir no seu model Usuario
         let senha_valida = verify(senha_plana, &usuario.senha_hash)
             .map_err(|e| format!("Erro ao processar senha: {}", e))?;
 
