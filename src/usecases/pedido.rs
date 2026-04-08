@@ -114,6 +114,10 @@ impl PedidoUsecase {
         self.pedido_service.listar_por_loja(self.loja_uuid).await
     }
 
+    pub async fn listar_por_usuario(&self) -> Result<Vec<Pedido>, String> {
+        self.pedido_service.listar_por_usuario(self.usuario.uuid).await
+    }
+
     pub async fn buscar_pedido_com_entrega(
         &self,
         pedido_uuid: Uuid,

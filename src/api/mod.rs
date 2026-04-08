@@ -55,7 +55,8 @@ pub use pedido::{
     buscar_pedido,
     listar_por_loja,
     buscar_pedido_com_entrega,
-    atualizar_status
+    atualizar_status,
+    listar_meus_pedidos
 };
 
 pub use usuario::{

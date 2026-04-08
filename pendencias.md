@@ -31,13 +31,13 @@ _(nenhum bug conhecido)_
 | 17 | **Campos NUMERIC com tipo correto** | Todos os campos `f64`/`Option<f64>` mapeados para `NUMERIC` migrados para `rust_decimal::Decimal`. Afeta preço, nota, salario, taxa_entrega, valor_minimo, latitude/longitude, quantidade, total, subtotal, desconto em 10+ models. | 2026-04-05 |
 | 18 | **Pesquisa de lojas** | Novos endpoints `GET /api/lojas/pesquisar?termo=...`, `GET /api/lojas/{uuid}` e `GET /api/lojas/slug/{slug}` para busca pública de lojas. Segue arquitetura Handler → Usecase → Service → Repository. | 2026-04-05 |
 | 19 | **Campo pizza_mode na categoria** | `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model, repository, service, handlers criar/atualizar categoria. | 2026-04-07 |
+| 20 | **Listar pedidos por usuário** | Novo endpoint `GET /api/pedidos/meus` retorna todos os pedidos do usuário autenticado com hidratação completa (itens, partes, adicionais). Usa `buscar_completos_por_usuario` do repository. | 2026-04-07 |
 
 ## 📋 Funcionalidades Pendentes
 
 | # | Feature | Detalhe | Prioridade |
 |---|---------|---------|------------|
 | 5 | **Atribuir entregador ao pedido** | Sem endpoint para vincular entregador a um pedido. | Alta |
-| 6 | **Listar pedidos por usuário** | Endpoint para cliente ver seus próprios pedidos. | Média |
 | 7 | **Pagamentos** | Tabela e endpoints para registrar pagamentos. | Alta (futuro) |
 | 8 | **Notificações push** | Sistema de notificações para status do pedido. | Baixa (futuro) |
 | 9 | **CI/CD pipeline** | Linters, testes automatizados, deploy. | Média |
@@ -60,8 +60,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 6 | 14, 15, 16, 17, 18, 19 |
+| ✅ Concluídas | 7 | 14, 15, 16, 17, 18, 19, 20 |
 | 📋 Features | 7 | 5–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 13 pendências ativas, 6 concluídas recentemente**
+**Total: 12 pendências ativas, 7 concluídas recentemente**

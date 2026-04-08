@@ -118,6 +118,10 @@ impl PedidoService {
         self.pedido_repo.buscar_completos_por_loja(loja_uuid).await
     }
 
+    pub async fn listar_por_usuario(&self, usuario_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
+        self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await
+    }
+
     /// Lógica para verificar promoções ativas da loja
     async fn __calcular_melhor_promocao(
         &self,

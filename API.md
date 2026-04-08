@@ -754,6 +754,66 @@ Authorization: Bearer <token>
 
 ---
 
+### 6.2.1 Listar Meus Pedidos (Por Usuário)
+
+```
+GET /api/pedidos/meus
+Authorization: Bearer <token>
+```
+
+> Retorna todos os pedidos criados pelo usuário autenticado, ordenados do mais recente ao mais antigo. Inclui itens, partes e adicionais hidratados.
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "criado",
+    "total": 65.90,
+    "subtotal": 55.90,
+    "taxa_entrega": 5.0,
+    "desconto": 0.0,
+    "forma_pagamento": "PIX",
+    "observacoes": "Sem cebola",
+    "tempo_estimado_min": 45,
+    "criado_em": "2026-04-04T00:00:00Z",
+    "atualizado_em": "2026-04-04T00:00:00Z",
+    "itens": [
+      {
+        "uuid": "550e8400-e29b-41d4-a716-446655440011",
+        "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+        "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+        "quantidade": 1,
+        "observacoes": null,
+        "adicionais": [],
+        "partes": [
+          {
+            "uuid": "550e8400-e29b-41d4-a716-446655440012",
+            "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+            "item_uuid": "550e8400-e29b-41d4-a716-446655440011",
+            "produto_nome": "Pizza Grande",
+            "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+            "preco_unitario": 49.90,
+            "posicao": 1,
+            "adicionais": []
+          }
+        ]
+      }
+    ],
+    "partes": []
+  }
+]
+```
+
+**Response `200` (vazio — sem pedidos):**
+```json
+[]
+```
+
+---
+
 ### 6.3 Buscar Pedido
 
 ```
@@ -2010,11 +2070,12 @@ DELETE /api/wipe
 | 14 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | 🔒 | 👑 |
 | 15 | `POST` | `/api/admin/lojas/{loja_uuid}/clientes` | 🔒 | 👑 |
 | 16 | `POST` | `/api/pedidos/criar` | 🔒 | — |
-| 17 | `GET` | `/api/pedidos/` | 🔒 | — |
-| 18 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — |
-| 19 | `GET` | `/api/pedidos/criar` | 🔒 | — |
-| 20 | `GET` | `/api/pedidos/criar/{pedido_uuid}/com-entrega` | 🔒 | — |
-| 21 | `PUT` | `/api/pedidos/criar/{pedido_uuid}/status` | 🔒 | — |
+| 17 | `GET` | `/api/pedidos/listar` | 🔒 | — |
+| 17.1 | `GET` | `/api/pedidos/meus` | 🔒 | — |
+| 18 | `GET` | `/api/pedidos/por-loja/{loja_uuid}` | 🔒 | — |
+| 19 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — |
+| 20 | `GET` | `/api/pedidos/{uuid}/com-entrega` | 🔒 | — |
+| 21 | `PUT` | `/api/pedidos/{uuid}/status` | 🔒 | — |
 | 22 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
 | 23 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
 | 24 | `GET` | `/api/marketing/cupons` | 🔒 | — |
@@ -2054,4 +2115,4 @@ DELETE /api/wipe
 | 58 | `GET` | `/api/ok` | — | — |
 | 59 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 59 endpoints**
+**Total: 60 endpoints**

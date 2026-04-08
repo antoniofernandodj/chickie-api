@@ -9,12 +9,14 @@ use crate::api::{
     buscar_pedido,
     buscar_pedido_com_entrega,
     atualizar_status,
+    listar_meus_pedidos,
 };
 
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/criar", post(criar_pedido))
         .route("/listar", get(listar_pedidos))
+        .route("/meus", get(listar_meus_pedidos))
         .route("/por-loja/{loja_uuid}", get(listar_por_loja))
         .route("/{uuid}", get(buscar_pedido))
         .route("/{uuid}/com-entrega", get(buscar_pedido_com_entrega))
