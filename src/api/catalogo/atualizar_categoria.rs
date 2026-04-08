@@ -13,6 +13,8 @@ pub struct UpdateCategoriaRequest {
     pub nome: String,
     pub descricao: Option<String>,
     pub ordem: Option<i32>,
+    #[serde(default)]
+    pub pizza_mode: bool,
 }
 
 pub async fn atualizar_categoria(
@@ -28,6 +30,7 @@ pub async fn atualizar_categoria(
         p.nome,
         p.descricao,
         p.ordem,
+        p.pizza_mode,
     ).await?;
 
     Ok(Json(categoria))

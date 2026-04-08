@@ -13,6 +13,8 @@ pub struct CreateCategoriaRequest {
     pub nome: String,
     pub descricao: Option<String>,
     pub ordem: Option<i32>,
+    #[serde(default)]
+    pub pizza_mode: bool,
 }
 
 pub async fn criar_categoria(
@@ -26,7 +28,8 @@ pub async fn criar_categoria(
         p.nome,
         p.descricao,
         loja_uuid,
-        p.ordem
+        p.ordem,
+        p.pizza_mode
     ).await?;
 
     Ok(Json(categoria))

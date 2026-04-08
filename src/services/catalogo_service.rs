@@ -56,13 +56,15 @@ impl CatalogoService {
         descricao: Option<String>,
         loja_uuid: Uuid,
         ordem: Option<i32>,
+        pizza_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
 
         let categoria: CategoriaProdutos = CategoriaProdutos::new(
             nome,
             descricao,
             loja_uuid,
-            ordem
+            ordem,
+            pizza_mode
         );
 
         self.categoria_repo.criar(&categoria).await?;
@@ -172,6 +174,7 @@ impl CatalogoService {
         nome: String,
         descricao: Option<String>,
         ordem: Option<i32>,
+        pizza_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
         let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
             .ok_or("Categoria não encontrada")?;
@@ -183,6 +186,7 @@ impl CatalogoService {
         categoria.nome = nome;
         categoria.descricao = descricao;
         categoria.ordem = ordem;
+        categoria.pizza_mode = pizza_mode;
 
         self.categoria_repo.atualizar(categoria.clone()).await?;
         Ok(categoria)

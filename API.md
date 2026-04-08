@@ -1333,7 +1333,8 @@ Content-Type: application/json
 {
   "nome": "Bebidas",
   "descricao": "string | null",
-  "ordem": 1
+  "ordem": 1,
+  "pizza_mode": false
 }
 ```
 
@@ -1345,6 +1346,7 @@ Content-Type: application/json
   "nome": "Bebidas",
   "descricao": "Bebidas geladas",
   "ordem": 1,
+  "pizza_mode": false,
   "criado_em": "2026-04-04T00:00:00Z"
 }
 ```
@@ -1367,6 +1369,7 @@ Authorization: Bearer <token>
     "nome": "Bebidas",
     "descricao": "Bebidas geladas",
     "ordem": 1,
+    "pizza_mode": false,
     "criado_em": "2026-04-04T00:00:00Z"
   }
 ]
@@ -1387,7 +1390,8 @@ Content-Type: application/json
 {
   "nome": "Bebidas Geladas",
   "descricao": "string | null",
-  "ordem": 2
+  "ordem": 2,
+  "pizza_mode": false
 }
 ```
 
@@ -1399,6 +1403,7 @@ Content-Type: application/json
   "nome": "Bebidas Geladas",
   "descricao": "Bebidas bem geladas",
   "ordem": 2,
+  "pizza_mode": false,
   "criado_em": "2026-04-04T00:00:00Z"
 }
 ```
