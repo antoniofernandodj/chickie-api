@@ -13,9 +13,14 @@ RUN apt-get update && apt-get install -y \
 # Cache de dependências
 COPY Cargo.toml Cargo.lock ./
 COPY migrations ./migrations
-RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    echo "fn main() {}" > src/worker.rs && \
+    echo "fn main() {}" > src/scheduler.rs
+
 RUN cargo build --release
-RUN rm -rf src target/release/chickie target/release/chickie.d
+RUN rm -rf src target/release/chickie target/release/chickie.d target/release/chickie-worker target/release/chickie-worker.d target/release/chickie-scheduler target/release/chickie-scheduler.d
 
 # Build real
 COPY src ./src
