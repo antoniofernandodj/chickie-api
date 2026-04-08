@@ -32,13 +32,13 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
 
 #[allow(unused)]
 pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
-    let mode = std::env::var("MODE").unwrap_or_default();
-    let is_dev = mode.eq_ignore_ascii_case("development");
+    // let mode = std::env::var("MODE").unwrap_or_default();
+    // let is_dev = mode.eq_ignore_ascii_case("development");
 
-    if is_dev {
-        tracing::info!("🧹 MODE=DEVELOPMENT — limpando banco de dados antes de migrar");
-        drop_all_tables(pool).await?;
-    }
+    // if is_dev {
+    //     tracing::info!("🧹 MODE=DEVELOPMENT — limpando banco de dados antes de migrar");
+    //     drop_all_tables(pool).await?;
+    // }
 
     tracing::info!("📦 Aplicando migrações...");
     run_migrations(pool).await?;
@@ -125,9 +125,8 @@ async fn create_migration_table(pool: &PgPool) -> Result<(), String> {
 
 /// Retorna a versão da última migração aplicada
 async fn get_last_applied_migration(pool: &PgPool) -> Result<Option<u32>, String> {
-    let result = sqlx::query_scalar::<_, Option<i32>>(
-        "SELECT MAX(version) FROM schema_migrations"
-    )
+    let stmt = "SELECT MAX(version) FROM schema_migrations";
+    let result = sqlx::query_scalar::<_, Option<i32>>(stmt)
     .fetch_one(pool)
     .await
     .map_err(|e| format!("Falha ao buscar última migração: {}", e))?;
@@ -137,14 +136,13 @@ async fn get_last_applied_migration(pool: &PgPool) -> Result<Option<u32>, String
 
 /// Registra uma migração como aplicada
 async fn record_migration(pool: &PgPool, version: u32, filename: &str) -> Result<(), String> {
-    sqlx::query(
-        "INSERT INTO schema_migrations (version, filename) VALUES ($1, $2)"
-    )
-    .bind(version as i32)
-    .bind(filename)
-    .execute(pool)
-    .await
-    .map_err(|e| format!("Falha ao registrar migração {}: {}", version, e))?;
+    let stmt = "INSERT INTO schema_migrations (version, filename) VALUES ($1, $2)";
+    sqlx::query(stmt)
+        .bind(version as i32)
+        .bind(filename)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Falha ao registrar migração {}: {}", version, e))?;
 
     tracing::info!("   📝 Migração {} registrada em schema_migrations", version);
     Ok(())

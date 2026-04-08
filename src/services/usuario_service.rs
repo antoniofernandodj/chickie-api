@@ -81,4 +81,14 @@ impl UsuarioService {
     pub async fn listar(&self) -> Result<Vec<Usuario>, String> {
         self.repo.listar_todos().await
     }
+
+    pub async fn verificar_email_disponivel(&self, email: &str) -> Result<bool, String> {
+        let existente = self.repo.buscar_por_email(email).await?;
+        Ok(existente.is_none())
+    }
+
+    pub async fn verificar_username_disponivel(&self, username: &str) -> Result<bool, String> {
+        let existente = self.repo.buscar_por_username(username).await?;
+        Ok(existente.is_none())
+    }
 }

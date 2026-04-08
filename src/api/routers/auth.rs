@@ -1,7 +1,7 @@
 use axum::{Router, middleware::from_fn_with_state, routing::{get, post}};
 use std::sync::Arc;
 
-use crate::api::{AppState, auth_middleware, me};
+use crate::api::{AppState, auth_middleware, me, verificar_email, verificar_username};
 use crate::api::usuario::login;
 use crate::api::{criar_usuario};
 
@@ -11,4 +11,6 @@ pub fn auth_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .route("/login", post(login))
         .route("/signup", post(criar_usuario))
+        .route("/verificar-email", post(verificar_email))
+        .route("/verificar-username", post(verificar_username))
 }

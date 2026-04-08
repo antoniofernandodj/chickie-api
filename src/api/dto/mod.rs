@@ -181,3 +181,18 @@ pub struct AvaliarProdutoRequest {
     pub comentario: Option<String>,
 }
 
+#[derive(Deserialize, ToSchema)]
+pub struct VerificarEmailRequest {
+    pub email: String,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct VerificarUsernameRequest {
+    pub username: String,
+}
+
+#[derive(Serialize, ToSchema)]
+pub struct DisponivelResponse {
+    pub disponivel: bool,
+}
+
