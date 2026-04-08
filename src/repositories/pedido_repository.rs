@@ -21,7 +21,8 @@ impl PedidoRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE usuario_uuid = $1")
+        let stmt = "SELECT * FROM pedidos WHERE usuario_uuid = $1";
+        sqlx::query_as::<_, Pedido>(stmt)
             .bind(usuario_uuid)
             .fetch_all(&*self.pool)
             .await
@@ -29,7 +30,8 @@ impl PedidoRepository {
     }
 
     pub async fn buscar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Pedido>, String> {
-        sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE loja_uuid = $1")
+        let stmt = "SELECT * FROM pedidos WHERE loja_uuid = $1";
+        sqlx::query_as::<_, Pedido>(stmt)
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await
