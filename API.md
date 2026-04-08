@@ -706,6 +706,7 @@ Authorization: Bearer <token>
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "entregador_uuid": null,
     "status": "criado",
     "total": 65.90,
     "subtotal": 55.90,
@@ -770,6 +771,7 @@ Authorization: Bearer <token>
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "entregador_uuid": null,
     "status": "criado",
     "total": 65.90,
     "subtotal": 55.90,
@@ -827,6 +829,7 @@ Authorization: Bearer <token>
   "uuid": "550e8400-e29b-41d4-a716-446655440010",
   "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
   "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "entregador_uuid": null,
   "status": "criado",
   "total": 65.90,
   "subtotal": 55.90,
@@ -888,6 +891,7 @@ Authorization: Bearer <token>
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "entregador_uuid": null,
     "status": "criado",
     "total": 65.90,
     "subtotal": 55.90,
@@ -941,6 +945,7 @@ Authorization: Bearer <token>
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "entregador_uuid": null,
     "status": "criado",
     "total": 65.90,
     "subtotal": 55.90,
@@ -1012,6 +1017,54 @@ Content-Type: application/json
 ```json
 {
   "error": "Transição inválida: Criado -> Entregue. Transições permitidas: [AguardandoConfirmacaoDeLoja]"
+}
+```
+
+---
+
+### 6.7 Atribuir Entregador ao Pedido
+
+```
+PUT /api/pedidos/{pedido_uuid}/entregador/{loja_uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+> Vincula um entregador existente ao pedido. O entregador deve pertencer à mesma loja do pedido.
+
+**Request Body:**
+```json
+{
+  "entregador_uuid": "550e8400-e29b-41d4-a716-446655440099"
+}
+```
+
+**Response `204`:** No Content
+
+**Response `404` (pedido ou entregador não encontrado):**
+```json
+{
+  "error": "Pedido não encontrado ou não pertence a esta loja"
+}
+```
+
+---
+
+### 6.8 Remover Entregador do Pedido
+
+```
+DELETE /api/pedidos/{pedido_uuid}/entregador/{loja_uuid}
+Authorization: Bearer <token>
+```
+
+> Remove o entregador vinculado ao pedido (define `entregador_uuid` como NULL).
+
+**Response `204`:** No Content
+
+**Response `404` (pedido não encontrado):**
+```json
+{
+  "error": "Pedido não encontrado ou não pertence a esta loja"
 }
 ```
 
@@ -2076,43 +2129,45 @@ DELETE /api/wipe
 | 19 | `GET` | `/api/pedidos/{uuid}` | 🔒 | — |
 | 20 | `GET` | `/api/pedidos/{uuid}/com-entrega` | 🔒 | — |
 | 21 | `PUT` | `/api/pedidos/{uuid}/status` | 🔒 | — |
-| 22 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
-| 23 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
-| 24 | `GET` | `/api/marketing/cupons` | 🔒 | — |
-| 25 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
-| 26 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
-| 27 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 28 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 29 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 30 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 31 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 32 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 33 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
-| 34 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
-| 35 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 36 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 37 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 38 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 39 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 40 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 41 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 42 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 43 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 44 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 45 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 46 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 47 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 48 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 49 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 50 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 51 | `POST` | `/api/produtos/` | 🔒 | — |
-| 52 | `GET` | `/api/produtos/` | 🔒 | — |
-| 53 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
-| 54 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
-| 55 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 56 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 57 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 58 | `GET` | `/api/ok` | — | — |
-| 59 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 22 | `PUT` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
+| 23 | `DELETE` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
+| 24 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
+| 25 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
+| 26 | `GET` | `/api/marketing/cupons` | 🔒 | — |
+| 27 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
+| 28 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
+| 29 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 30 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 31 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 32 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 33 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 34 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 35 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
+| 36 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
+| 37 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 38 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 39 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 40 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 41 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 42 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 43 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 44 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 45 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 46 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 47 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 48 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 49 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 50 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 51 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 52 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 53 | `POST` | `/api/produtos/` | 🔒 | — |
+| 54 | `GET` | `/api/produtos/` | 🔒 | — |
+| 55 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 56 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 57 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 58 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 59 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 60 | `GET` | `/api/ok` | — | — |
+| 61 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 60 endpoints**
+**Total: 62 endpoints**

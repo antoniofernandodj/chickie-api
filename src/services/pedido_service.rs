@@ -373,4 +373,44 @@ impl PedidoService {
 
         Ok(pedido)
     }
+
+    /// Atribui um entregador a um pedido
+    pub async fn atribuir_entregador(
+        &self,
+        pedido_uuid: Uuid,
+        entregador_uuid: Uuid,
+    ) -> Result<(), String> {
+        // Validar que o pedido existe
+        self.pedido_repo.buscar_por_uuid(pedido_uuid).await?
+            .ok_or("Pedido não encontrado")?;
+
+        self.pedido_repo.atribuir_entregador(pedido_uuid, entregador_uuid).await?;
+
+        tracing::info!(
+            "Entregador {} atribuído ao pedido {}",
+            entregador_uuid, pedido_uuid
+        );
+
+        Ok(())
+    }
+
+    /// Remove o entregador de um pedido
+    pub async fn remover_entregador(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<(), String> {
+        self.pedido_repo.remover_entregador(pedido_uuid).await?;
+
+        tracing::info!("Entregador removido do pedido {}", pedido_uuid);
+        Ok(())
+    }
+
+    /// Busca pedido com informações do entregador
+    pub async fn buscar_pedido_com_entregador(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<crate::repositories::PedidoComEntregador, String> {
+        self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
+            .ok_or("Pedido não encontrado".to_string())
+    }
 }

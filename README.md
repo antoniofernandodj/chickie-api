@@ -211,6 +211,8 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/pedidos/{uuid}` | Buscar pedido     | ✅   |
 | `GET`  | `/api/pedidos/{uuid}/com-entrega` | Pedido com endereço | ✅ |
 | `PUT`  | `/api/pedidos/{uuid}/status` | Avançar status | ✅ |
+| `PUT`  | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | Atribuir entregador | ✅ |
+| `DELETE` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | Remover entregador | ✅ |
 
 ### Cupons & Avaliações
 

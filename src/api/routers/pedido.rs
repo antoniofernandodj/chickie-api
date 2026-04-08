@@ -1,4 +1,4 @@
-use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put}};
+use axum::{Router, middleware::from_fn_with_state, routing::{get, put, delete, post}};
 use std::sync::Arc;
 
 use crate::api::{AppState, auth_middleware};
@@ -10,6 +10,8 @@ use crate::api::{
     buscar_pedido_com_entrega,
     atualizar_status,
     listar_meus_pedidos,
+    atribuir_entregador,
+    remover_entregador,
 };
 
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
@@ -21,5 +23,7 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{uuid}", get(buscar_pedido))
         .route("/{uuid}/com-entrega", get(buscar_pedido_com_entrega))
         .route("/{uuid}/status", put(atualizar_status))
+        .route("/{pedido_uuid}/entregador/{loja_uuid}", put(atribuir_entregador))
+        .route("/{pedido_uuid}/entregador/{loja_uuid}", delete(remover_entregador))
         .layer(from_fn_with_state(s.clone(), auth_middleware))
 }

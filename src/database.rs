@@ -9,7 +9,6 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL não encontrado");
 
-
     let pool = PgPoolOptions::new()
         .max_connections(10)
         .min_connections(2)
@@ -48,11 +47,12 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
 
 /// Executa os arquivos de migração em ordem, dividindo em statements individuais
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    let migration_files: [&str; 4] = [
+    let migration_files: [&str; 5] = [
         "0001_criar_tabelas.sql",
         "0002_add_promocao_escopo.sql",
         "0003_add_criado_por_lojas.sql",
-        "0004_add_pizza_mode_categorias.sql"
+        "0004_add_pizza_mode_categorias.sql",
+        "0005_add_entregador_uuid_pedidos.sql"
     ];
 
     for migration_path in

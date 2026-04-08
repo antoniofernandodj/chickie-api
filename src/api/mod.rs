@@ -56,7 +56,9 @@ pub use pedido::{
     listar_por_loja,
     buscar_pedido_com_entrega,
     atualizar_status,
-    listar_meus_pedidos
+    listar_meus_pedidos,
+    atribuir_entregador,
+    remover_entregador,
 };
 
 pub use usuario::{

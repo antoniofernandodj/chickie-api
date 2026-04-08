@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
+use sqlx::FromRow;
 use uuid::Uuid;
+use serde::Serialize;
+use utoipa::ToSchema;
 use crate::{
     repositories::Repository,
     models::{
@@ -13,6 +16,32 @@ use crate::{
         ParteDeItemPedido
     },
 };
+
+/// DTO para retorno de pedido com informações do entregador
+#[derive(Debug, Clone, FromRow, Serialize, ToSchema)]
+pub struct PedidoComEntregador {
+    pub uuid: Uuid,
+    pub usuario_uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub entregador_uuid: Option<Uuid>,
+    pub status: EstadoDePedido,
+    pub total: rust_decimal::Decimal,
+    pub subtotal: rust_decimal::Decimal,
+    pub taxa_entrega: rust_decimal::Decimal,
+    pub desconto: Option<rust_decimal::Decimal>,
+    pub forma_pagamento: String,
+    pub observacoes: Option<String>,
+    pub tempo_estimado_min: Option<i32>,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+    pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    // Campos do entregador (via LEFT JOIN)
+    #[sqlx(skip)]
+    pub entregador_nome: String,
+    #[sqlx(skip)]
+    pub veiculo: String,
+    #[sqlx(skip)]
+    pub placa: String,
+}
 
 pub struct PedidoRepository { pool: Arc<PgPool> }
 
@@ -228,6 +257,85 @@ impl PedidoRepository {
         Ok(pedidos_hidratados)
     }
 
+    /// Atribui um entregador a um pedido
+    pub async fn atribuir_entregador(
+        &self,
+        pedido_uuid: Uuid,
+        entregador_uuid: Uuid,
+    ) -> Result<(), String> {
+        let result = sqlx::query(
+            "UPDATE pedidos SET entregador_uuid = $1 WHERE uuid = $2"
+        )
+        .bind(entregador_uuid)
+        .bind(pedido_uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Pedido não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Remove o entregador de um pedido
+    pub async fn remover_entregador(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<(), String> {
+        let result = sqlx::query(
+            "UPDATE pedidos SET entregador_uuid = NULL WHERE uuid = $1"
+        )
+        .bind(pedido_uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Pedido não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Busca um pedido com dados do entregador (JOIN com entregadores + usuarios)
+    pub async fn buscar_com_entregador(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<Option<PedidoComEntregador>, String> {
+        let row = sqlx::query_as::<_, PedidoComEntregador>(
+            "SELECT
+                p.uuid,
+                p.usuario_uuid,
+                p.loja_uuid,
+                p.entregador_uuid,
+                p.status,
+                p.total,
+                p.subtotal,
+                p.taxa_entrega,
+                p.desconto,
+                p.forma_pagamento,
+                p.observacoes,
+                p.tempo_estimado_min,
+                p.criado_em,
+                p.atualizado_em,
+                COALESCE(e.uuid, '00000000-0000-0000-0000-000000000000'::uuid) as entregador_uuid,
+                COALESCE(u.nome, '') as entregador_nome,
+                COALESCE(e.veiculo, '') as veiculo,
+                COALESCE(e.placa, '') as placa
+            FROM pedidos p
+            LEFT JOIN entregadores e ON p.entregador_uuid = e.uuid
+            LEFT JOIN usuarios u ON e.usuario_uuid = u.uuid
+            WHERE p.uuid = $1"
+        )
+        .bind(pedido_uuid)
+        .fetch_optional(&*self.pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+        Ok(row)
+    }
 
 }
 
@@ -249,14 +357,15 @@ impl Repository<Pedido> for PedidoRepository {
 
         tracing::info!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
         let stmt = "
-            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, entregador_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         ";
 
         sqlx::query(stmt)
             .bind(&pedido.uuid)
             .bind(&pedido.usuario_uuid)
             .bind(&pedido.loja_uuid)
+            .bind(&pedido.entregador_uuid)
             .bind(&pedido.status.to_string())
             .bind(&pedido.total)
             .bind(&pedido.subtotal)
@@ -357,8 +466,8 @@ impl Repository<Pedido> for PedidoRepository {
     async fn atualizar(&self, item: Pedido) -> Result<(), String> {
         let uuid = item.get_uuid();
         let stmt = "
-            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8
-            WHERE uuid = $9
+            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8, entregador_uuid = $9
+            WHERE uuid = $10
         ";
 
         let result = sqlx::query(stmt)
@@ -370,6 +479,7 @@ impl Repository<Pedido> for PedidoRepository {
             .bind(&item.forma_pagamento)
             .bind(&item.observacoes)
             .bind(item.tempo_estimado_min)
+            .bind(item.entregador_uuid)
             .bind(uuid)
             .execute(self.pool())
             .await

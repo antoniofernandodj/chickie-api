@@ -132,6 +132,21 @@ impl PedidoUsecase {
     ) -> Result<Pedido, String> {
         self.pedido_service.atualizar_status(pedido_uuid, novo_status).await
     }
+
+    pub async fn atribuir_entregador(
+        &self,
+        pedido_uuid: Uuid,
+        entregador_uuid: Uuid,
+    ) -> Result<(), String> {
+        self.pedido_service.atribuir_entregador(pedido_uuid, entregador_uuid).await
+    }
+
+    pub async fn remover_entregador(
+        &self,
+        pedido_uuid: Uuid,
+    ) -> Result<(), String> {
+        self.pedido_service.remover_entregador(pedido_uuid).await
+    }
 }
 
 // ─── Input types ───

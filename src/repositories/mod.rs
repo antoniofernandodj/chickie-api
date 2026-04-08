@@ -88,7 +88,7 @@ pub use loja_repository::LojaRepository;
 pub use cliente_repository::ClienteRepository;
 pub use produto_repository::ProdutoRepository;
 pub use categoria_produtos_repository::CategoriaProdutosRepository;
-pub use pedido_repository::PedidoRepository;
+pub use pedido_repository::{PedidoRepository, PedidoComEntregador};
 pub use adicional_repository::AdicionalRepository;
 pub use ingrediente_repository::IngredienteRepository;
 // pub use endereco_loja_repository::EnderecoLojaRepository;

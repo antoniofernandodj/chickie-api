@@ -32,12 +32,12 @@ _(nenhum bug conhecido)_
 | 18 | **Pesquisa de lojas** | Novos endpoints `GET /api/lojas/pesquisar?termo=...`, `GET /api/lojas/{uuid}` e `GET /api/lojas/slug/{slug}` para busca pública de lojas. Segue arquitetura Handler → Usecase → Service → Repository. | 2026-04-05 |
 | 19 | **Campo pizza_mode na categoria** | `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model, repository, service, handlers criar/atualizar categoria. | 2026-04-07 |
 | 20 | **Listar pedidos por usuário** | Novo endpoint `GET /api/pedidos/meus` retorna todos os pedidos do usuário autenticado com hidratação completa (itens, partes, adicionais). Usa `buscar_completos_por_usuario` do repository. | 2026-04-07 |
+| 21 | **Atribuir entregador ao pedido** | Endpoints `PUT /api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` e `DELETE` para vincular/remover entregador. Migration `0005` adicionou `entregador_uuid` à tabela `pedidos`. Stack completa: model, repository, service, usecase, handlers. | 2026-04-07 |
 
 ## 📋 Funcionalidades Pendentes
 
 | # | Feature | Detalhe | Prioridade |
 |---|---------|---------|------------|
-| 5 | **Atribuir entregador ao pedido** | Sem endpoint para vincular entregador a um pedido. | Alta |
 | 7 | **Pagamentos** | Tabela e endpoints para registrar pagamentos. | Alta (futuro) |
 | 8 | **Notificações push** | Sistema de notificações para status do pedido. | Baixa (futuro) |
 | 9 | **CI/CD pipeline** | Linters, testes automatizados, deploy. | Média |
@@ -60,8 +60,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 7 | 14, 15, 16, 17, 18, 19, 20 |
-| 📋 Features | 7 | 5–11 |
+| ✅ Concluídas | 8 | 14, 15, 16, 17, 18, 19, 20, 21 |
+| 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 12 pendências ativas, 7 concluídas recentemente**
+**Total: 11 pendências ativas, 8 concluídas recentemente**
