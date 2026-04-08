@@ -48,10 +48,11 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
 
 /// Executa os arquivos de migração em ordem, dividindo em statements individuais
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    let migration_files: [&str; 3] = [
+    let migration_files: [&str; 4] = [
         "0001_criar_tabelas.sql",
         "0002_add_promocao_escopo.sql",
-        "0003_add_criado_por_lojas.sql"
+        "0003_add_criado_por_lojas.sql",
+        "0004_add_pizza_mode_categorias.sql"
     ];
 
     for migration_path in
