@@ -32,13 +32,13 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
 
 #[allow(unused)]
 pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
-    // let mode = std::env::var("MODE").unwrap_or_default();
-    // let is_dev = mode.eq_ignore_ascii_case("development");
+    let mode = std::env::var("MODE").unwrap_or_default();
+    let is_dev = mode.eq_ignore_ascii_case("development");
 
-    // if is_dev {
-    //     tracing::info!("🧹 MODE=DEVELOPMENT — limpando banco de dados antes de migrar");
-    //     drop_all_tables(pool).await?;
-    // }
+    if is_dev {
+        tracing::info!("🧹 MODE=DEVELOPMENT — limpando banco de dados antes de migrar");
+        drop_all_tables(pool).await?;
+    }
 
     tracing::info!("📦 Aplicando migrações...");
     run_migrations(pool).await?;
