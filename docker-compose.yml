@@ -15,6 +15,36 @@ services:
     networks:
       - mynetwork
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chickie-api
+    environment:
+      DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
+      APP_PORT: "3000"
+      RUST_LOG: info
+      JWT_SECRET: secret
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - mynetwork
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: chickie-worker
+    environment:
+      DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
+      RUST_LOG: info
+    depends_on:
+      - postgres
+    networks:
+      - mynetwork
+
 volumes:
   postgres_data:
 
