@@ -1,5 +1,7 @@
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
+
+#[allow(unused)]
 pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
     if let Err(e) = dotenvy::from_filename("database.secrets.env") {
         tracing::error!("⚠️ Aviso: Não foi possível carregar database.secrets.env: {}", e);
@@ -27,8 +29,8 @@ pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
     Ok(pool)
 }
 
-/// Aplica as migrações no banco de dados.
-/// Se `MODE == DEVELOPMENT`, dropa todas as tabelas antes de reaplicar.
+
+#[allow(unused)]
 pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
     let mode = std::env::var("MODE").unwrap_or_default();
     let is_dev = mode.eq_ignore_ascii_case("development");
@@ -81,7 +83,8 @@ async fn run_migrations(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Divide SQL em statements individuais, respeitando blocos $$ e ignorando comentários
+
+#[allow(unused)]
 fn split_sql_statements(sql: &str) -> Result<Vec<String>, String> {
     let mut statements = Vec::new();
     let mut current = String::new();
@@ -138,7 +141,8 @@ fn split_sql_statements(sql: &str) -> Result<Vec<String>, String> {
     Ok(statements)
 }
 
-/// Dropa todas as tabelas do schema public usando CASCADE
+
+#[allow(unused)]
 async fn drop_all_tables(pool: &PgPool) -> Result<(), String> {
     // Gera e executa DROP CASCADE para todas as tabelas
     let drop_sql = "
