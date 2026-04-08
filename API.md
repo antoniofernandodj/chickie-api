@@ -1070,6 +1070,47 @@ Authorization: Bearer <token>
 
 ---
 
+### 6.9 Buscar Pedido com Informações do Entregador
+
+```
+GET /api/pedidos/{pedido_uuid}/com-entregador
+Authorization: Bearer <token>
+```
+
+> Retorna o pedido completo com dados do entregador vinculado (nome, veículo, placa). Se nenhum entregador estiver atribuído, os campos retornam vazios e `entregador_uuid` é `null`.
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440010",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "entregador_uuid": "550e8400-e29b-41d4-a716-446655440099",
+  "status": "saiu_para_entrega",
+  "total": 65.90,
+  "subtotal": 55.90,
+  "taxa_entrega": 5.0,
+  "desconto": 0.0,
+  "forma_pagamento": "PIX",
+  "observacoes": "Sem cebola",
+  "tempo_estimado_min": 45,
+  "criado_em": "2026-04-04T00:00:00Z",
+  "atualizado_em": "2026-04-04T00:00:00Z",
+  "entregador_nome": "Carlos Entregador",
+  "veiculo": "Moto",
+  "placa": "ABC-1234"
+}
+```
+
+**Response `404`:**
+```json
+{
+  "error": "Pedido não encontrado"
+}
+```
+
+---
+
 ## 7. Marketing: Cupons, Avaliações e Promoções
 
 ### 7.1 Criar Cupom
@@ -2131,43 +2172,44 @@ DELETE /api/wipe
 | 21 | `PUT` | `/api/pedidos/{uuid}/status` | 🔒 | — |
 | 22 | `PUT` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
 | 23 | `DELETE` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
-| 24 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
-| 25 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
-| 26 | `GET` | `/api/marketing/cupons` | 🔒 | — |
-| 27 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
-| 28 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
-| 29 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 30 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 31 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 32 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 33 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 34 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 35 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
-| 36 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
-| 37 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 38 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 39 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 40 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 41 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 42 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 43 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 44 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 45 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 46 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 47 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 48 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 49 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 50 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 51 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 52 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 53 | `POST` | `/api/produtos/` | 🔒 | — |
-| 54 | `GET` | `/api/produtos/` | 🔒 | — |
-| 55 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
-| 56 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
-| 57 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 58 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 59 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 60 | `GET` | `/api/ok` | — | — |
-| 61 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 24 | `GET` | `/api/pedidos/{pedido_uuid}/com-entregador` | 🔒 | — |
+| 25 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
+| 26 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
+| 27 | `GET` | `/api/marketing/cupons` | 🔒 | — |
+| 28 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
+| 29 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
+| 30 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 31 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 32 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 33 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 34 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 35 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 36 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
+| 37 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
+| 38 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 39 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 40 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 41 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 42 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 43 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 44 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 45 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 46 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 47 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 48 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 49 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 50 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 51 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 52 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 53 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 54 | `POST` | `/api/produtos/` | 🔒 | — |
+| 55 | `GET` | `/api/produtos/` | 🔒 | — |
+| 56 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 57 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 58 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 59 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 60 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 61 | `GET` | `/api/ok` | — | — |
+| 62 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 62 endpoints**
+**Total: 63 endpoints**
