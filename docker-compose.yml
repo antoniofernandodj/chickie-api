@@ -45,6 +45,19 @@ services:
     networks:
       - mynetwork
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.scheduler
+    container_name: chickie-scheduler
+    environment:
+      DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
+      RUST_LOG: info
+    depends_on:
+      - postgres
+    networks:
+      - mynetwork
+
 volumes:
   postgres_data:
 

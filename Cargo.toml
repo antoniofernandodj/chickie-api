@@ -11,6 +11,10 @@ path = "src/main.rs"
 name = "chickie-worker"
 path = "src/worker.rs"
 
+[[bin]]
+name = "chickie-scheduler"
+path = "src/scheduler.rs"
+
 [dependencies]
 anyhow = "1.0.102"
 async-trait = "0.1.89"
