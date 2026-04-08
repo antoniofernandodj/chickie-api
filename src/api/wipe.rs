@@ -22,6 +22,7 @@ pub async fn wipe_database(
     // RESTART IDENTITY resets auto-increment sequences.
     sqlx::query(
         "TRUNCATE TABLE
+            schema_migrations,
             usuarios,
             lojas,
             clientes,

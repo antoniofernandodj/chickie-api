@@ -47,20 +47,40 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
     Ok(())
 }
 
-/// Executa os arquivos de migração em ordem, dividindo em statements individuais
+/// Executa os arquivos de migração em ordem, aplicando apenas as pendentes
 async fn run_migrations(pool: &PgPool) -> Result<(), String> {
-    let migration_files: [&str; 5] = [
+    // Cria a tabela de controle de migrações se não existir
+    create_migration_table(pool).await?;
+
+    // Busca a última migração aplicada
+    let last_applied = get_last_applied_migration(pool).await?;
+    tracing::info!("📋 Última migração aplicada: {:?}", last_applied);
+
+    let migration_files = [
         "0001_criar_tabelas.sql",
         "0002_add_promocao_escopo.sql",
         "0003_add_criado_por_lojas.sql",
         "0004_add_pizza_mode_categorias.sql",
-        "0005_add_entregador_uuid_pedidos.sql"
+        "0005_add_entregador_uuid_pedidos.sql",
     ];
 
-    for migration_path in
-        &migration_files.map(|f: &str| format!("migrations/{}", f))
-    {
-        let sql = match std::fs::read_to_string(migration_path) {
+    for filename in &migration_files {
+
+        let version = filename
+            .split('_')
+            .next()
+            .and_then(|s| s.parse::<u32>().ok())
+            .unwrap_or_default();
+
+        if let Some(last) = last_applied {
+            if version <= last {
+                tracing::info!("   ⏭️  {} (já aplicada)", filename);
+                continue;
+            }
+        }
+
+        let migration_path = format!("migrations/{}", filename);
+        let sql = match std::fs::read_to_string(&migration_path) {
             Ok(content) => content,
             Err(_) => match std::fs::read_to_string(format!("src/../{}", migration_path)) {
                 Ok(content) => content,
@@ -77,9 +97,56 @@ async fn run_migrations(pool: &PgPool) -> Result<(), String> {
                 .map_err(|e| format!("Falha no statement #{} em {}: {}", i + 1, migration_path, e))?;
         }
 
-        tracing::info!("   {} -> {} statements executados", migration_path, statements.len());
+        // Registra a migração como aplicada
+        record_migration(pool, version, filename).await?;
+
+        tracing::info!("   ✅ {} -> {} statements executados", migration_path, statements.len());
     }
 
+    Ok(())
+}
+
+/// Cria a tabela de controle de versões de migração
+async fn create_migration_table(pool: &PgPool) -> Result<(), String> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY,
+            filename TEXT NOT NULL,
+            applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        )"
+    )
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Falha ao criar tabela schema_migrations: {}", e))?;
+
+    tracing::info!("📊 Tabela schema_migrations verificada");
+    Ok(())
+}
+
+/// Retorna a versão da última migração aplicada
+async fn get_last_applied_migration(pool: &PgPool) -> Result<Option<u32>, String> {
+    let result = sqlx::query_scalar::<_, Option<i32>>(
+        "SELECT MAX(version) FROM schema_migrations"
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| format!("Falha ao buscar última migração: {}", e))?;
+
+    Ok(result.map(|v| v as u32))
+}
+
+/// Registra uma migração como aplicada
+async fn record_migration(pool: &PgPool, version: u32, filename: &str) -> Result<(), String> {
+    sqlx::query(
+        "INSERT INTO schema_migrations (version, filename) VALUES ($1, $2)"
+    )
+    .bind(version as i32)
+    .bind(filename)
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Falha ao registrar migração {}: {}", version, e))?;
+
+    tracing::info!("   📝 Migração {} registrada em schema_migrations", version);
     Ok(())
 }
 
