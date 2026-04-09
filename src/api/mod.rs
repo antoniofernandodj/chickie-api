@@ -141,6 +141,7 @@ pub use funcionario::{
 
 pub use entregador::{
     atualizar_entregador,
+    atualizar_disponibilidade_entregador,
     listar_entregadores,
     entregador_trocar_email_senha
 };

@@ -5,6 +5,7 @@ use crate::api::{
     listar_entregadores,
     atualizar_entregador,
     entregador_trocar_email_senha,
+    atualizar_disponibilidade_entregador,
 };
 
 pub fn entregador_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
@@ -12,4 +13,5 @@ pub fn entregador_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
         .route("/{loja_uuid}", get(listar_entregadores))
         .route("/{loja_uuid}/{uuid}", put(atualizar_entregador))
         .route("/{loja_uuid}/usuarios/{usuario_uuid}/credenciais", put(entregador_trocar_email_senha))
+        .route("/{loja_uuid}/{uuid}/disponibilidade", put(atualizar_disponibilidade_entregador))
 }
