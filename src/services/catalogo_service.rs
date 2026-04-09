@@ -183,6 +183,21 @@ impl CatalogoService {
         Ok(adicional)
     }
 
+    pub async fn deletar_adicional(
+        &self,
+        adicional_uuid: Uuid,
+        loja_uuid: Uuid,
+    ) -> Result<(), String> {
+        let adicional = self.adicional_repo.buscar_por_uuid(adicional_uuid).await?
+            .ok_or("Adicional não encontrado")?;
+
+        if adicional.loja_uuid != loja_uuid {
+            return Err("Adicional não pertence a esta loja".to_string());
+        }
+
+        self.adicional_repo.deletar(adicional_uuid).await
+    }
+
     pub async fn listar_categorias(
         &self,
         loja_uuid: Uuid,

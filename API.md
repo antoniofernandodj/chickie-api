@@ -1520,7 +1520,32 @@ Authorization: Bearer <token>
 
 ---
 
-### 8.6 Criar Categoria
+### 8.6 Deletar Adicional
+
+```
+DELETE /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+**Response `404` (adicional não encontrado):**
+```json
+{
+  "error": "Adicional não encontrado"
+}
+```
+
+**Response `400` (adicional não pertence à loja):**
+```json
+{
+  "error": "Adicional não pertence a esta loja"
+}
+```
+
+---
+
+### 8.7 Criar Categoria
 
 ```
 POST /api/catalogo/{loja_uuid}/categorias
@@ -1553,7 +1578,7 @@ Content-Type: application/json
 
 ---
 
-### 8.7 Listar Categorias
+### 8.8 Listar Categorias
 
 ```
 GET /api/catalogo/{loja_uuid}/categorias
@@ -1577,7 +1602,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 8.8 Atualizar Categoria
+### 8.9 Atualizar Categoria
 
 ```
 PUT /api/catalogo/{loja_uuid}/categorias/{uuid}
@@ -1610,7 +1635,7 @@ Content-Type: application/json
 
 ---
 
-### 8.9 Deletar Categoria
+### 8.10 Deletar Categoria
 
 ```
 DELETE /api/catalogo/{loja_uuid}/categorias/{uuid}
@@ -2233,30 +2258,31 @@ DELETE /api/wipe
 | 36 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
 | 37 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
 | 38 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
-| 39 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 40 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 41 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 42 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 43 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 44 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 45 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 46 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 47 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 48 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 49 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 50 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 51 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 52 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 53 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 54 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 55 | `POST` | `/api/produtos/` | 🔒 | — |
-| 56 | `GET` | `/api/produtos/` | 🔒 | — |
-| 57 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
-| 58 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
-| 59 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 60 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 61 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 62 | `GET` | `/api/ok` | — | — |
-| 63 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 39 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
+| 40 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 41 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 42 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 43 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 44 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 45 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 46 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 47 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 48 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 49 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 50 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 51 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 52 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 53 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 54 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 55 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 56 | `POST` | `/api/produtos/` | 🔒 | — |
+| 57 | `GET` | `/api/produtos/` | 🔒 | — |
+| 58 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 59 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 60 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 61 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 62 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 63 | `GET` | `/api/ok` | — | — |
+| 64 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 64 endpoints**
+**Total: 65 endpoints**

@@ -147,6 +147,7 @@ pub use entregador::{
 pub use catalogo::{
     criar_adicional,
     atualizar_adicional,
+    deletar_adicional,
     criar_categoria,
     atualizar_categoria,
     deletar_categoria,
