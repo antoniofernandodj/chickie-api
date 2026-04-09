@@ -289,6 +289,7 @@ Cada repositório implementa também:
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
 

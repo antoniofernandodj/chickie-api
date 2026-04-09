@@ -1,3 +1,4 @@
+mod atualizar_adicional;
 mod atualizar_categoria;
 mod criar_adicional;
 mod criar_categoria;
@@ -7,6 +8,7 @@ mod listar_adicionais_disponiveis;
 mod listar_categorias;
 mod marcar_indisponivel;
 
+pub use atualizar_adicional::atualizar_adicional;
 pub use atualizar_categoria::atualizar_categoria;
 pub use criar_adicional::criar_adicional;
 pub use criar_categoria::criar_categoria;

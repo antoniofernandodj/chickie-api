@@ -160,6 +160,29 @@ impl CatalogoService {
         self.adicional_repo.marcar_indisponivel(adicional_uuid).await
     }
 
+    pub async fn atualizar_adicional(
+        &self,
+        adicional_uuid: Uuid,
+        loja_uuid: Uuid,
+        nome: String,
+        descricao: String,
+        preco: Decimal,
+    ) -> Result<Adicional, String> {
+        let mut adicional = self.adicional_repo.buscar_por_uuid(adicional_uuid).await?
+            .ok_or("Adicional não encontrado")?;
+
+        if adicional.loja_uuid != loja_uuid {
+            return Err("Adicional não pertence a esta loja".to_string());
+        }
+
+        adicional.nome = nome;
+        adicional.descricao = descricao;
+        adicional.preco = preco;
+
+        self.adicional_repo.atualizar(adicional.clone()).await?;
+        Ok(adicional)
+    }
+
     pub async fn listar_categorias(
         &self,
         loja_uuid: Uuid,

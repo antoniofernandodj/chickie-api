@@ -194,6 +194,7 @@ Todos os endpoints vivem sob `/api`.
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais`   | Criar adicional        | ✅   |
 | `GET`  | `/api/catalogo/{loja_uuid}/adicionais`   | Listar todos adicionais| ✅   |
 | `GET`  | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar disponíveis | ✅ |
+| `PUT`  | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional | ✅ |
 | `PUT`  | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar indisponível | ✅ |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias`   | Criar categoria        | ✅   |
 | `GET`  | `/api/catalogo/{loja_uuid}/categorias`   | Listar categorias      | ✅   |
