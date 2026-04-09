@@ -27,8 +27,9 @@ impl AdicionalRepository {
         .map_err(|e| e.to_string())
     }
 
-    pub async fn marcar_indisponivel(&self, uuid: Uuid) -> Result<(), String> {
-        let result = sqlx::query("UPDATE adicionais SET disponivel = false WHERE uuid = $1")
+    pub async fn atualizar_disponibilidade(&self, uuid: Uuid, disponivel: bool) -> Result<(), String> {
+        let result = sqlx::query("UPDATE adicionais SET disponivel = $1 WHERE uuid = $2")
+            .bind(disponivel)
             .bind(uuid)
             .execute(self.pool())
             .await

@@ -290,7 +290,7 @@ Cada repositório implementa também:
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | Atualizar disponibilidade (true/false) |
 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Deletar adicional |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
 

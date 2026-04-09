@@ -1,27 +1,27 @@
 use std::sync::Arc;
 
-use axum::{Extension, extract::{Path, State}, response::IntoResponse, http::StatusCode};
+use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
     api::{dto::AppError, AppState},
     models::Usuario,
-    usecases::CatalogoUsecase
 };
 
-pub async fn marcar_indisponivel(
+#[derive(Deserialize)]
+pub struct AtualizarDisponibilidadeRequest {
+    pub disponivel: bool,
+}
+
+pub async fn atualizar_disponibilidade(
     State(state): State<Arc<AppState>>,
     Path((loja_uuid, adicional_uuid)): Path<(Uuid, Uuid)>,
-    Extension(usuario): Extension<Usuario>,
+    Extension(_): Extension<Usuario>,
+    Json(p): Json<AtualizarDisponibilidadeRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    let usecase = CatalogoUsecase::new(
-        state.catalogo_service.clone(),
-        loja_uuid,
-        usuario
-    );
-
-    usecase.marcar_adicional_indisponivel(adicional_uuid).await?;
+    state.catalogo_service.atualizar_disponibilidade(adicional_uuid, loja_uuid, p.disponivel).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

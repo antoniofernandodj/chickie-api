@@ -148,13 +148,13 @@ pub use catalogo::{
     criar_adicional,
     atualizar_adicional,
     deletar_adicional,
+    atualizar_disponibilidade,
     criar_categoria,
     atualizar_categoria,
     deletar_categoria,
     listar_adicionais,
     listar_adicionais_disponiveis,
     listar_categorias,
-    marcar_indisponivel
 };
 
 pub use endereco_entrega::{

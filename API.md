@@ -1509,14 +1509,38 @@ Content-Type: application/json
 
 ---
 
-### 8.5 Marcar Adicional como Indisponível
+### 8.5 Atualizar Disponibilidade do Adicional
 
 ```
-PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel
+PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade
 Authorization: Bearer <token>
+Content-Type: application/json
 ```
+
+**Request Body:**
+```json
+{
+  "disponivel": false
+}
+```
+
+> Envie `"disponivel": true` para tornar o adicional disponível novamente.
 
 **Response `204`:** No Content
+
+**Response `404` (adicional não encontrado):**
+```json
+{
+  "error": "Adicional não encontrado"
+}
+```
+
+**Response `400` (adicional não pertence à loja):**
+```json
+{
+  "error": "Adicional não pertence a esta loja"
+}
+```
 
 ---
 
@@ -2257,7 +2281,7 @@ DELETE /api/wipe
 | 35 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
 | 36 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
 | 37 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
-| 38 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | 🔒 | — |
+| 38 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | — |
 | 39 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
 | 40 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
 | 41 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |

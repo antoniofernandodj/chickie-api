@@ -101,13 +101,6 @@ impl CatalogoUsecase {
         self.catalogo_service.listar_adicionais_disponiveis(self.loja_uuid).await
     }
 
-    pub async fn marcar_adicional_indisponivel(
-        &self,
-        adicional_uuid: Uuid,
-    ) -> Result<(), String> {
-        self.catalogo_service.marcar_adicional_indisponivel(adicional_uuid).await
-    }
-
     pub async fn deletar_produto(&self, produto_uuid: Uuid) -> Result<(), String> {
         self.catalogo_service.deletar_produto(produto_uuid).await
     }
