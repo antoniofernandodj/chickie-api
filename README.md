@@ -137,6 +137,7 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/produtos/{uuid}` | Buscar produto por UUID | ✅ |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |
 | `DELETE` | `/api/produtos/{uuid}` | Deletar produto | ✅ |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | Atualizar disponibilidade | ✅ |
 | `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto (S3) | ✅ |
 
 ### Horários de Funcionamento (auth required)

@@ -285,4 +285,20 @@ impl CatalogoService {
         self.produto_repo.deletar(uuid).await
     }
 
+    pub async fn atualizar_disponibilidade_produto(
+        &self,
+        produto_uuid: Uuid,
+        loja_uuid: Uuid,
+        disponivel: bool,
+    ) -> Result<(), String> {
+        let produto = self.produto_repo.buscar_por_uuid(produto_uuid).await?
+            .ok_or("Produto não encontrado")?;
+
+        if produto.loja_uuid != loja_uuid {
+            return Err("Produto não pertence a esta loja".to_string());
+        }
+
+        self.produto_repo.atualizar_disponibilidade(produto_uuid, disponivel).await
+    }
+
 }

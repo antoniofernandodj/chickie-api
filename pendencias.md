@@ -28,7 +28,8 @@ _(nenhum bug conhecido)_
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
 | 15 | **Campos TIME com tipo correto** | `horario_abertura`/`horario_fechamento` (`loja`) e `abertura`/`fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. | 2026-04-05 |
 | 16 | **Endpoint minhas lojas** | `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. | 2026-04-05 |
-| 22 | **CRUD completo de adicionais** | Novo endpoint `PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` para editar nome, descrição e preço de adicional. Endpoint `DELETE` para deletar adicional. Segue arquitetura Handler → Service → Repository. | 2026-04-09 |
+| 22 | **CRUD completo de adicionais** | Novo endpoint `PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` para editar nome, descrição e preço de adicional. Endpoint `DELETE` para deletar adicional. Endpoint `PUT /.../disponibilidade` para toggle. Segue arquitetura Handler → Service → Repository. | 2026-04-09 |
+| 23 | **Disponibilidade de produto** | Novo endpoint `PUT /api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` para ativar/desativar produto via body `{ disponivel: bool }`. Segue arquitetura Handler → Service → Repository. | 2026-04-09 |
 | 17 | **Campos NUMERIC com tipo correto** | Todos os campos `f64`/`Option<f64>` mapeados para `NUMERIC` migrados para `rust_decimal::Decimal`. Afeta preço, nota, salario, taxa_entrega, valor_minimo, latitude/longitude, quantidade, total, subtotal, desconto em 10+ models. | 2026-04-05 |
 | 18 | **Pesquisa de lojas** | Novos endpoints `GET /api/lojas/pesquisar?termo=...`, `GET /api/lojas/{uuid}` e `GET /api/lojas/slug/{slug}` para busca pública de lojas. Segue arquitetura Handler → Usecase → Service → Repository. | 2026-04-05 |
 | 19 | **Campo pizza_mode na categoria** | `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model, repository, service, handlers criar/atualizar categoria. | 2026-04-07 |
@@ -61,8 +62,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 9 | 14, 15, 16, 17, 18, 19, 20, 21, 22 |
+| ✅ Concluídas | 10 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 9 concluídas recentemente**
+**Total: 11 pendências ativas, 10 concluídas recentemente**

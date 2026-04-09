@@ -234,7 +234,12 @@ Cada repositório implementa também:
 |--------|------|-----------|
 | `POST` | `/api/produtos/` | Criar produto |
 | `GET` | `/api/produtos/` | Listar produtos |
-| `PUT` | `/api/produtos/{uuid}` | Atualizar product |
+| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
+| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
+| `PUT` | `/api/produtos/{uuid}` | Atualizar produto |
+| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | Atualizar disponibilidade |
+| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto |
 
 #### Horários de Funcionamento (🔒)
 

@@ -2175,7 +2175,42 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.7 Subir Imagem do Produto
+### 12.7 Atualizar Disponibilidade do Produto
+
+```
+PUT /api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "disponivel": false
+}
+```
+
+> Envie `"disponivel": true` para tornar o produto disponível novamente.
+
+**Response `204`:** No Content
+
+**Response `404` (produto não encontrado):**
+```json
+{
+  "error": "Produto não encontrado"
+}
+```
+
+**Response `400` (produto não pertence à loja):**
+```json
+{
+  "error": "Produto não pertence a esta loja"
+}
+```
+
+---
+
+### 12.8 Subir Imagem do Produto
 
 ```
 POST /api/produtos/{uuid}/imagem
@@ -2305,8 +2340,9 @@ DELETE /api/wipe
 | 59 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
 | 60 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
 | 61 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 62 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 63 | `GET` | `/api/ok` | — | — |
-| 64 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 62 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
+| 63 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 64 | `GET` | `/api/ok` | — | — |
+| 65 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 65 endpoints**
+**Total: 66 endpoints**

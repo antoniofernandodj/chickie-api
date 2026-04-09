@@ -9,6 +9,7 @@ use crate::api::{
     atualizar_produto,
     deletar_produto,
     subir_imagem_produto,
+    atualizar_disponibilidade_produto,
 };
 
 pub fn produto_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
@@ -20,4 +21,5 @@ pub fn produto_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
         .route("/{uuid}", put(atualizar_produto))
         .route("/{uuid}", delete(deletar_produto))
         .route("/{uuid}/imagem", post(subir_imagem_produto))
+        .route("/{loja_uuid}/{produto_uuid}/disponibilidade", put(atualizar_disponibilidade_produto))
 }

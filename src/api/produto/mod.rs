@@ -1,3 +1,4 @@
+mod atualizar_disponibilidade;
 mod atualizar_produto;
 mod buscar_produto;
 mod criar_produto;
@@ -6,6 +7,7 @@ mod listar_produtos;
 mod listar_produtos_por_categoria;
 mod subir_imagem;
 
+pub use atualizar_disponibilidade::atualizar_disponibilidade_produto;
 pub use atualizar_produto::atualizar_produto;
 pub use buscar_produto::buscar_produto_por_uuid;
 pub use criar_produto::criar_produto;

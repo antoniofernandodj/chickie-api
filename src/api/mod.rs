@@ -91,7 +91,8 @@ pub use produto::{
     buscar_produto_por_uuid,
     deletar_produto,
     atualizar_produto,
-    subir_imagem_produto
+    subir_imagem_produto,
+    atualizar_disponibilidade_produto
 };
 
 pub use cupom::{

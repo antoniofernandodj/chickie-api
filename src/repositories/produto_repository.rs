@@ -42,6 +42,21 @@ impl ProdutoRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn atualizar_disponibilidade(&self, uuid: Uuid, disponivel: bool) -> Result<(), String> {
+        let result = sqlx::query("UPDATE produtos SET disponivel = $1 WHERE uuid = $2")
+            .bind(disponivel)
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        if result.rows_affected() == 0 {
+            Err("Produto não encontrado".to_string())
+        } else {
+            Ok(())
+        }
+    }
 }
 
 #[async_trait::async_trait]
