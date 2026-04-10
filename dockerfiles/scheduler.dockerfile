@@ -23,6 +23,7 @@ RUN rm -rf src target/release/chickie-scheduler target/release/chickie-scheduler
 
 # Build real
 COPY src ./src
+COPY scheduler.toml ./scheduler.toml
 COPY database.secrets.env ./database.secrets.env
 ENV CARGO_INCREMENTAL=0
 RUN touch src/scheduler.rs

@@ -36,12 +36,12 @@ fn get_config_path() -> String {
     }
 
     // 2. Se estiver em Docker, usa o path padrão do container
-    if std::path::Path::new("/app/worker.toml").exists() {
-        return "/app/worker.toml".to_string();
+    if std::path::Path::new("/app/scheduler.toml").exists() {
+        return "/app/scheduler.toml".to_string();
     }
 
     // 3. Fallback para desenvolvimento local
-    "worker.toml".to_string()
+    "scheduler.toml".to_string()
 }
 
 fn load_config(path: &str) -> Result<Config> {

@@ -23,7 +23,6 @@ RUN rm -rf src target/release/chickie-worker target/release/chickie-worker.d
 
 # Build real
 COPY src ./src
-COPY worker.toml ./worker.toml
 COPY database.secrets.env ./database.secrets.env
 ENV CARGO_INCREMENTAL=0
 RUN touch src/worker.rs
