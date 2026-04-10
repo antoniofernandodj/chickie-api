@@ -23,6 +23,7 @@ RUN rm -rf src target/release/chickie-worker target/release/chickie-worker.d
 
 # Build real
 COPY src ./src
+COPY worker.toml ./worker.toml
 COPY database.secrets.env ./database.secrets.env
 ENV CARGO_INCREMENTAL=0
 RUN touch src/worker.rs
@@ -45,6 +46,7 @@ RUN useradd -r -u 1000 appuser
 COPY --from=builder /app/target/release/chickie-worker /app/chickie-worker
 COPY --from=builder /app/migrations /app/migrations
 COPY --from=builder /app/database.secrets.env /app/database.secrets.env
+COPY --from=builder /app/worker.toml /app/worker.toml
 
 RUN chown -R appuser:appuser /app
 USER appuser
