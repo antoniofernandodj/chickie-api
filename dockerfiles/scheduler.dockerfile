@@ -26,7 +26,6 @@ COPY src ./src
 COPY scheduler.toml ./scheduler.toml
 COPY database.secrets.env ./database.secrets.env
 ENV CARGO_INCREMENTAL=0
-RUN touch src/scheduler.rs
 RUN cargo build --release --bin chickie-scheduler
 
 # ============================================================
@@ -45,6 +44,7 @@ RUN useradd -r -u 1000 appuser
 
 COPY --from=builder /app/target/release/chickie-scheduler /app/chickie-scheduler
 COPY --from=builder /app/migrations /app/migrations
+COPY --from=builder /app/scheduler.toml /app/scheduler.toml
 COPY --from=builder /app/database.secrets.env /app/database.secrets.env
 
 RUN chown -R appuser:appuser /app
