@@ -2,7 +2,7 @@ use axum::{Extension, Json, extract::State};
 use serde_json::json;
 use std::sync::Arc;
 
-use crate::api::{AppState, dto::AppError};
+use crate::api_handlers::{AppState, dto::AppError};
 use crate::models::Usuario;
 use crate::repositories::Repository;
 

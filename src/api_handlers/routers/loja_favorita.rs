@@ -1,14 +1,14 @@
 use axum::Router;
 use axum::routing::{get, post, delete};
 
-use crate::api::{
+use crate::api_handlers::{
     adicionar_favorita,
     remover_favorita,
     listar_minhas_favoritas,
     verificar_favorita,
 };
 
-pub fn loja_favorita_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
+pub fn loja_favorita_routes() -> Router<std::sync::Arc<crate::api_handlers::AppState>> {
     Router::new()
         .route("/{loja_uuid}", post(adicionar_favorita))
         .route("/{loja_uuid}", delete(remover_favorita))

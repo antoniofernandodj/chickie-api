@@ -6,7 +6,7 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    api::{
+    api_handlers::{
         dto::{AppError, AvaliarProdutoRequest},
         AppState
     },

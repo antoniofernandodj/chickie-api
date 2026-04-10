@@ -4,7 +4,7 @@ use axum::{Json, extract::{Path, State, Extension}, response::IntoResponse};
 use uuid::Uuid;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
     models::Usuario,
     usecases::AdicionarLojaFavoritaUsecase
 };

@@ -5,7 +5,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
     models::Usuario,
 };
 

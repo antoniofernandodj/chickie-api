@@ -3,7 +3,7 @@ use uuid::Uuid;
 use std::sync::Arc;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
     models::Usuario,
     usecases::MarketingUsecase
 };

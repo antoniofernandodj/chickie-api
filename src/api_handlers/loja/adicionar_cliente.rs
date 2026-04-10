@@ -4,7 +4,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
-    api::{AppState, auth::AdminPermission, dto::AppError},
+    api_handlers::{AppState, auth::AdminPermission, dto::AppError},
 };
 
 #[derive(Deserialize)]

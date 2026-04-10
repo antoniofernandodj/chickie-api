@@ -4,8 +4,8 @@ use uuid::Uuid;
 use std::sync::Arc;
 use crate::usecases::{AtualizarProdutoRequest, CatalogoUsecase};
 use crate::models::Usuario;
-use crate::api::dto::AppError;
-use crate::api::AppState;
+use crate::api_handlers::dto::AppError;
+use crate::api_handlers::AppState;
 
 pub async fn atualizar_produto(
     State(state): State<Arc<AppState>>,

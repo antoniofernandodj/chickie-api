@@ -7,8 +7,8 @@ use serde::Serialize;
 use std::sync::Arc;
 
 use crate::{
-    api::dto::AppError,
-    api::AppState,
+    api_handlers::dto::AppError,
+    api_handlers::AppState,
     usecases::LojaUsecase
 };
 

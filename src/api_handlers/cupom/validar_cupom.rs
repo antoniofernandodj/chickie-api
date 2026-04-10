@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 
 use std::sync::Arc;
-use crate::{api::{AppState, dto::AppError}, models::Usuario};
+use crate::{api_handlers::{AppState, dto::AppError}, models::Usuario};
 
 
 pub async fn validar_cupom(

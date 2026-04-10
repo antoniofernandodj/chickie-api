@@ -6,8 +6,8 @@ use axum::{
 
 
 use std::sync::Arc;
-use crate::{api::dto::AppError, repositories::Repository};
-use crate::api::AppState;
+use crate::{api_handlers::dto::AppError, repositories::Repository};
+use crate::api_handlers::AppState;
 
 
 pub async fn listar_lojas(

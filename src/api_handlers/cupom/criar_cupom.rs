@@ -5,7 +5,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 use std::sync::Arc;
 use rust_decimal::Decimal;
-use crate::{api::{AppState, dto::AppError}, models::Usuario};
+use crate::{api_handlers::{AppState, dto::AppError}, models::Usuario};
 
 
 #[derive(Deserialize)]

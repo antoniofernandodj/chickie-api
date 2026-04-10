@@ -2,8 +2,8 @@ use axum::{Extension, Json, extract::State, response::IntoResponse};
 use std::sync::Arc;
 use crate::usecases::{CatalogoUsecase, CreateProdutoRequest};
 use crate::models::Usuario;
-use crate::api::dto::AppError;
-use crate::api::AppState;
+use crate::api_handlers::dto::AppError;
+use crate::api_handlers::AppState;
 
 pub async fn criar_produto(
     State(state): State<Arc<AppState>>,

@@ -1,9 +1,9 @@
 use axum::{extract::State, response::IntoResponse, Json};
 use std::sync::Arc;
 
-use crate::api::dto::{DisponivelResponse, VerificarEmailRequest};
-use crate::api::dto::AppError;
-use crate::api::AppState;
+use crate::api_handlers::dto::{DisponivelResponse, VerificarEmailRequest};
+use crate::api_handlers::dto::AppError;
+use crate::api_handlers::AppState;
 
 pub async fn verificar_email(
     State(state): State<Arc<AppState>>,

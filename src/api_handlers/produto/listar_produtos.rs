@@ -1,8 +1,8 @@
 use axum::{Extension, Json, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::{api::dto::AppError, models::{self, Usuario}, usecases::CatalogoUsecase};
-use crate::api::AppState;
+use crate::{api_handlers::dto::AppError, models::{self, Usuario}, usecases::CatalogoUsecase};
+use crate::api_handlers::AppState;
 
 
 pub async fn listar_produtos(

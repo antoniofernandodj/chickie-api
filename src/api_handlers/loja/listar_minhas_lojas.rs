@@ -5,7 +5,7 @@ use axum::{
 };
 use std::sync::Arc;
 use crate::{
-    api::{AppState, auth::AdminPermission, dto::AppError},
+    api_handlers::{AppState, auth::AdminPermission, dto::AppError},
 };
 
 /// Lista todas as lojas criadas pelo admin autenticado

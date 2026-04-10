@@ -2,7 +2,7 @@ use axum::{Json, extract::State, response::IntoResponse};
 use std::sync::Arc;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
 };
 
 pub async fn listar_lojas_admin(

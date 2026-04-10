@@ -1,13 +1,13 @@
 use axum::Router;
 use axum::routing::{get, put};
 
-use crate::api::{
+use crate::api_handlers::{
     listar_funcionarios,
     atualizar_funcionario,
     funcionario_trocar_email_senha,
 };
 
-pub fn funcionario_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
+pub fn funcionario_routes() -> Router<std::sync::Arc<crate::api_handlers::AppState>> {
     Router::new()
         .route("/{loja_uuid}", get(listar_funcionarios))
         .route("/{loja_uuid}/{uuid}", put(atualizar_funcionario))

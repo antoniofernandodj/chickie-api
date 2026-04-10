@@ -5,8 +5,8 @@ use axum::{
 };
 
 use std::sync::Arc;
-use crate::{api::{CreateLojaRequest, auth::AdminPermission, dto::AppError}, models::{TipoCalculoPedido}};
-use crate::api::AppState;
+use crate::{api_handlers::{CreateLojaRequest, auth::AdminPermission, dto::AppError}, models::{TipoCalculoPedido}};
+use crate::api_handlers::AppState;
 
 
 pub async fn criar_loja(

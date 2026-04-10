@@ -1,8 +1,8 @@
 use axum::{Router, middleware::from_fn_with_state, routing::{get, put, delete, post}};
 use std::sync::Arc;
 
-use crate::api::{AppState, auth_middleware};
-use crate::api::{
+use crate::api_handlers::{AppState, auth_middleware};
+use crate::api_handlers::{
     criar_pedido,
     listar_pedidos,
     listar_por_loja,

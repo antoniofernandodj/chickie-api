@@ -22,7 +22,7 @@ use std::sync::Arc;
 
 use axum::{Router, middleware::from_fn_with_state, routing::get};
 
-use crate::api::{AppState, auth_middleware};
+use crate::api_handlers::{AppState, auth_middleware};
 
 pub use auth::auth_routes;
 pub use loja::loja_routes;

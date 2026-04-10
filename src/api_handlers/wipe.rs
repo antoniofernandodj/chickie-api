@@ -5,7 +5,7 @@ use serde_json::json;
 use sqlx::PgPool;
 use tracing::info;
 
-use crate::api::AppState;
+use crate::api_handlers::AppState;
 
 /// ⚠️ **DEVELOPMENT ONLY** — Wipes ALL data from the database.
 /// Must be removed before production deployment.

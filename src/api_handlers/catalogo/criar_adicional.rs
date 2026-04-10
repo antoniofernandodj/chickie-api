@@ -5,7 +5,7 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
     models::Usuario
 };
 

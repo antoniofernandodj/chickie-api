@@ -3,7 +3,7 @@ use axum::{
     Json
 };
 use std::sync::Arc;
-use crate::{api::{AppState, dto::AppError}, models, repositories::Repository};
+use crate::{api_handlers::{AppState, dto::AppError}, models, repositories::Repository};
 
 
 pub async fn listar_usuarios(

@@ -1,8 +1,8 @@
 use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put, delete}};
 use std::sync::Arc;
 
-use crate::api::{AppState, auth_middleware};
-use crate::api::{
+use crate::api_handlers::{AppState, auth_middleware};
+use crate::api_handlers::{
     criar_cupom,
     validar_cupom,
     listar_cupons,

@@ -4,7 +4,7 @@ use axum::{
     Json
 };
 use std::sync::Arc;
-use crate::{api::{AppState, CreateUsuarioRequest, dto::AppError}};
+use crate::{api_handlers::{AppState, CreateUsuarioRequest, dto::AppError}};
 
 
 pub async fn criar_usuario(

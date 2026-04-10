@@ -1,7 +1,7 @@
 use axum::Router;
 use axum::routing::{get, post, put, delete};
 
-use crate::api::{
+use crate::api_handlers::{
     criar_produto,
     listar_produtos,
     listar_produtos_por_categoria,
@@ -12,7 +12,7 @@ use crate::api::{
     atualizar_disponibilidade_produto,
 };
 
-pub fn produto_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
+pub fn produto_routes() -> Router<std::sync::Arc<crate::api_handlers::AppState>> {
     Router::new()
         .route("/", post(criar_produto))
         .route("/listar/{loja_uuid}", get(listar_produtos))

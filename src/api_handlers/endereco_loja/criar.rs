@@ -4,7 +4,7 @@ use uuid::Uuid;
 use std::sync::Arc;
 use rust_decimal::Decimal;
 
-use crate::{api::{dto::AppError, AppState}, models::{EnderecoLoja, Usuario}, usecases::AdminUsecase};
+use crate::{api_handlers::{dto::AppError, AppState}, models::{EnderecoLoja, Usuario}, usecases::AdminUsecase};
 
 #[derive(Deserialize)]
 pub struct CriarEnderecoLojaRequest {

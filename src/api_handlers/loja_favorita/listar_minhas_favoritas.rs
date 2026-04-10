@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{Json, extract::{State, Extension}, response::IntoResponse};
 
 use crate::{
-    api::{dto::AppError, AppState},
+    api_handlers::{dto::AppError, AppState},
     models::Usuario,
     usecases::ListarLojasFavoritasUsecase
 };

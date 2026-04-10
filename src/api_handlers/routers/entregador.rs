@@ -1,14 +1,14 @@
 use axum::Router;
 use axum::routing::{get, put};
 
-use crate::api::{
+use crate::api_handlers::{
     listar_entregadores,
     atualizar_entregador,
     entregador_trocar_email_senha,
     atualizar_disponibilidade_entregador,
 };
 
-pub fn entregador_routes() -> Router<std::sync::Arc<crate::api::AppState>> {
+pub fn entregador_routes() -> Router<std::sync::Arc<crate::api_handlers::AppState>> {
     Router::new()
         .route("/{loja_uuid}", get(listar_entregadores))
         .route("/{loja_uuid}/{uuid}", put(atualizar_entregador))

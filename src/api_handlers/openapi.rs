@@ -2,7 +2,7 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 use axum::Router;
 use std::sync::Arc;
-use crate::api::AppState;
+use crate::api_handlers::AppState;
 
 use crate::models::{
     Usuario, Loja, Pedido, Produto, Cupom, Promocao, 
@@ -13,7 +13,7 @@ use crate::models::{
     EnderecoLoja, StatusCupom, UsoCupom, TipoEscopoPromocao,
     TipoCalculoPedido, ClasseUsuario,
 };
-use crate::api::dto::{
+use crate::api_handlers::dto::{
     CreateUsuarioRequest, CreateLojaRequest, 
     LoginRequest, AvaliarLojaRequest, AvaliarProdutoRequest,
     Claims,

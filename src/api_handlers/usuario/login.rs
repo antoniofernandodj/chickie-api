@@ -1,7 +1,7 @@
 use axum::{Json, extract::State, response::IntoResponse};
 use serde_json::json;
 use std::sync::Arc;
-use crate::api::{AppState, create_jwt, dto::{AppError, LoginRequest}};
+use crate::api_handlers::{AppState, create_jwt, dto::{AppError, LoginRequest}};
 
 pub async fn login(
     State(state): State<Arc<AppState>>,

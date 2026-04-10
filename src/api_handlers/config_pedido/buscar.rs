@@ -2,7 +2,7 @@ use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
 use uuid::Uuid;
 use std::sync::Arc;
 
-use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
+use crate::{api_handlers::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
 pub async fn buscar_config_pedido(
     State(state): State<Arc<AppState>>,

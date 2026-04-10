@@ -1,6 +1,6 @@
 use axum::{Router, routing::get};
 
-use crate::api::{
+use crate::api_handlers::{
     listar_lojas,
     pesquisar_lojas,
     buscar_loja,
@@ -8,7 +8,7 @@ use crate::api::{
     verificar_slug_disponivel,
 };
 
-pub fn loja_routes() -> axum::Router<std::sync::Arc<crate::api::AppState>> {
+pub fn loja_routes() -> axum::Router<std::sync::Arc<crate::api_handlers::AppState>> {
     Router::new()
         .route("/", get(listar_lojas))
         .route("/pesquisar", get(pesquisar_lojas))
