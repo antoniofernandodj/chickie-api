@@ -7,8 +7,8 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Cache de dependências
 COPY Cargo.toml Cargo.lock ./

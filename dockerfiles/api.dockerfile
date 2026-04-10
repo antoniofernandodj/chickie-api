@@ -7,13 +7,12 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Cache de dependências
 COPY Cargo.toml Cargo.lock ./
 COPY migrations ./migrations
-
 RUN mkdir -p src && \
     echo "fn main() {}" > src/main.rs && \
     echo "fn main() {}" > src/worker.rs && \
