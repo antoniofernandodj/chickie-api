@@ -2,7 +2,6 @@ use super::CronJob;
 use anyhow::Result;
 use async_trait::async_trait;
 use tracing::info;
-
 pub struct CleanupJob;
 
 #[async_trait]
