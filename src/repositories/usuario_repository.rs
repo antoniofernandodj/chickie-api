@@ -33,6 +33,15 @@ impl UsuarioRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query("UPDATE usuarios SET passou_pelo_primeiro_acesso = true WHERE uuid = $1")
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -43,7 +52,7 @@ impl Repository<Usuario> for UsuarioRepository {
 
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, celular, classe)
+            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, celular, classe, modo_de_cadastro)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ")
         .bind(&item.uuid)
@@ -53,6 +62,7 @@ impl Repository<Usuario> for UsuarioRepository {
         .bind(&item.senha_hash)
         .bind(&item.celular)
         .bind(&item.classe)
+        .bind(&item.modo_de_cadastro)
         .execute(self.pool())
         .await
         .map_err(|e| e.to_string())?;

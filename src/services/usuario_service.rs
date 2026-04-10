@@ -60,7 +60,7 @@ impl UsuarioService {
     ) -> Result<Usuario, String> {
 
         // 1. Busca o usuário por email, username ou celular
-        let usuario = if let Some(u) = self.repo.buscar_por_email(&identifier).await? {
+        let mut usuario = if let Some(u) = self.repo.buscar_por_email(&identifier).await? {
             u
         } else if let Some(u) = self.repo.buscar_por_username(&identifier).await? {
             u
@@ -78,7 +78,13 @@ impl UsuarioService {
             return Err("Senha incorreta".to_string());
         }
 
-        // 3. Retorna o usuário se tudo estiver correto
+        // 3. Se é o primeiro acesso, marcar como true
+        if !usuario.passou_pelo_primeiro_acesso {
+            self.repo.marcar_primeiro_acesso(usuario.uuid).await?;
+            usuario.passou_pelo_primeiro_acesso = true;
+        }
+
+        // 4. Retorna o usuário se tudo estiver correto
         Ok(usuario)
     }
 
