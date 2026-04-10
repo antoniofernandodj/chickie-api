@@ -151,9 +151,17 @@ async fn main() -> Result<()> {
 
     log_info("🔧 Chickie Scheduler iniciando...");
     log_info(&format!("📋 PID: {}", std::process::id()));
+    log_info(&format!("📂 Executável: {:?}", std::env::current_exe().unwrap_or_default()));
+    log_info(&format!("👤 Usuário: {:?}", env::var("USER").unwrap_or_else(|_| "desconhecido".to_string())));
     
     let current_dir = std::env::current_dir().unwrap_or_default();
     log_info(&format!("📁 Working directory: {}", current_dir.display()));
+    
+    // Lista arquivos no diretório atual para conferir se o scheduler.toml está lá
+    if let Ok(entries) = std::fs::read_dir(&current_dir) {
+        let files: Vec<_> = entries.filter_map(|e| e.ok()).map(|e| e.file_name().to_string_lossy().into_owned()).collect();
+        log_info(&format!("🗄️  Arquivos em {}: {:?}", current_dir.display(), files));
+    }
 
     let config_path = get_config_path();
     log_info(&format!("📄 Carregando config de: {}", config_path));

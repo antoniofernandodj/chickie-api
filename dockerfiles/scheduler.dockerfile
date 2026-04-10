@@ -59,4 +59,4 @@ EXPOSE 8080
 #  CMD curl -f http://localhost:8080/health || exit 1
 
 # CMD ["/app/chickie-scheduler"]
-CMD ["sh", "-c", "echo '🚀 Starting binary...' && ls -la /app/chickie-scheduler && exec /app/chickie-scheduler"]
+CMD ["sh", "-c", "echo '🚀 Starting binary...'; ls -la /app/chickie-scheduler; ldd /app/chickie-scheduler; /app/chickie-scheduler 2>&1 || { echo \"\n❌ BINARY CRASHED WITH EXIT CODE $? \"; echo \"⏳ Keeping container alive for 120s for log inspection...\"; sleep 120; exit 1; }"]
