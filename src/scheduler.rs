@@ -1,206 +1,163 @@
-mod models;
-mod database;
-mod utils;
-mod repositories;
-mod services;
-mod usecases;
+mod jobs;
 
+use anyhow::Result;
+use chrono::Utc;
+use cron::Schedule;
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::env;
+use std::str::FromStr; // ← Necessário para Schedule::from_str
+use futures::future::join_all; // ← Para aguardar todas as tasks
 use std::sync::Arc;
-use tracing::{info, error, warn};
-use tracing_subscriber::fmt;
-use tokio::time::{Duration, interval};
-use sqlx::PgPool;
+use tokio::signal;
+use tokio::time::{sleep, Duration};
+use tracing::{info, error, Level, warn};
+use tracing_subscriber::FmtSubscriber;
 
-#[tokio::main]
-async fn main() {
-    // Initialize logging
-    fmt()
-        .with_target(false)
-        .with_level(true)
-        .init();
 
-    info!("⏰ [SCHEDULER] Chickie scheduler starting...");
-    info!("⏰ [SCHEDULER] PID: {}", std::process::id());
+use jobs::{CronJob, backup::BackupJob, cleanup::CleanupJob, health_check::HealthCheckJob};
 
-    let pool = Arc::new(
-        database::criar_pool()
-            .await
-            .expect("Failed to create database pool")
-    );
+#[derive(Debug, Deserialize)]
+struct JobSchedule {
+    name: String,
+    schedule: String,
+    enabled: Option<bool>,
+}
 
-    // Apply migrations (same as API)
-    database::aplicar_migrations(&pool)
-        .await
-        .expect("Failed to apply migrations");
+#[derive(Debug, Deserialize)]
+struct Config {
+    jobs: Vec<JobSchedule>,
+}
 
-    info!("✅ [SCHEDULER] Database initialized, starting scheduled tasks...");
+fn get_config_path() -> String {
+    // 1. Prioridade máxima: variável de ambiente CONFIG_PATH
+    if let Ok(path) = env::var("CONFIG_PATH") {
+        return path;
+    }
+    
+    // 2. Se estiver em Docker, usa o path padrão do container
+    if std::path::Path::new("/app/config.toml").exists() {
+        return "/app/config.toml".to_string();
+    }
+    
+    // 3. Fallback para desenvolvimento local
+    "config.toml".to_string()
+}
 
-    // Run different tasks at different intervals
-    let pool_clone = pool.clone();
-    tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(60)); // Every 1 minute
-        loop {
-            interval.tick().await;
-            info!("⏰ [SCHEDULER] Running frequent tasks (1 min interval)...");
-            if let Err(e) = run_frequent_tasks(&pool_clone).await {
-                error!("❌ [SCHEDULER] Frequent tasks failed: {}", e);
-            }
-        }
-    });
+fn load_config(path: &str) -> Result<Config> {
+    let content = std::fs::read_to_string(path)?;
+    let config: Config = toml::from_str(&content)?;
+    Ok(config)
+}
 
-    let pool_clone = pool.clone();
-    tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(300)); // Every 5 minutes
-        loop {
-            interval.tick().await;
-            info!("⏰ [SCHEDULER] Running periodic tasks (5 min interval)...");
-            if let Err(e) = run_periodic_tasks(&pool_clone).await {
-                error!("❌ [SCHEDULER] Periodic tasks failed: {}", e);
-            }
-        }
-    });
+fn create_job_registry() -> HashMap<&'static str, Arc<dyn CronJob>> {
+    let mut registry: HashMap<&'static str, Arc<dyn CronJob>> = HashMap::new();
+    registry.insert("backup_job", Arc::new(BackupJob));
+    registry.insert("cleanup_job", Arc::new(CleanupJob));
+    registry.insert("health_check_job", Arc::new(HealthCheckJob));
+    registry
+}
 
-    let pool_clone = pool.clone();
-    tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(3600)); // Every 1 hour
-        loop {
-            interval.tick().await;
-            info!("⏰ [SCHEDULER] Running hourly tasks...");
-            if let Err(e) = run_hourly_tasks(&pool_clone).await {
-                error!("❌ [SCHEDULER] Hourly tasks failed: {}", e);
-            }
-        }
-    });
+async fn run_scheduled_job(
+    job: Arc<dyn CronJob>,
+    schedule: Schedule,
+) -> Result<()> {
+    let job_name = job.name();
+    info!("⏰ Job '{}' registrado com schedule: {}", job_name, schedule);
 
-    let pool_clone = pool.clone();
-    tokio::spawn(async move {
-        let mut interval = interval(Duration::from_secs(86400)); // Every 24 hours
-        loop {
-            interval.tick().await;
-            info!("⏰ [SCHEDULER] Running daily tasks...");
-            if let Err(e) = run_daily_tasks(&pool_clone).await {
-                error!("❌ [SCHEDULER] Daily tasks failed: {}", e);
-            }
-        }
-    });
-
-    // Keep the main task alive
     loop {
-        tokio::time::sleep(Duration::from_secs(3600)).await;
+        let now = Utc::now();
+        
+        // ✅ CORREÇÃO: usa `after()` que é público, ou `upcoming().next()`
+        let next = schedule
+            .upcoming(Utc)
+            .next()
+            .expect("Erro ao calcular próxima execução");
+        
+        let duration = (next - now)
+            .to_std()
+            .unwrap_or(Duration::from_secs(0));
+
+        info!("⏳ Job '{}' aguardando até {} (em {:?})", job_name, next, duration);
+        sleep(duration).await;
+
+        info!("🚀 Executando job '{}'...", job_name);
+        
+        let start = std::time::Instant::now();
+        match job.execute().await {
+            Ok(_) => {
+                let elapsed = start.elapsed();
+                info!("✅ Job '{}' concluído em {:?}", job_name, elapsed);
+            }
+            Err(e) => {
+                error!("❌ Job '{}' falhou: {}", job_name, e);
+            }
+        }
     }
 }
 
-/// Frequent tasks (every 1 minute)
-async fn run_frequent_tasks(_pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement frequent tasks here
-    // Examples:
-    // - Check for order timeouts
-    // - Update real-time statistics
-    // - Process webhook events
-    
-    info!("📋 [SCHEDULER] Frequent tasks completed");
-    Ok(())
-}
+#[tokio::main]
+async fn main() -> Result<()> {
+    FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .with_env_filter("chickie_scheduler=info") // ← Ajustado para nome do seu crate
+        .init();
 
-/// Periodic tasks (every 5 minutes)
-async fn run_periodic_tasks(_pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement periodic tasks here
-    // Examples:
-    // - Sync order statuses
-    // - Update delivery ETAs
-    // - Check store availability
-    
-    info!("📋 [SCHEDULER] Periodic tasks completed");
-    Ok(())
-}
+    info!("🔧 Rust Cron Scheduler iniciando...");
 
-/// Hourly tasks (every 1 hour)
-async fn run_hourly_tasks(_pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement hourly tasks here
-    // Examples:
-    // - Aggregate analytics
-    // - Send batch notifications
-    // - Clean up temporary data
-    // - Update store ratings
-    
-    info!("📋 [SCHEDULER] Hourly tasks completed");
-    Ok(())
-}
+    let config_path = get_config_path();
+    info!("🔧 Chickie Scheduler iniciando...");
+    info!("📄 Carregando config de: {}", config_path);
 
-/// Daily tasks (every 24 hours)
-async fn run_daily_tasks(pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement daily tasks here
-    // Examples:
-    // - Soft-delete expired accounts (30 days after a_remover)
-    // - Generate daily reports
-    // - Archive old data
-    // - Cleanup expired sessions
-    // - Send daily summaries
-    
-    info!("🗑️ [SCHEDULER] Processing soft-deletes...");
-    process_soft_deletes(pool).await?;
-    
-    info!("📊 [SCHEDULER] Generating daily reports...");
-    generate_daily_reports(pool).await?;
-    
-    info!("📋 [SCHEDULER] Daily tasks completed");
-    Ok(())
-}
+    let config = match load_config(&config_path) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("Falha crítica ao carregar config '{}': {}", config_path, e);
+            return Ok(());
+        }
+    };
 
-/// Process soft-deletes for users and stores
-async fn process_soft_deletes(_pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement soft-delete processing
-    // According to QWEN.md:
-    // - Users marked with a_remover = now() + 1 month
-    // - After 30 days, mark excluida = true
-    
-    info!("🗑️ [SCHEDULER] Checking for expired soft-deletes...");
-    
-    // Example implementation structure:
-    // 
-    // // Soft-delete users (30 days after a_remover)
-    // let result = sqlx::query!(
-    //     r#"
-    //     UPDATE usuarios 
-    //     SET excluida = true, atualizado_em = NOW()
-    //     WHERE a_remover IS NOT NULL 
-    //     AND a_remover <= NOW() - INTERVAL '30 days'
-    //     AND excluida = false
-    //     "#
-    // )
-    // .execute(pool.as_ref())
-    // .await?;
-    // 
-    // info!("🗑️ [SCHEDULER] Soft-deleted {} users", result.rows_affected());
-    //
-    // // Soft-delete stores (same mechanism)
-    // let result = sqlx::query!(
-    //     r#"
-    //     UPDATE lojas 
-    //     SET excluida = true, atualizado_em = NOW()
-    //     WHERE a_remover IS NOT NULL 
-    //     AND a_remover <= NOW() - INTERVAL '30 days'
-    //     AND excluida = false
-    //     "#
-    // )
-    // .execute(pool.as_ref())
-    // .await?;
-    // 
-    // info!("🗑️ [SCHEDULER] Soft-deleted {} stores", result.rows_affected());
-    
-    warn!("⚠️ [SCHEDULER] Soft-delete processing not yet implemented");
-    Ok(())
-}
+    let registry = create_job_registry();
+    let mut futures = vec![];
 
-/// Generate daily reports
-async fn generate_daily_reports(_pool: &Arc<PgPool>) -> Result<(), anyhow::Error> {
-    // TODO: Implement daily report generation
-    // Examples:
-    // - Order statistics
-    // - Revenue reports
-    // - Store performance metrics
-    // - User activity reports
-    
-    warn!("⚠️ [SCHEDULER] Daily report generation not yet implemented");
+    for job_config in config.jobs {
+        if job_config.enabled == Some(false) {
+            info!("⏭️  Job '{}' desabilitado, ignorando...", job_config.name);
+            continue;
+        }
+
+        match (Schedule::from_str(&job_config.schedule), registry.get(job_config.name.as_str())) {
+            (Ok(schedule), Some(job)) => {
+                let job_clone = Arc::clone(job);
+                // Spawn retorna um JoinHandle que podemos await depois
+                let handle = tokio::spawn(run_scheduled_job(job_clone, schedule));
+                futures.push(handle);
+                info!("✅ '{}' agendado", job_config.name);
+            }
+            (Err(e), _) => error!("❌ Schedule inválido para '{}': {}", job_config.name, e),
+            (_, None) => error!("⚠️  Job '{}' não registrado no código", job_config.name),
+        }
+    }
+
+    if futures.is_empty() {
+        warn!("⚠️  Nenhum job ativo. Mantendo processo vivo...");
+        // Mantém o processo vivo mesmo sem jobs
+        signal::ctrl_c().await?;
+        return Ok(());
+    }
+
+    info!("🎯 {} jobs rodando. Pressione Ctrl+C para parar.", futures.len());
+
+    // ✅ BLOQUEIO REAL:
+    // Escolhe entre: receber sinal de parada OU todas as jobs terminarem (o que não deve acontecer num loop infinito)
+    tokio::select! {
+        _ = signal::ctrl_c() => {
+            info!("🛑 Sinal de parada recebido. Encerrando...");
+        }
+        _ = join_all(futures) => {
+            info!("🏁 Todas as jobs finalizaram (inesperado).");
+        }
+    }
+
     Ok(())
 }

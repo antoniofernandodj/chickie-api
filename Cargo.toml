@@ -3,6 +3,7 @@ name = "chickie-api"
 version = "0.1.0"
 edition = "2024"
 
+# Binary definitions
 [[bin]]
 name = "chickie-api"
 path = "src/main.rs"
@@ -16,9 +17,11 @@ name = "chickie-scheduler"
 path = "src/scheduler.rs"
 
 [dependencies]
+# ═══════════════════════════════════════════════════════════
+# SHARED DEPENDENCIES (used by models/services/repos/usecases)
+# ═══════════════════════════════════════════════════════════
 anyhow = "1.0.102"
 async-trait = "0.1.89"
-axum = { version = "0.8.8", features = ["multipart"] }
 aws-config = "=1.0.1"
 aws-sdk-s3 = "=1.5.0"
 bcrypt = "0.18.0"
@@ -29,12 +32,29 @@ rust_decimal_macros = "1.38"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "uuid", "chrono", "rust_decimal", "postgres"] }
-tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
-tower-http = { version = "0.6.8", features = ["cors"] }
+tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread", "signal"] }
 uuid = { version = "1.20.0", features = ["serde", "v4"] }
 jsonwebtoken = { version = "10.3", features = ["rust_crypto"] }
 dotenvy = "0.15.7"
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid", "decimal"] }
+futures = "0.3"
+
+# ═══════════════════════════════════════════════════════════
+# API-SERVER SPECIFIC (src/main.rs + src/api/*)
+# ═══════════════════════════════════════════════════════════
+axum = { version = "0.8.8", features = ["multipart"] }
+tower-http = { version = "0.6.8", features = ["cors"] }
 utoipa-swagger-ui = { version = "9", features = ["axum"] }
+
+# ═══════════════════════════════════════════════════════════
+# WORKER SPECIFIC (src/worker.rs + src/worker_lib/*)
+# ═══════════════════════════════════════════════════════════
+lapin = "2"
+
+# ═══════════════════════════════════════════════════════════
+# SCHEDULER SPECIFIC (src/scheduler.rs + src/jobs/*)
+# ═══════════════════════════════════════════════════════════
+cron = "0.15"
+toml = "0.8"

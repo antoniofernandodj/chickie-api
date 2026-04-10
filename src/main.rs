@@ -4,7 +4,7 @@ mod utils;
 mod repositories;
 mod services;
 mod usecases;
-mod api;
+mod api_handlers;
 
 use axum::{
     Json,
@@ -18,7 +18,7 @@ use std::{env, net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 use tracing::{info, debug};
 use tracing_subscriber::fmt;
-use crate::api::AppState;
+use crate::api_handlers::AppState;
 use serde_json::json;
 
 
@@ -50,8 +50,8 @@ async fn main() {
 
     let s: Arc<AppState> = AppState::new(pool);
 
-    let api_routes = api::api_routes(&s);
-    let swagger_routes = api::swagger_router(&s);
+    let api_routes = api_handlers::api_routes(&s);
+    let swagger_routes = api_handlers::swagger_router(&s);
 
     let app = Router::new()
         .route("/", get(handler_ok))
