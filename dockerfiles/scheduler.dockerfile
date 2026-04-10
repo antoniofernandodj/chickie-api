@@ -47,7 +47,7 @@ COPY --from=builder /app/migrations /app/migrations
 COPY --from=builder /app/scheduler.toml /app/scheduler.toml
 
 RUN chown -R appuser:appuser /app
-USER appuser
+# USER appuser
 
 ENV RUST_LOG=info
 ENV TZ=America/Sao_Paulo
@@ -55,7 +55,8 @@ ENV SCHEDULER_PORT=8080
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+#  CMD curl -f http://localhost:8080/health || exit 1
 
-CMD ["/app/chickie-scheduler"]
+# CMD ["/app/chickie-scheduler"]
+CMD ["sh", "-c", "echo '🚀 Starting binary...' && ls -la /app/chickie-scheduler && exec /app/chickie-scheduler"]

@@ -6,14 +6,12 @@ use cron::Schedule;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::env;
-use std::str::FromStr; // ← Necessário para Schedule::from_str
-use futures::future::join_all; // ← Para aguardar todas as tasks
+use std::str::FromStr;
+use futures::future::join_all;
 use std::sync::Arc;
 use tokio::signal;
 use tokio::time::{sleep, Duration};
-use tracing::{info, error, warn};
-use tracing_subscriber::FmtSubscriber;
-
+use std::io::{self, Write};
 
 use jobs::{CronJob, backup::BackupJob, cleanup::CleanupJob, health_check::HealthCheckJob};
 use axum::{response::Json, routing::get, Router};
@@ -32,18 +30,23 @@ struct Config {
     jobs: Vec<JobSchedule>,
 }
 
+fn log_msg(level: &str, msg: &str) {
+    let now = Utc::now().to_rfc3339();
+    eprintln!("[{} {}] {}", now, level, msg);
+    let _ = io::stderr().flush();
+}
+
+fn log_info(msg: &str) { log_msg("INFO", msg); }
+fn log_error(msg: &str) { log_msg("ERROR", msg); }
+fn log_warn(msg: &str) { log_msg("WARN", msg); }
+
 fn get_config_path() -> String {
-    // 1. Prioridade máxima: variável de ambiente CONFIG_PATH
     if let Ok(path) = env::var("CONFIG_PATH") {
         return path;
     }
-
-    // 2. Se estiver em Docker, usa o path padrão do container
     if std::path::Path::new("/app/scheduler.toml").exists() {
         return "/app/scheduler.toml".to_string();
     }
-
-    // 3. Fallback para desenvolvimento local
     "scheduler.toml".to_string()
 }
 
@@ -70,12 +73,10 @@ async fn run_scheduled_job(
     schedule: Schedule,
 ) -> Result<()> {
     let job_name = job.name();
-    info!("⏰ Job '{}' registrado com schedule: {}", job_name, schedule);
+    log_info(&format!("⏰ Job '{}' registrado com schedule: {}", job_name, schedule));
 
     loop {
         let now = Utc::now();
-
-        // ✅ CORREÇÃO: usa `after()` que é público, ou `upcoming().next()`
         let next = schedule
             .upcoming(Utc)
             .next()
@@ -85,19 +86,19 @@ async fn run_scheduled_job(
             .to_std()
             .unwrap_or(Duration::from_secs(0));
 
-        info!("⏳ Job '{}' aguardando até {} (em {:?})", job_name, next, duration);
+        log_info(&format!("⏳ Job '{}' aguardando até {} (em {:?})", job_name, next, duration));
         sleep(duration).await;
 
-        info!("🚀 Executando job '{}'...", job_name);
+        log_info(&format!("🚀 Executando job '{}'...", job_name));
 
         let start = std::time::Instant::now();
         match job.execute().await {
             Ok(_) => {
                 let elapsed = start.elapsed();
-                info!("✅ Job '{}' concluído em {:?}", job_name, elapsed);
+                log_info(&format!("✅ Job '{}' concluído em {:?}", job_name, elapsed));
             }
             Err(e) => {
-                error!("❌ Job '{}' falhou: {}", job_name, e);
+                log_error(&format!("❌ Job '{}' falhou: {}", job_name, e));
             }
         }
     }
@@ -123,7 +124,7 @@ async fn start_health_server() -> Result<()> {
         .parse()
         .expect("Invalid address");
 
-    info!("🌐 Health check server listening on http://{}", addr);
+    log_info(&format!("🌐 Health check server listening on http://{}", addr));
 
     axum::serve(
         tokio::net::TcpListener::bind(&addr).await?,
@@ -135,83 +136,84 @@ async fn start_health_server() -> Result<()> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Inicializa tracing ANTES de qualquer outra coisa
-    let env_filter = std::env::var("RUST_LOG")
-        .unwrap_or_else(|_| "info".to_string());
+    // Imediatamente escreve algo para garantir que o log funcione (stdout e stderr)
+    let _ = io::stdout().write_all(b"--- CHICKIE SCHEDULER BOOTSTRAP STDOUT ---\n");
+    let _ = io::stdout().flush();
+    eprintln!("--- CHICKIE SCHEDULER BOOTSTRAP STDERR ---");
+    let _ = io::stderr().flush();
 
-    FmtSubscriber::builder()
-        .with_target(false)
-        .with_level(true)
-        .with_env_filter(env_filter)
-        .init();
+    // Adiciona um panic hook para capturar falhas catastróficas
+    std::panic::set_hook(Box::new(|info| {
+        let now = Utc::now().to_rfc3339();
+        eprintln!("[{} PANIC] {:?}", now, info);
+        let _ = io::stderr().flush();
+    }));
 
-    info!("🔧 Chickie Scheduler iniciando...");
-    info!("📋 PID: {}", std::process::id());
-    info!("📁 Working directory: {}", std::env::current_dir().unwrap_or_default().display());
-    info!("🌍 RUST_LOG: {}", std::env::var("RUST_LOG").unwrap_or_else(|_| "(não definido)".to_string()));
+    log_info("🔧 Chickie Scheduler iniciando...");
+    log_info(&format!("📋 PID: {}", std::process::id()));
+    
+    let current_dir = std::env::current_dir().unwrap_or_default();
+    log_info(&format!("📁 Working directory: {}", current_dir.display()));
 
     let config_path = get_config_path();
-    info!("📄 Carregando config de: {}", config_path);
+    log_info(&format!("📄 Carregando config de: {}", config_path));
 
     let config = match load_config(&config_path) {
         Ok(c) => c,
         Err(e) => {
-            error!("❌ Falha crítica ao carregar config '{}': {}", config_path, e);
-            // Retorna erro para o processo sair com código de erro
-            return Err(anyhow::anyhow!("Falha ao carregar configuração: {}", e));
+            log_error(&format!("❌ Falha crítica ao carregar config '{}': {}", config_path, e));
+            std::process::exit(1);
         }
     };
 
-    info!("📋 Config carregada com {} jobs definidos", config.jobs.len());
+    log_info(&format!("📋 Config carregada com {} jobs definidos", config.jobs.len()));
 
     let registry = create_job_registry();
     let mut futures = vec![];
 
     for job_config in config.jobs {
-        info!("🔄 Processando job config: name='{}', enabled={:?}", 
-              job_config.name, job_config.enabled);
+        log_info(&format!("🔄 Processando job config: name='{}', enabled={:?}", 
+              job_config.name, job_config.enabled));
         
         if job_config.enabled == Some(false) {
-            info!("⏭️  Job '{}' desabilitado, ignorando...", job_config.name);
+            log_info(&format!("⏭️  Job '{}' desabilitado, ignorando...", job_config.name));
             continue;
         }
 
         match (Schedule::from_str(&job_config.schedule), registry.get(job_config.name.as_str())) {
             (Ok(schedule), Some(job)) => {
                 let job_clone = Arc::clone(job);
-                info!("🚀 Spawnando job '{}' com schedule: {}", job_config.name, job_config.schedule);
+                log_info(&format!("🚀 Spawnando job '{}' com schedule: {}", job_config.name, job_config.schedule));
                 let handle = tokio::spawn(run_scheduled_job(job_clone, schedule));
                 futures.push(handle);
-                info!("✅ '{}' agendado com sucesso", job_config.name);
+                log_info(&format!("✅ '{}' agendado com sucesso", job_config.name));
             }
-            (Err(e), _) => error!("❌ Schedule inválido para '{}': {}", job_config.name, e),
-            (_, None) => error!("⚠️  Job '{}' não registrado no código", job_config.name),
+            (Err(e), _) => log_error(&format!("❌ Schedule inválido para '{}': {}", job_config.name, e)),
+            (_, None) => log_error(&format!("⚠️  Job '{}' não registrado no código", job_config.name)),
         }
     }
 
     if futures.is_empty() {
-        warn!("⚠️  Nenhum job ativo.");
+        log_warn("⚠️  Nenhum job ativo.");
+        log_info("Aguardando sinal de parada...");
         signal::ctrl_c().await?;
         return Ok(());
     }
 
-    info!("🎯 {} jobs rodando. Pressione Ctrl+C para parar.", futures.len());
+    log_info(&format!("🎯 {} jobs rodando. Pressione Ctrl+C para parar.", futures.len()));
 
-    // Start health check server for Dokploy
     let health_handle = tokio::spawn(start_health_server());
-    info!("🏥 Health check server iniciado");
+    log_info("🏥 Health check server iniciado");
 
-    // ✅ BLOQUEIO REAL:
-    // Escolhe entre: receber sinal de parada OU todas as jobs terminarem (o que não deve acontecer num loop infinito)
     tokio::select! {
         _ = signal::ctrl_c() => {
-            info!("🛑 Sinal de parada recebido. Encerrando...");
+            log_info("🛑 Sinal de parada recebido. Encerrando...");
         }
-        _ = join_all(futures) => {
-            info!("🏁 Todas as jobs finalizaram (inesperado).");
+        res = join_all(futures) => {
+            log_info(&format!("🏁 Todas as jobs finalizaram (inesperado). {:?}", res));
         }
-        _ = health_handle => {
-            warn!("🏥 Health check server encerrou (inesperado).");
+        res = health_handle => {
+            log_warn(&format!("🏥 Health check server encerrou (inesperado). {:?}", res));
         }
     }
 
