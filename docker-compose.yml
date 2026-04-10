@@ -18,7 +18,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfiles/api.dockerfile
     container_name: chickie-api
     environment:
       DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
