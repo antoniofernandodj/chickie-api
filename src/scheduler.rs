@@ -100,7 +100,7 @@ async fn run_scheduled_job(
 async fn main() -> Result<()> {
     FmtSubscriber::builder()
         .with_max_level(Level::INFO)
-        .with_env_filter("chickie=info")
+        .with_env_filter("info")
         .init();
 
     info!("🔧 Chickie Scheduler iniciando...");
@@ -139,8 +139,7 @@ async fn main() -> Result<()> {
     }
 
     if futures.is_empty() {
-        warn!("⚠️  Nenhum job ativo. Mantendo processo vivo...");
-        // Mantém o processo vivo mesmo sem jobs
+        warn!("⚠️  Nenhum job ativo.");
         signal::ctrl_c().await?;
         return Ok(());
     }
