@@ -80,7 +80,7 @@ impl WorkerConfig {
             host: "rabbitmq".into(),
             // port: env::var("RABBITMQ_PORT").ok().and_then(|p| p.parse().ok())
             //     .expect("RABBITMQ_PORT não encontrado!"),
-            port: "5672".into(),
+            port: 5672,
             username: env::var("RABBITMQ_USER")
                 .expect("RABBITMQ_USER não encontrado!"),
             password: env::var("RABBITMQ_PASS")
