@@ -11,3 +11,4 @@ sync:
 		git merge main; \
 		git push; \
 	done
+	git checkout $(b)
