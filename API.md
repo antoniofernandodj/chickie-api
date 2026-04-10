@@ -1775,9 +1775,116 @@ Authorization: Bearer <token>
 
 ---
 
-## 10. Endereços de Usuário (🔒)
+## 10. Endereços de Loja (🔒)
 
-### 10.1 Criar Endereço
+### 10.1 Listar Endereços da Loja
+
+```
+GET /api/enderecos-loja/{loja_uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440085",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "cep": "01001-000",
+    "logradouro": "Rua das Lojas",
+    "numero": "100",
+    "complemento": "Loja 5",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
+]
+```
+
+---
+
+### 10.2 Criar Endereço da Loja
+
+```
+POST /api/enderecos-loja/{loja_uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "cep": "string | null",
+  "logradouro": "string",
+  "numero": "string",
+  "complemento": "string | null",
+  "bairro": "string",
+  "cidade": "string",
+  "estado": "string",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
+
+**Response `201`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440085"
+}
+```
+
+---
+
+### 10.3 Atualizar Endereço da Loja
+
+```
+PUT /api/enderecos-loja/{loja_uuid}/{endereco_uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "cep": "string | null",
+  "logradouro": "string",
+  "numero": "string",
+  "complemento": "string | null",
+  "bairro": "string",
+  "cidade": "string",
+  "estado": "string",
+  "latitude": -23.5505,
+  "longitude": -46.6333
+}
+```
+
+**Response `204`:** No Content
+
+---
+
+### 10.4 Deletar Endereço da Loja
+
+```
+DELETE /api/enderecos-loja/{loja_uuid}/{endereco_uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+**Response `404` (endereço não encontrado):**
+```json
+{
+  "error": "Endereço não encontrado"
+}
+```
+
+---
+
+## 11. Endereços de Usuário (🔒)
+
+### 11.1 Criar Endereço
 
 ```
 POST /api/enderecos-usuario/
@@ -1817,7 +1924,7 @@ Content-Type: application/json
 
 ---
 
-### 10.2 Listar Endereços
+### 11.2 Listar Endereços
 
 ```
 GET /api/enderecos-usuario/
@@ -1845,7 +1952,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 10.3 Buscar Endereço
+### 11.3 Buscar Endereço
 
 ```
 GET /api/enderecos-usuario/{uuid}
@@ -1871,7 +1978,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 10.4 Atualizar Endereço
+### 11.4 Atualizar Endereço
 
 ```
 PUT /api/enderecos-usuario/{uuid}
@@ -1911,7 +2018,7 @@ Content-Type: application/json
 
 ---
 
-### 10.5 Deletar Endereço
+### 11.5 Deletar Endereço
 
 ```
 DELETE /api/enderecos-usuario/{uuid}
@@ -1922,9 +2029,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 11. Lojas Favoritas (🔒)
+## 12. Lojas Favoritas (🔒)
 
-### 11.1 Adicionar Favorita
+### 12.1 Adicionar Favorita
 
 ```
 POST /api/favoritos/{loja_uuid}
@@ -1943,7 +2050,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11.2 Remover Favorita
+### 12.2 Remover Favorita
 
 ```
 DELETE /api/favoritos/{loja_uuid}
@@ -1957,7 +2064,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11.3 Listar Minhas Favoritas
+### 12.3 Listar Minhas Favoritas
 
 ```
 GET /api/favoritos/minhas
@@ -1978,7 +2085,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11.4 Verificar se é Favorita
+### 12.4 Verificar se é Favorita
 
 ```
 GET /api/favoritos/{loja_uuid}/verificar
@@ -1992,9 +2099,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 12. Produtos (🔒)
+## 13. Produtos (🔒)
 
-### 12.1 Criar Produto
+### 13.1 Criar Produto
 
 ```
 POST /api/produtos/
@@ -2037,7 +2144,7 @@ Content-Type: application/json
 
 ---
 
-### 12.2 Listar Produtos
+### 13.2 Listar Produtos
 
 ```
 GET /api/produtos/
@@ -2066,7 +2173,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.3 Listar Produtos por Categoria
+### 13.3 Listar Produtos por Categoria
 
 ```
 GET /api/produtos/categoria/{categoria_uuid}
@@ -2095,7 +2202,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.4 Buscar Produto por UUID
+### 13.4 Buscar Produto por UUID
 
 ```
 GET /api/produtos/{uuid}
@@ -2122,7 +2229,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.5 Atualizar Produto
+### 13.5 Atualizar Produto
 
 ```
 PUT /api/produtos/{uuid}
@@ -2161,7 +2268,7 @@ Content-Type: application/json
 
 ---
 
-### 12.6 Deletar Produto
+### 13.6 Deletar Produto
 
 ```
 DELETE /api/produtos/{uuid}
@@ -2172,7 +2279,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.7 Atualizar Disponibilidade do Produto
+### 13.7 Atualizar Disponibilidade do Produto
 
 ```
 PUT /api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade
@@ -2207,7 +2314,7 @@ Content-Type: application/json
 
 ---
 
-### 12.8 Subir Imagem do Produto
+### 13.8 Subir Imagem do Produto
 
 ```
 POST /api/produtos/{uuid}/imagem
@@ -2322,24 +2429,28 @@ DELETE /api/wipe
 | 44 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
 | 45 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
 | 46 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 47 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 48 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 49 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 50 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 51 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 52 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 53 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 54 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 55 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 56 | `POST` | `/api/produtos/` | 🔒 | — |
-| 57 | `GET` | `/api/produtos/` | 🔒 | — |
-| 58 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
-| 59 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
-| 60 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 61 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 62 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
-| 63 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 64 | `GET` | `/api/ok` | — | — |
-| 65 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 47 | `GET` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
+| 48 | `POST` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
+| 49 | `PUT` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
+| 50 | `DELETE` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
+| 51 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 52 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 53 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 54 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 55 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 56 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 57 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 58 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 59 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 60 | `POST` | `/api/produtos/` | 🔒 | — |
+| 61 | `GET` | `/api/produtos/` | 🔒 | — |
+| 62 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 63 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 64 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 65 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 66 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
+| 67 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 68 | `GET` | `/api/ok` | — | — |
+| 69 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 66 endpoints**
+**Total: 70 endpoints**
