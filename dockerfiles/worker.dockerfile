@@ -49,4 +49,7 @@ COPY --from=builder /app/database.secrets.env /app/database.secrets.env
 RUN chown -R appuser:appuser /app
 USER appuser
 
+ENV RUST_LOG=info
+ENV TZ=America/Sao_Paulo
+
 CMD ["/app/chickie-worker"]

@@ -45,8 +45,12 @@ fn get_config_path() -> String {
 }
 
 fn load_config(path: &str) -> Result<Config> {
-    let content = std::fs::read_to_string(path)?;
-    let config: Config = toml::from_str(&content)?;
+    let content = std::fs::read_to_string(path)
+        .map_err(|e| anyhow::anyhow!("Não foi possível ler o arquivo '{}': {}", path, e))?;
+    
+    let config: Config = toml::from_str(&content)
+        .map_err(|e| anyhow::anyhow!("Erro ao fazer parse do TOML: {}", e))?;
+    
     Ok(config)
 }
 
@@ -98,12 +102,20 @@ async fn run_scheduled_job(
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Inicializa tracing ANTES de qualquer outra coisa
+    let env_filter = std::env::var("RUST_LOG")
+        .unwrap_or_else(|_| "info".to_string());
+
     FmtSubscriber::builder()
-        .with_max_level(Level::INFO)
-        .with_env_filter("info")
+        .with_target(false)
+        .with_level(true)
+        .with_env_filter(env_filter)
         .init();
 
     info!("🔧 Chickie Scheduler iniciando...");
+    info!("📋 PID: {}", std::process::id());
+    info!("📁 Working directory: {}", std::env::current_dir().unwrap_or_default().display());
+    info!("🌍 RUST_LOG: {}", std::env::var("RUST_LOG").unwrap_or_else(|_| "(não definido)".to_string()));
 
     let config_path = get_config_path();
     info!("📄 Carregando config de: {}", config_path);
@@ -111,15 +123,21 @@ async fn main() -> Result<()> {
     let config = match load_config(&config_path) {
         Ok(c) => c,
         Err(e) => {
-            error!("Falha crítica ao carregar config '{}': {}", config_path, e);
-            return Ok(());
+            error!("❌ Falha crítica ao carregar config '{}': {}", config_path, e);
+            // Retorna erro para o processo sair com código de erro
+            return Err(anyhow::anyhow!("Falha ao carregar configuração: {}", e));
         }
     };
+
+    info!("📋 Config carregada com {} jobs definidos", config.jobs.len());
 
     let registry = create_job_registry();
     let mut futures = vec![];
 
     for job_config in config.jobs {
+        info!("🔄 Processando job config: name='{}', enabled={:?}", 
+              job_config.name, job_config.enabled);
+        
         if job_config.enabled == Some(false) {
             info!("⏭️  Job '{}' desabilitado, ignorando...", job_config.name);
             continue;
@@ -128,10 +146,10 @@ async fn main() -> Result<()> {
         match (Schedule::from_str(&job_config.schedule), registry.get(job_config.name.as_str())) {
             (Ok(schedule), Some(job)) => {
                 let job_clone = Arc::clone(job);
-                // Spawn retorna um JoinHandle que podemos await depois
+                info!("🚀 Spawnando job '{}' com schedule: {}", job_config.name, job_config.schedule);
                 let handle = tokio::spawn(run_scheduled_job(job_clone, schedule));
                 futures.push(handle);
-                info!("✅ '{}' agendado", job_config.name);
+                info!("✅ '{}' agendado com sucesso", job_config.name);
             }
             (Err(e), _) => error!("❌ Schedule inválido para '{}': {}", job_config.name, e),
             (_, None) => error!("⚠️  Job '{}' não registrado no código", job_config.name),

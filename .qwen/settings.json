@@ -18,7 +18,9 @@
       "Bash(cargo run)",
       "Bash(git log *)",
       "Bash(docker run *)",
-      "Bash(docker build *)"
+      "Bash(docker build *)",
+      "Bash(timeout *)",
+      "Bash(true)"
     ]
   },
   "$version": 3
