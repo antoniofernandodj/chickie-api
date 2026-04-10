@@ -34,14 +34,14 @@ fn get_config_path() -> String {
     if let Ok(path) = env::var("CONFIG_PATH") {
         return path;
     }
-    
+
     // 2. Se estiver em Docker, usa o path padrão do container
-    if std::path::Path::new("/app/config.toml").exists() {
-        return "/app/config.toml".to_string();
+    if std::path::Path::new("/app/worker.toml").exists() {
+        return "/app/worker.toml".to_string();
     }
-    
+
     // 3. Fallback para desenvolvimento local
-    "config.toml".to_string()
+    "worker.toml".to_string()
 }
 
 fn load_config(path: &str) -> Result<Config> {
