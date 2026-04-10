@@ -32,6 +32,16 @@ struct QueueBinding {
     handler: HandlerFn,
 }
 
+impl QueueBinding {
+    fn new(queue: String, routing_key: String, handler: HandlerFn) -> Self {
+        Self {
+            queue,
+            routing_key,
+            handler,
+        }
+    }
+}
+
 /// Configurações gerais do worker
 #[derive(Debug, Clone)]
 pub struct WorkerConfig {
@@ -65,8 +75,9 @@ impl WorkerConfig {
     pub fn from_env() -> Self {
         let def = Self::default();
         Self {
-            host: env::var("RABBITMQ_HOST")
-                .expect("RABBITMQ_HOST não encontrado!"),
+            // host: env::var("RABBITMQ_HOST")
+            //     .expect("RABBITMQ_HOST não encontrado!"),
+            host: "rabbitmq".into(),
             port: env::var("RABBITMQ_PORT").ok().and_then(|p| p.parse().ok())
                 .expect("RABBITMQ_PORT não encontrado!"),
             username: env::var("RABBITMQ_USER")
@@ -128,12 +139,13 @@ impl Worker {
     where
         F: Fn(String) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = Result<()>> + Send + 'static,
-    {
-        self.bindings.push(QueueBinding {
-            queue: queue.to_string(),
-            routing_key: routing_key.to_string(),
-            handler: Arc::new(move |body| Box::pin(handler(body))),
-        });
+    {   
+        let binding = QueueBinding::new(
+            queue.to_string(),
+            routing_key.to_string(),
+            Arc::new(move |b| Box::pin(handler(b))),
+        );
+        self.bindings.push(binding);
         self
     }
 

@@ -27,14 +27,10 @@ async fn main() -> Result<()> {
     let cfg: WorkerConfig = WorkerConfig::from_env();
     let mut worker: Worker = Worker::new(cfg);
 
-    // ✨ Registra handlers — simples como Flask routes
-    for item in register_handlers() {
-        let handler = item.handler.clone();
-        worker.queue(
-            &item.queue,
-            &item.routing_key,
-            move |body| handler(body),
-        );
+    for i in register_handlers() {
+        let h = i.handler.clone();
+        let h = move |body| h(body);
+        worker.queue(&i.queue, &i.routing_key, h);
     }
 
     worker.run().await
