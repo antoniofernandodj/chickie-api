@@ -26,7 +26,6 @@ pub async fn me(
         "username": usuario_completo.username,
         "email": usuario_completo.email,
         "celular": usuario_completo.celular,
-        "telefone": usuario_completo.telefone,
         "classe": usuario_completo.classe,
         "ativo": usuario_completo.ativo,
         "passou_pelo_primeiro_acesso": usuario_completo.passou_pelo_primeiro_acesso,

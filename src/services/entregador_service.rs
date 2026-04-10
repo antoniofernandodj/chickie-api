@@ -30,7 +30,6 @@ impl EntregadorService {
         usuario_uuid: Uuid,
         nome: Option<String>,
         celular: Option<String>,
-        telefone: Option<String>,
         veiculo: Option<String>,
         placa: Option<String>,
     ) -> Result<(), String> {
@@ -46,9 +45,6 @@ impl EntregadorService {
                 usuario.nome = nome_val;
                 if let Some(cel_val) = &celular {
                     usuario.celular = cel_val.clone();
-                }
-                if let Some(tel_val) = &telefone {
-                    usuario.telefone = Some(tel_val.clone());
                 }
                 self.usuario_repo.atualizar(usuario).await?;
             }

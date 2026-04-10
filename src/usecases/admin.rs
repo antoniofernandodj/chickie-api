@@ -4,14 +4,15 @@ use uuid::Uuid;
 use chrono::NaiveDate;
 
 use crate::{
-    models::{Ingrediente, HorarioFuncionamento, ConfiguracaoDePedidosLoja, Funcionario, Entregador, Usuario},
+    models::{Ingrediente, HorarioFuncionamento, ConfiguracaoDePedidosLoja, Funcionario, Entregador, Usuario, EnderecoLoja},
     services::{
         IngredienteService,
         HorarioFuncionamentoService,
         ConfiguracaoPedidosLojaService,
         FuncionarioService,
         EntregadorService,
-        MarketingService
+        MarketingService,
+        EnderecoLojaService
     }
 };
 
@@ -22,6 +23,7 @@ pub struct AdminUsecase {
     funcionario_service: Arc<FuncionarioService>,
     entregador_service: Arc<EntregadorService>,
     marketing_service: Arc<MarketingService>,
+    endereco_loja_service: Arc<EnderecoLojaService>,
     pub _usuario: Usuario,
     pub loja_uuid: Uuid,
 }
@@ -35,6 +37,7 @@ impl AdminUsecase {
         funcionario_service: Arc<FuncionarioService>,
         entregador_service: Arc<EntregadorService>,
         marketing_service: Arc<MarketingService>,
+        endereco_loja_service: Arc<EnderecoLojaService>,
         _usuario: Usuario,
         loja_uuid: Uuid,
     ) -> Self {
@@ -45,6 +48,7 @@ impl AdminUsecase {
             funcionario_service,
             entregador_service,
             marketing_service,
+            endereco_loja_service,
             _usuario,
             loja_uuid,
         }
@@ -90,8 +94,8 @@ impl AdminUsecase {
     pub async fn listar_funcionarios(&self) -> Result<Vec<Funcionario>, String> {
         self.funcionario_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, telefone: Option<String>, cargo: Option<String>, salario: Option<Decimal>, data_admissao: NaiveDate) -> Result<(), String> {
-        self.funcionario_service.atualizar(uuid, usuario_uuid, nome, email, senha, celular, telefone, cargo, salario, data_admissao).await
+    pub async fn atualizar_funcionario(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, email: Option<String>, senha: Option<String>, celular: Option<String>, cargo: Option<String>, salario: Option<Decimal>, data_admissao: NaiveDate) -> Result<(), String> {
+        self.funcionario_service.atualizar(uuid, usuario_uuid, nome, email, senha, celular, cargo, salario, data_admissao).await
     }
     pub async fn funcionario_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
         self.funcionario_service.trocar_email_senha(usuario_uuid, novo_email, nova_senha).await
@@ -104,8 +108,8 @@ impl AdminUsecase {
     pub async fn listar_entregadores(&self) -> Result<Vec<Entregador>, String> {
         self.entregador_service.listar_por_loja(self.loja_uuid).await
     }
-    pub async fn atualizar_entregador(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, celular: Option<String>, telefone: Option<String>, veiculo: Option<String>, placa: Option<String>) -> Result<(), String> {
-        self.entregador_service.atualizar(uuid, usuario_uuid, nome, celular, telefone, veiculo, placa).await
+    pub async fn atualizar_entregador(&self, uuid: Uuid, usuario_uuid: Uuid, nome: Option<String>, celular: Option<String>, veiculo: Option<String>, placa: Option<String>) -> Result<(), String> {
+        self.entregador_service.atualizar(uuid, usuario_uuid, nome, celular, veiculo, placa).await
     }
     pub async fn entregador_trocar_email_senha(&self, usuario_uuid: Uuid, novo_email: Option<String>, nova_senha: Option<String>) -> Result<(), String> {
         self.entregador_service.trocar_email_senha(usuario_uuid, novo_email, nova_senha).await
@@ -123,5 +127,19 @@ impl AdminUsecase {
     }
     pub async fn deletar_cupom(&self, uuid: Uuid) -> Result<(), String> {
         self.marketing_service.deletar_cupom(uuid).await
+    }
+
+    // ─── Endereços da Loja ───
+    pub async fn listar_enderecos(&self) -> Result<Vec<EnderecoLoja>, String> {
+        self.endereco_loja_service.listar_por_loja(self.loja_uuid).await
+    }
+    pub async fn criar_endereco(&self, endereco: &EnderecoLoja) -> Result<Uuid, String> {
+        self.endereco_loja_service.criar(endereco).await
+    }
+    pub async fn atualizar_endereco(&self, endereco: EnderecoLoja) -> Result<(), String> {
+        self.endereco_loja_service.atualizar(endereco).await
+    }
+    pub async fn deletar_endereco(&self, uuid: Uuid) -> Result<(), String> {
+        self.endereco_loja_service.deletar(uuid).await
     }
 }

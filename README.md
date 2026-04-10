@@ -364,7 +364,7 @@ POST /api/auth/signup
   "username": "joao",
   "email": "joao@email.com",
   "senha": "senha123",
-  "telefone": "11999999999",
+  "celular": "11999999999",
   "auth_method": "email"
 }
 ```
@@ -377,7 +377,7 @@ POST /api/auth/signup
   "username": "maria",
   "email": "maria@email.com",
   "senha": "senha123",
-  "telefone": "11888888888",
+  "celular": "11888888888",
   "auth_method": "email",
   "classe": "administrador"
 }

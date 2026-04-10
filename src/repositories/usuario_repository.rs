@@ -26,9 +26,9 @@ impl UsuarioRepository {
         .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_telefone(&self, telefone: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE telefone = $1")
-        .bind(telefone)
+    pub async fn buscar_por_celular(&self, celular: &str) -> Result<Option<Usuario>, String> {
+        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE celular = $1")
+        .bind(celular)
         .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
@@ -43,7 +43,7 @@ impl Repository<Usuario> for UsuarioRepository {
 
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, telefone, celular, classe)
+            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, celular, classe)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ")
         .bind(&item.uuid)
@@ -51,7 +51,6 @@ impl Repository<Usuario> for UsuarioRepository {
         .bind(&item.username)
         .bind(&item.email)
         .bind(&item.senha_hash)
-        .bind(&item.telefone)
         .bind(&item.celular)
         .bind(&item.classe)
         .execute(self.pool())
@@ -65,13 +64,12 @@ impl Repository<Usuario> for UsuarioRepository {
     async fn atualizar(&self, item: Usuario) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, telefone = $4, classe = $5, atualizado_em = $6
+            UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, celular = $4, classe = $5, atualizado_em = $6
             WHERE uuid = $7
         ")
         .bind(&item.username)
         .bind(&item.email)
         .bind(&item.senha_hash)
-        .bind(&item.telefone)
         .bind(&item.classe)
         .bind(&item.atualizado_em)
         .bind(uuid)

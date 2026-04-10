@@ -15,6 +15,7 @@ mod endereco_usuario;
 mod loja_favorita;
 mod ingrediente;
 mod horario;
+mod endereco_loja;
 mod config_pedido;
 mod funcionario;
 mod entregador;
@@ -126,6 +127,13 @@ pub use horario::{
     criar_ou_atualizar_horario,
     definir_ativo,
     deletar_horario_dia
+};
+
+pub use endereco_loja::{
+    listar_enderecos_loja,
+    criar_endereco_loja,
+    atualizar_endereco_loja,
+    deletar_endereco_loja
 };
 
 pub use config_pedido::{

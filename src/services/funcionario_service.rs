@@ -30,7 +30,6 @@ impl FuncionarioService {
         email: Option<String>,
         senha: Option<String>,
         celular: Option<String>,
-        telefone: Option<String>,
         cargo: Option<String>,
         salario: Option<Decimal>,
         data_admissao: NaiveDate,
@@ -50,9 +49,6 @@ impl FuncionarioService {
                 usuario.nome = nome_val;
                 if let Some(cel_val) = &celular {
                     usuario.celular = cel_val.clone();
-                }
-                if let Some(tel_val) = &telefone {
-                    usuario.telefone = Some(tel_val.clone());
                 }
                 if let Some(email_val) = &email {
                     usuario.email = email_val.clone();

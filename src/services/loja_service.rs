@@ -66,7 +66,7 @@ impl LojaService {
         slug: String,
         email: String,
         descricao: Option<String>,
-        telefone: Option<String>,
+        celular: Option<String>,
         horario_abertura: Option<String>,
         horario_fechamento: Option<String>,
         dias_funcionamento: Option<Vec<i32>>,
@@ -94,7 +94,7 @@ impl LojaService {
             slug,
             email,
             descricao,
-            telefone,
+            celular,
             hora_abertura,
             hora_fechamento,
             dias_funcionamento,
@@ -193,7 +193,6 @@ impl LojaService {
         email: String,
         senha: String,
         celular: String,
-        // telefone: Option<String>,
     ) -> Result<Cliente, String> {
 
         // 1. Cria o usuário com classe "cliente"

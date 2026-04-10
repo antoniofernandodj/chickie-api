@@ -17,7 +17,7 @@ pub async fn criar_usuario(
         p.username,
         p.senha,
         p.email,
-        p.telefone,
+        p.celular,
         p.auth_method,
         p.classe
     ).await?;

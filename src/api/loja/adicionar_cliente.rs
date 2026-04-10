@@ -14,7 +14,6 @@ pub struct AdicionarClienteRequest {
     pub email: String,
     pub senha: String,
     pub celular: String,
-    // pub telefone: Option<String>,
 }
 
 pub async fn adicionar_cliente(
@@ -31,7 +30,6 @@ pub async fn adicionar_cliente(
         p.email,
         p.senha,
         p.celular,
-        // p.telefone
     ).await?;
 
     Ok(Json(cliente))

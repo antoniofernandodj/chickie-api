@@ -1,12 +1,12 @@
-use axum::{Extension, extract::{Path, State}, response::IntoResponse, http::StatusCode};
+use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
 use uuid::Uuid;
 use std::sync::Arc;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
-pub async fn deletar_horario_dia(
+pub async fn listar_enderecos_loja(
     State(state): State<Arc<AppState>>,
-    Path((loja_uuid, dia_semana)): Path<(Uuid, i32)>,
+    Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
 ) -> Result<impl IntoResponse, AppError> {
     let uc = AdminUsecase::new(
@@ -20,6 +20,5 @@ pub async fn deletar_horario_dia(
         usuario,
         loja_uuid,
     );
-    uc.deletar_horario_dia(dia_semana).await?;
-    Ok(StatusCode::NO_CONTENT)
+    Ok(Json(uc.listar_enderecos().await?))
 }

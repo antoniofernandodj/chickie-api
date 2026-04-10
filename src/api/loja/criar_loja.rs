@@ -24,7 +24,7 @@ pub async fn criar_loja(
             p.slug,
             p.email_contato,
             p.descricao,
-            p.telefone,
+            p.celular,
             p.hora_abertura,
             p.hora_fechamento,
             p.dias_funcionamento,

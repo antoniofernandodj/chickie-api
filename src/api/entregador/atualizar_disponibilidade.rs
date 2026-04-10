@@ -27,6 +27,7 @@ pub async fn atualizar_disponibilidade_entregador(
         state.funcionario_service.clone(),
         state.entregador_service.clone(),
         state.marketing_service.clone(),
+        state.endereco_loja_service.clone(),
         usuario,
         loja_uuid,
     );

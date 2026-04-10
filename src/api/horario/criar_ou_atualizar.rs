@@ -34,6 +34,7 @@ pub async fn criar_ou_atualizar_horario(
         state.funcionario_service.clone(),
         state.entregador_service.clone(),
         state.marketing_service.clone(),
+        state.endereco_loja_service.clone(),
         usuario,
         loja_uuid,
     );

@@ -14,7 +14,6 @@ pub struct AtualizarFuncionarioRequest {
     pub email: Option<String>,
     pub senha: Option<String>,
     pub celular: Option<String>,
-    pub telefone: Option<String>,
     pub cargo: Option<String>,
     pub salario: Option<Decimal>,
     pub data_admissao: String,
@@ -37,6 +36,7 @@ pub async fn atualizar_funcionario(
         state.funcionario_service.clone(),
         state.entregador_service.clone(),
         state.marketing_service.clone(),
+        state.endereco_loja_service.clone(),
         usuario,
         loja_uuid,
     );
@@ -48,7 +48,6 @@ pub async fn atualizar_funcionario(
         p.email,
         p.senha,
         p.celular,
-        p.telefone,
         p.cargo,
         p.salario,
         data_admissao,

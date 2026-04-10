@@ -10,7 +10,7 @@ pub struct CreateUsuarioRequest {
     pub username: String,
     pub senha: String,
     pub email: String,
-    pub telefone: String,
+    pub celular: String,
     pub auth_method: String,
     #[schema(example = "cliente")]
     pub classe: Option<String>,  // "cliente" (default) | "administrador"
@@ -22,7 +22,7 @@ pub struct CreateLojaRequest {
     pub slug: String,
     pub email_contato: String,
     pub descricao: Option<String>,
-    pub telefone: Option<String>,
+    pub celular: Option<String>,
     pub hora_abertura: Option<String>,
     pub hora_fechamento: Option<String>,
     pub dias_funcionamento: Option<Vec<i32>>,  // [0,1,2,3,4,5,6]

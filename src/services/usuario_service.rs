@@ -16,7 +16,7 @@ impl UsuarioService {
         username: String,
         senha: String,
         email: String,
-        telefone: String,
+        celular: String,
         auth_method: String,
         classe: Option<String>,
     ) -> Result<Usuario, String> {
@@ -35,7 +35,7 @@ impl UsuarioService {
             username,
             email,
             senha_hash,
-            telefone,
+            celular,
             auth_method,
             classe
         );
@@ -64,7 +64,7 @@ impl UsuarioService {
             u
         } else if let Some(u) = self.repo.buscar_por_username(&identifier).await? {
             u
-        } else if let Some(u) = self.repo.buscar_por_telefone(&identifier).await? {
+        } else if let Some(u) = self.repo.buscar_por_celular(&identifier).await? {
             u
         } else {
             return Err("Usuário não encontrado".to_string());

@@ -64,7 +64,6 @@ pub struct Usuario {
     pub modo_de_cadastro: String,
     pub classe: String,  // "cliente" | "administrador"
 
-    pub telefone: Option<String>,
     pub senha_hash: String,
     pub uuid: Uuid,
     pub ativo: bool,
@@ -92,7 +91,6 @@ impl Usuario {
             modo_de_cadastro,
             classe: classe.as_str().to_string(),
 
-            telefone: None,
             senha_hash,
             uuid: Uuid::new_v4(),
             ativo: true,

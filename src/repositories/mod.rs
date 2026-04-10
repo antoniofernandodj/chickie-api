@@ -91,7 +91,7 @@ pub use categoria_produtos_repository::CategoriaProdutosRepository;
 pub use pedido_repository::{PedidoRepository, PedidoComEntregador};
 pub use adicional_repository::AdicionalRepository;
 pub use ingrediente_repository::IngredienteRepository;
-// pub use endereco_loja_repository::EnderecoLojaRepository;
+pub use endereco_loja_repository::EnderecoLojaRepository;
 pub use entregador_repository::EntregadorRepository;
 pub use funcionario_repository::FuncionarioRepository;
 pub use avaliacao_de_loja_repository::AvaliacaoDeLojaRepository;

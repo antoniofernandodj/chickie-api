@@ -14,6 +14,7 @@ use crate::{
         ConfiguracaoPedidosLojaRepository,
         CupomRepository,
         EnderecoEntregaRepository,
+        EnderecoLojaRepository,
         EnderecoUsuarioRepository,
         EntregadorRepository,
         FuncionarioRepository,
@@ -30,6 +31,7 @@ use crate::{
         CatalogoService,
         ConfiguracaoPedidosLojaService,
         EnderecoEntregaService,
+        EnderecoLojaService,
         EnderecoUsuarioService,
         EntregadorService,
         FuncionarioService,
@@ -53,6 +55,7 @@ pub struct AppState {
     pub marketing_service: Arc<MarketingService>,
     pub endereco_entrega_service: Arc<EnderecoEntregaService>,
     pub endereco_usuario_service: Arc<EnderecoUsuarioService>,
+    pub endereco_loja_service: Arc<EnderecoLojaService>,
     pub loja_favorita_service: Arc<LojaFavoritaService>,
     pub ingrediente_service: Arc<IngredienteService>,
     pub horario_funcionamento_service: Arc<HorarioFuncionamentoService>,
@@ -111,6 +114,8 @@ impl AppState {
             Arc::new(EnderecoEntregaRepository::new(pool.clone()));
         let endereco_usuario_repo =
             Arc::new(EnderecoUsuarioRepository::new(pool.clone()));
+        let endereco_loja_repo =
+            Arc::new(EnderecoLojaRepository::new(pool.clone()));
         let loja_favorita_repo =
             Arc::new(LojaFavoritaRepository::new(pool.clone()));
 
@@ -169,6 +174,12 @@ impl AppState {
         let endereco_usuario_service = Arc::new(
             EnderecoUsuarioService::new(
                 Arc::clone(&endereco_usuario_repo)
+            )
+        );
+
+        let endereco_loja_service = Arc::new(
+            EnderecoLojaService::new(
+                Arc::clone(&endereco_loja_repo)
             )
         );
 
@@ -235,6 +246,7 @@ impl AppState {
                 marketing_service: Arc::clone(&marketing_service),
                 endereco_entrega_service: Arc::clone(&endereco_entrega_service),
                 endereco_usuario_service: Arc::clone(&endereco_usuario_service),
+                endereco_loja_service: Arc::clone(&endereco_loja_service),
                 loja_favorita_service: Arc::clone(&loja_favorita_service),
                 ingrediente_service,
                 horario_funcionamento_service,

@@ -10,7 +10,6 @@ pub struct AtualizarEntregadorRequest {
     pub usuario_uuid: Uuid,
     pub nome: Option<String>,
     pub celular: Option<String>,
-    pub telefone: Option<String>,
     pub veiculo: Option<String>,
     pub placa: Option<String>,
 }
@@ -28,9 +27,10 @@ pub async fn atualizar_entregador(
         state.funcionario_service.clone(),
         state.entregador_service.clone(),
         state.marketing_service.clone(),
+        state.endereco_loja_service.clone(),
         usuario,
         loja_uuid,
     );
-    uc.atualizar_entregador(uuid, p.usuario_uuid, p.nome, p.celular, p.telefone, p.veiculo, p.placa).await?;
+    uc.atualizar_entregador(uuid, p.usuario_uuid, p.nome, p.celular, p.veiculo, p.placa).await?;
     Ok(StatusCode::NO_CONTENT)
 }

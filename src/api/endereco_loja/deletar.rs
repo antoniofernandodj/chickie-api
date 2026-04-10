@@ -4,9 +4,9 @@ use std::sync::Arc;
 
 use crate::{api::{dto::AppError, AppState}, models::Usuario, usecases::AdminUsecase};
 
-pub async fn deletar_horario_dia(
+pub async fn deletar_endereco_loja(
     State(state): State<Arc<AppState>>,
-    Path((loja_uuid, dia_semana)): Path<(Uuid, i32)>,
+    Path((loja_uuid, endereco_uuid)): Path<(Uuid, Uuid)>,
     Extension(usuario): Extension<Usuario>,
 ) -> Result<impl IntoResponse, AppError> {
     let uc = AdminUsecase::new(
@@ -20,6 +20,6 @@ pub async fn deletar_horario_dia(
         usuario,
         loja_uuid,
     );
-    uc.deletar_horario_dia(dia_semana).await?;
+    uc.deletar_endereco(endereco_uuid).await?;
     Ok(StatusCode::NO_CONTENT)
 }

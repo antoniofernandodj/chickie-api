@@ -10,6 +10,7 @@ mod loja_favorita;
 mod marketing;
 mod ingrediente;
 mod horario;
+mod endereco_loja;
 mod config_pedido;
 mod cupom_admin;
 mod funcionario;
@@ -35,6 +36,7 @@ pub use loja_favorita::loja_favorita_routes;
 pub use marketing::marketing_routes;
 pub use ingrediente::ingrediente_routes;
 pub use horario::horario_routes;
+pub use endereco_loja::endereco_loja_routes;
 pub use config_pedido::config_pedido_routes;
 pub use cupom_admin::cupom_admin_routes;
 pub use funcionario::funcionario_routes;
@@ -56,6 +58,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/favoritos", loja_favorita_routes())
         .nest("/ingredientes", ingrediente_routes())
         .nest("/horarios", horario_routes())
+        .nest("/enderecos-loja", endereco_loja_routes())
         .nest("/config-pedido", config_pedido_routes())
         .nest("/cupons/admin", cupom_admin_routes())
         .nest("/funcionarios", funcionario_routes())

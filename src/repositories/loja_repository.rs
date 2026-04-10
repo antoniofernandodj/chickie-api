@@ -67,7 +67,7 @@ impl Repository<Loja> for LojaRepository {
 
     async fn criar(&self, item: &Loja) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO lojas (uuid, nome, slug, descricao, email, telefone, ativa, logo_url, banner_url, horario_abertura, horario_fechamento, dias_funcionamento, tempo_preparo_min, taxa_entrega, valor_minimo_pedido, raio_entrega_km, criado_por)
+            INSERT INTO lojas (uuid, nome, slug, descricao, email, celular, ativa, logo_url, banner_url, horario_abertura, horario_fechamento, dias_funcionamento, tempo_preparo_min, taxa_entrega, valor_minimo_pedido, raio_entrega_km, criado_por)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         ")
         .bind(item.uuid)
@@ -75,7 +75,7 @@ impl Repository<Loja> for LojaRepository {
         .bind(&item.slug)
         .bind(&item.descricao)
         .bind(&item.email)
-        .bind(&item.telefone)
+        .bind(&item.celular)
         .bind(item.ativa)
         .bind(&item.logo_url)
         .bind(&item.banner_url)
@@ -99,14 +99,14 @@ impl Repository<Loja> for LojaRepository {
     async fn atualizar(&self, item: Loja) -> Result<(), String> {
         let uuid = item.get_uuid();
         let result = sqlx::query("
-            UPDATE lojas SET nome = $1, slug = $2, descricao = $3, email = $4, telefone = $5, ativa = $6, logo_url = $7, banner_url = $8, horario_abertura = $9, horario_fechamento = $10, dias_funcionamento = $11, tempo_preparo_min = $12, taxa_entrega = $13, valor_minimo_pedido = $14, raio_entrega_km = $15
+            UPDATE lojas SET nome = $1, slug = $2, descricao = $3, email = $4, celular = $5, ativa = $6, logo_url = $7, banner_url = $8, horario_abertura = $9, horario_fechamento = $10, dias_funcionamento = $11, tempo_preparo_min = $12, taxa_entrega = $13, valor_minimo_pedido = $14, raio_entrega_km = $15
             WHERE uuid = $16
         ")
         .bind(&item.nome)
         .bind(&item.slug)
         .bind(&item.descricao)
         .bind(&item.email)
-        .bind(&item.telefone)
+        .bind(&item.celular)
         .bind(item.ativa)
         .bind(&item.logo_url)
         .bind(&item.banner_url)
