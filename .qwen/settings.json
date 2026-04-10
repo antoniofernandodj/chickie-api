@@ -16,7 +16,9 @@
       "Bash(cargo tree *)",
       "WebSearch",
       "Bash(cargo run)",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "Bash(docker run *)",
+      "Bash(docker build *)"
     ]
   },
   "$version": 3

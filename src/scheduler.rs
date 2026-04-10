@@ -100,13 +100,12 @@ async fn run_scheduled_job(
 async fn main() -> Result<()> {
     FmtSubscriber::builder()
         .with_max_level(Level::INFO)
-        .with_env_filter("chickie_scheduler=info") // ← Ajustado para nome do seu crate
+        .with_env_filter("chickie=info")
         .init();
 
-    info!("🔧 Rust Cron Scheduler iniciando...");
+    info!("🔧 Chickie Scheduler iniciando...");
 
     let config_path = get_config_path();
-    info!("🔧 Chickie Scheduler iniciando...");
     info!("📄 Carregando config de: {}", config_path);
 
     let config = match load_config(&config_path) {
