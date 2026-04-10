@@ -16,6 +16,9 @@ use tracing_subscriber::FmtSubscriber;
 
 
 use jobs::{CronJob, backup::BackupJob, cleanup::CleanupJob, health_check::HealthCheckJob};
+use axum::{response::Json, routing::get, Router};
+use serde_json::json;
+use std::net::SocketAddr;
 
 #[derive(Debug, Deserialize)]
 struct JobSchedule {
@@ -71,13 +74,13 @@ async fn run_scheduled_job(
 
     loop {
         let now = Utc::now();
-        
+
         // ✅ CORREÇÃO: usa `after()` que é público, ou `upcoming().next()`
         let next = schedule
             .upcoming(Utc)
             .next()
             .expect("Erro ao calcular próxima execução");
-        
+
         let duration = (next - now)
             .to_std()
             .unwrap_or(Duration::from_secs(0));
@@ -86,7 +89,7 @@ async fn run_scheduled_job(
         sleep(duration).await;
 
         info!("🚀 Executando job '{}'...", job_name);
-        
+
         let start = std::time::Instant::now();
         match job.execute().await {
             Ok(_) => {
@@ -98,6 +101,36 @@ async fn run_scheduled_job(
             }
         }
     }
+}
+
+async fn health_check() -> Json<serde_json::Value> {
+    Json(json!({
+        "status": "healthy",
+        "service": "chickie-scheduler",
+        "timestamp": Utc::now().to_rfc3339()
+    }))
+}
+
+async fn start_health_server() -> Result<()> {
+    let app = Router::new()
+        .route("/health", get(health_check))
+        .route("/", get(health_check));
+
+    let port = env::var("SCHEDULER_PORT")
+        .unwrap_or_else(|_| "8080".to_string());
+    
+    let addr: SocketAddr = format!("0.0.0.0:{}", port)
+        .parse()
+        .expect("Invalid address");
+
+    info!("🌐 Health check server listening on http://{}", addr);
+
+    axum::serve(
+        tokio::net::TcpListener::bind(&addr).await?,
+        app
+    )
+    .await
+    .map_err(|e| anyhow::anyhow!("Health server error: {}", e))
 }
 
 #[tokio::main]
@@ -164,6 +197,10 @@ async fn main() -> Result<()> {
 
     info!("🎯 {} jobs rodando. Pressione Ctrl+C para parar.", futures.len());
 
+    // Start health check server for Dokploy
+    let health_handle = tokio::spawn(start_health_server());
+    info!("🏥 Health check server iniciado");
+
     // ✅ BLOQUEIO REAL:
     // Escolhe entre: receber sinal de parada OU todas as jobs terminarem (o que não deve acontecer num loop infinito)
     tokio::select! {
@@ -172,6 +209,9 @@ async fn main() -> Result<()> {
         }
         _ = join_all(futures) => {
             info!("🏁 Todas as jobs finalizaram (inesperado).");
+        }
+        _ = health_handle => {
+            warn!("🏥 Health check server encerrou (inesperado).");
         }
     }
 

@@ -48,15 +48,24 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: Dockerfile.scheduler
+      dockerfile: dockerfiles/scheduler.dockerfile
     container_name: chickie-scheduler
     environment:
       DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
       RUST_LOG: info
+      SCHEDULER_PORT: "8080"
+    ports:
+      - "8080:8080"
     depends_on:
       - postgres
     networks:
       - mynetwork
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_data:

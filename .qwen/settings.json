@@ -20,7 +20,13 @@
       "Bash(docker run *)",
       "Bash(docker build *)",
       "Bash(timeout *)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(sleep *)",
+      "Bash(curl *)",
+      "Bash(jq *)",
+      "Bash(docker logs *)",
+      "Bash(docker stop *)",
+      "Bash(docker rm *)"
     ]
   },
   "$version": 3
