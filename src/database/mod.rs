@@ -1,15 +1,21 @@
 use sqlx::postgres::{PgPool, PgPoolOptions};
+use std::path::Path;
 
 
 #[allow(unused)]
 pub async fn criar_pool() -> Result<PgPool, sqlx::Error> {
-    if let Err(e) = dotenvy::from_filename("database.secrets.env") {
-        tracing::error!("⚠️ Aviso: Não foi possível carregar database.secrets.env: {}", e);
-        tracing::error!("   Certifique-se de que a variável DATABASE_URL está definida no ambiente.");
+    // Tenta carregar database.secrets.env apenas se existir
+    let env_path = "database.secrets.env";
+    if Path::new(env_path).exists() {
+        if let Err(e) = dotenvy::from_filename(env_path) {
+            tracing::warn!("⚠️ Falha ao carregar database.secrets.env: {}", e);
+        }
+    } else {
+        tracing::debug!("📄 database.secrets.env não encontrado, usando variáveis de ambiente do sistema");
     }
 
     let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL não encontrado");
+        .expect("DATABASE_URL não encontrado no ambiente");
 
     let pool = PgPoolOptions::new()
         .max_connections(10)
