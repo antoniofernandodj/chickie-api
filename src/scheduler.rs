@@ -11,7 +11,7 @@ use futures::future::join_all; // ← Para aguardar todas as tasks
 use std::sync::Arc;
 use tokio::signal;
 use tokio::time::{sleep, Duration};
-use tracing::{info, error, Level, warn};
+use tracing::{info, error, warn};
 use tracing_subscriber::FmtSubscriber;
 
 
