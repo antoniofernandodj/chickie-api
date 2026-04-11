@@ -110,6 +110,7 @@ use axum::{
     Json,
 };
 use serde_json::json;
+use chickie_core::domain::errors::DomainError;
 
 #[derive(IntoResponses)]
 pub enum AppError {
@@ -121,6 +122,10 @@ pub enum AppError {
     BadRequest(String),
     #[response(status = 403)]
     Unauthorized(String),
+    #[response(status = 409)]
+    Conflict(String),
+    #[response(status = 422)]
+    InvalidState(String),
 }
 
 // O "pulo do gato": transforma seu erro em uma resposta do Axum automaticamente
@@ -131,10 +136,35 @@ impl IntoResponse for AppError {
             AppError::Internal(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Unauthorized(msg) => (StatusCode::FORBIDDEN, msg),
+            AppError::Conflict(msg) => (StatusCode::CONFLICT, msg),
+            AppError::InvalidState(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
         };
 
         let body = Json(json!({ "error": message }));
         (status, body).into_response()
+    }
+}
+
+// DomainError → AppError mapping (Clean Architecture boundary)
+impl From<DomainError> for AppError {
+    fn from(err: DomainError) -> Self {
+        match err {
+            DomainError::NotFound { entity, id } => {
+                AppError::NotFound(format!("{} not found: {}", entity, id))
+            }
+            DomainError::BusinessRule(msg) => AppError::BadRequest(msg),
+            DomainError::Validation(msg) => AppError::BadRequest(msg),
+            DomainError::Conflict { entity, field } => {
+                AppError::Conflict(format!("{} conflict on field '{}'", entity, field))
+            }
+            DomainError::InvalidState { current, attempted, allowed } => {
+                AppError::InvalidState(format!(
+                    "Invalid state transition: {} -> {}. Allowed: {:?}",
+                    current, attempted, allowed
+                ))
+            }
+            DomainError::Internal(msg) => AppError::Internal(msg),
+        }
     }
 }
 

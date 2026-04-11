@@ -1,5 +1,5 @@
-use chickie_core::database;
 mod api_handlers;
+mod infrastructure;
 
 use axum::{
     Json,
@@ -34,12 +34,12 @@ async fn main() {
     info!("[MAIN] Starting on port {}...", port);
 
     let pool = Arc::new(
-        database::criar_pool()
+        infrastructure::database::criar_pool()
         .await
         .expect("Falha ao criar pool")
     );
 
-    database::aplicar_migrations(&pool)
+    infrastructure::database::aplicar_migrations(&pool)
         .await
         .expect("Falha ao aplicar migrações");
 

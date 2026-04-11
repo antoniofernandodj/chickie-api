@@ -15,6 +15,7 @@ utoipa-swagger-ui.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 chrono.workspace = true
+dotenvy.workspace = true
 sqlx.workspace = true
 uuid.workspace = true
 rust_decimal.workspace = true
