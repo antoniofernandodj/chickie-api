@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use bcrypt::{DEFAULT_COST, hash, verify};
+use argon2::{
+    password_hash::{PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 use crate::models::{Usuario, ClasseUsuario};
 use crate::repositories::{UsuarioRepository, Repository as _};
 
@@ -21,9 +24,13 @@ impl UsuarioService {
         classe: Option<String>,
     ) -> Result<Usuario, String> {
 
-        // Dentro do registrar...
-        let senha_hash = hash(senha, DEFAULT_COST)
-            .map_err(|e| e.to_string())?;
+        // Hash the password using argon2id
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let argon2 = Argon2::default();
+        let senha_hash = argon2
+            .hash_password(senha.as_bytes(), &salt)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?
+            .to_string();
 
         // Parse classe: default = "cliente"
         let classe_str = classe.as_deref().unwrap_or("cliente");
@@ -71,8 +78,12 @@ impl UsuarioService {
         };
 
         // 2. Verifica se a senha enviada condiz com o hash do banco
-        let senha_valida = verify(senha_plana, &usuario.senha_hash)
+        let argon2 = Argon2::default();
+        let parsed_hash = argon2::password_hash::PasswordHash::new(&usuario.senha_hash)
             .map_err(|e| format!("Erro ao processar senha: {}", e))?;
+        let senha_valida = argon2
+            .verify_password(senha_plana.as_bytes(), &parsed_hash)
+            .is_ok();
 
         if !senha_valida {
             return Err("Senha incorreta".to_string());

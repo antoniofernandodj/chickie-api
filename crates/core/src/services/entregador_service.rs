@@ -1,5 +1,9 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use argon2::{
+    password_hash::{PasswordHasher, SaltString},
+    Argon2,
+};
 
 use crate::models::Entregador;
 use crate::repositories::{EntregadorRepository, UsuarioRepository, Repository as _};
@@ -66,8 +70,12 @@ impl EntregadorService {
             usuario.email = email;
         }
         if let Some(senha) = nova_senha {
-            usuario.senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
-                .map_err(|e| e.to_string())?;
+            let salt = SaltString::generate(&mut rand::thread_rng());
+            let argon2 = Argon2::default();
+            usuario.senha_hash = argon2
+                .hash_password(senha.as_bytes(), &salt)
+                .map_err(|e| e.to_string())?
+                .to_string();
         }
 
         self.usuario_repo.atualizar(usuario).await

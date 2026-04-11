@@ -4,6 +4,10 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::*;
 use chrono::NaiveDate;
+use argon2::{
+    password_hash::{PasswordHasher, SaltString},
+    Argon2,
+};
 
 use crate::models::{
     Cliente,
@@ -156,8 +160,12 @@ impl LojaService {
     ) -> Result<Funcionario, String> {
 
         // 1. Cria o usuário com classe "funcionario"
-        let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
-            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let argon2 = Argon2::default();
+        let senha_hash = argon2
+            .hash_password(senha.as_bytes(), &salt)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?
+            .to_string();
 
         let usuario = Usuario::new(
             nome,
@@ -196,8 +204,12 @@ impl LojaService {
     ) -> Result<Cliente, String> {
 
         // 1. Cria o usuário com classe "cliente"
-        let senha_hash = bcrypt::hash(senha, bcrypt::DEFAULT_COST)
-            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let argon2 = Argon2::default();
+        let senha_hash = argon2
+            .hash_password(senha.as_bytes(), &salt)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?
+            .to_string();
 
         let usuario = Usuario::new(
             nome,
@@ -231,8 +243,12 @@ impl LojaService {
     ) -> Result<Entregador, String> {
 
         // 1. Cria o usuário com classe "entregador"
-        let senha_hash = bcrypt::hash(&senha, bcrypt::DEFAULT_COST)
-            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?;
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let argon2 = Argon2::default();
+        let senha_hash = argon2
+            .hash_password(senha.as_bytes(), &salt)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?
+            .to_string();
 
         let usuario = Usuario::new(
             nome,
