@@ -1,7 +1,7 @@
 # ============================================================
 # ETAPA 1: BUILD
 # ============================================================
-FROM rust:1.91-bookworm AS builder
+FROM rust:1.88-bookworm AS builder
 
 WORKDIR /app
 
@@ -10,22 +10,27 @@ RUN apt-get update && apt-get install -y \
     libssl-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Cache de dependências
+# Cache de dependências do workspace
 COPY Cargo.toml Cargo.lock ./
-COPY migrations ./migrations
-RUN mkdir -p src && \
-    echo "fn main() {}" > src/main.rs && \
-    echo "fn main() {}" > src/worker.rs && \
-    echo "fn main() {}" > src/scheduler.rs
+COPY crates/core/Cargo.toml ./crates/core/Cargo.toml
+COPY crates/api/Cargo.toml ./crates/api/Cargo.toml
+COPY crates/worker/Cargo.toml ./crates/worker/Cargo.toml
+COPY crates/scheduler/Cargo.toml ./crates/scheduler/Cargo.toml
 
-RUN cargo build --release
-RUN rm -rf src target/release/chickie target/release/chickie.d target/release/chickie-worker target/release/chickie-worker.d target/release/chickie-scheduler target/release/chickie-scheduler.d
+# Build dummy para cache de dependências
+RUN mkdir -p crates/core/src crates/api/src crates/worker/src crates/scheduler/src && \
+    echo "fn main() {}" > crates/api/src/main.rs && \
+    echo "fn main() {}" > crates/worker/src/main.rs && \
+    echo "fn main() {}" > crates/scheduler/src/main.rs && \
+    echo "pub fn dummy() {}" > crates/core/src/lib.rs
+
+RUN cargo build --release -p chickie-api
+RUN rm -rf crates target/release/.fingerprint target/release/build target/release/deps
 
 # Build real
-COPY src ./src
+COPY crates ./crates
 ENV CARGO_INCREMENTAL=0
-RUN touch src/main.rs
-RUN cargo build --release
+RUN cargo build --release -p chickie-api
 
 # ============================================================
 # ETAPA 2: RUNTIME
@@ -42,7 +47,7 @@ WORKDIR /app
 RUN useradd -r -u 1000 appuser
 
 COPY --from=builder /app/target/release/chickie-api /app/chickie-api
-COPY --from=builder /app/migrations /app/migrations
+COPY migrations /app/migrations
 
 RUN chown -R appuser:appuser /app
 USER appuser

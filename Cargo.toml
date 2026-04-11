@@ -1,25 +1,18 @@
-[package]
-name = "chickie"
+[workspace]
+members = [
+    "crates/core",
+    "crates/api",
+    "crates/worker",
+    "crates/scheduler",
+]
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+authors = ["Antonio"]
 
-# Binary definitions
-[[bin]]
-name = "chickie-api"
-path = "src/main.rs"
-
-[[bin]]
-name = "chickie-worker"
-path = "src/worker.rs"
-
-[[bin]]
-name = "chickie-scheduler"
-path = "src/scheduler.rs"
-
-[dependencies]
-# ═══════════════════════════════════════════════════════════
-# SHARED DEPENDENCIES (used by models/services/repos/usecases)
-# ═══════════════════════════════════════════════════════════
+[workspace.dependencies]
 anyhow = "1.0.102"
 async-trait = "0.1.89"
 aws-config = "=1.0.1"
@@ -40,21 +33,10 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 utoipa = { version = "5", features = ["axum_extras", "chrono", "uuid", "decimal"] }
 futures = "0.3"
-
-# ═══════════════════════════════════════════════════════════
-# API-SERVER SPECIFIC (src/main.rs + src/api/*)
-# ═══════════════════════════════════════════════════════════
 axum = { version = "0.8.8", features = ["multipart"] }
 tower-http = { version = "0.6.8", features = ["cors"] }
 utoipa-swagger-ui = { version = "9", features = ["axum"] }
-
-# ═══════════════════════════════════════════════════════════
-# WORKER SPECIFIC (src/worker.rs + src/worker_lib/*)
-# ═══════════════════════════════════════════════════════════
 lapin = "2"
-
-# ═══════════════════════════════════════════════════════════
-# SCHEDULER SPECIFIC (src/scheduler.rs + src/jobs/*)
-# ═══════════════════════════════════════════════════════════
 cron = "0.15"
 toml = "0.8"
+chickie-core = { path = "crates/core" }
