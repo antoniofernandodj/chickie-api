@@ -7,12 +7,12 @@ use rust_decimal::Decimal;
 use crate::{
     models::{ParteDeItemPedido, Pedido, EstadoDePedido, EnderecoEntrega, Produto, Usuario},
     services::{PedidoService, PedidoComEntrega},
-    repositories::{ProdutoRepository, Repository as _}
+    ports::ProdutoRepositoryPort,
 };
 
 pub struct PedidoUsecase {
     pub pedido_service: Arc<PedidoService>,
-    pub produto_repo: Arc<ProdutoRepository>,
+    pub produto_repo: Arc<dyn ProdutoRepositoryPort>,
     pub usuario: Usuario,
     pub loja_uuid: Uuid,
 }
@@ -21,7 +21,7 @@ pub struct PedidoUsecase {
 impl PedidoUsecase {
     pub fn new(
         pedido_service: Arc<PedidoService>,
-        produto_repo: Arc<ProdutoRepository>,
+        produto_repo: Arc<dyn ProdutoRepositoryPort>,
         usuario: Usuario,
         loja_uuid: Uuid,
     ) -> Self {

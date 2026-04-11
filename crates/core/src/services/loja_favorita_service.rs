@@ -2,15 +2,15 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::LojaFavorita;
-use crate::repositories::{LojaFavoritaRepository, Repository as _};
+use crate::ports::LojaFavoritaRepositoryPort;
 
 #[derive(Clone)]
 pub struct LojaFavoritaService {
-    repo: Arc<LojaFavoritaRepository>,
+    repo: Arc<dyn LojaFavoritaRepositoryPort>,
 }
 
 impl LojaFavoritaService {
-    pub fn new(repo: Arc<LojaFavoritaRepository>) -> Self {
+    pub fn new(repo: Arc<dyn LojaFavoritaRepositoryPort>) -> Self {
         Self { repo }
     }
 
@@ -38,15 +38,15 @@ impl LojaFavoritaService {
         loja_uuid: Uuid,
     ) -> Result<(), String> {
 
-        let existente = self.repo.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await?
+        let existente = self.repo.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await.map_err(|e| e.to_string())?
             .ok_or("Loja não está na lista de favoritas")?;
 
-        self.repo.deletar(existente.uuid).await
+        self.repo.deletar(existente.uuid).await.map_err(|e| e.to_string())
     }
 
     /// Lista todas as lojas favoritas de um usuário
     pub async fn listar_favoritas(&self, usuario_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
-        self.repo.buscar_por_usuario(usuario_uuid).await
+        self.repo.listar_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
     }
 
     // /// Lista todos os usuários que favoritaram uma loja
@@ -56,7 +56,7 @@ impl LojaFavoritaService {
 
     /// Verifica se uma loja é favorita para um usuário
     pub async fn eh_favorita(&self, usuario_uuid: Uuid, loja_uuid: Uuid) -> Result<bool, String> {
-        let result = self.repo.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await?;
+        let result = self.repo.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await.map_err(|e| e.to_string())?;
         Ok(result.is_some())
     }
 }

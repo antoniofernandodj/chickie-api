@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Loja, Model}, repositories::Repository};
+use crate::ports::LojaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct LojaRepository { pool: Arc<PgPool> }
 
@@ -131,5 +133,27 @@ impl Repository<Loja> for LojaRepository {
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Loja>, String> {
         Err("não se aplica".into())
+    }
+}
+
+#[async_trait::async_trait]
+impl LojaRepositoryPort for LojaRepository {
+    async fn criar(&self, entity: &Loja) -> DomainResult<Uuid> {
+        <Self as Repository<Loja>>::criar(self, entity).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Loja>> {
+        <Self as Repository<Loja>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_slug(&self, slug: &str) -> DomainResult<Option<Loja>> {
+        self.buscar_por_slug(slug).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Loja>> {
+        <Self as Repository<Loja>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_criador(&self, criador_uuid: Uuid) -> DomainResult<Vec<Loja>> {
+        self.buscar_por_criador(criador_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn pesquisar(&self, termo: &str) -> DomainResult<Vec<Loja>> {
+        self.pesquisar(termo).await.map_err(|e| DomainError::Internal(e))
     }
 }

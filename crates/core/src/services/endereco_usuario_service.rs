@@ -3,15 +3,15 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::EnderecoUsuario;
-use crate::repositories::{EnderecoUsuarioRepository, Repository as _};
+use crate::ports::EnderecoUsuarioRepositoryPort;
 
 #[derive(Clone)]
 pub struct EnderecoUsuarioService {
-    repo: Arc<EnderecoUsuarioRepository>,
+    repo: Arc<dyn EnderecoUsuarioRepositoryPort>,
 }
 
 impl EnderecoUsuarioService {
-    pub fn new(repo: Arc<EnderecoUsuarioRepository>) -> Self {
+    pub fn new(repo: Arc<dyn EnderecoUsuarioRepositoryPort>) -> Self {
         Self { repo }
     }
 
@@ -49,7 +49,7 @@ impl EnderecoUsuarioService {
 
     /// Lista todos os endereços de um usuário
     pub async fn listar_enderecos(&self, usuario_uuid: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
-        self.repo.buscar_por_usuario(usuario_uuid).await
+        self.repo.listar_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
     }
 
     /// Busca um endereço específico, validando que pertence ao usuário (segurança)
@@ -58,7 +58,8 @@ impl EnderecoUsuarioService {
         uuid: Uuid,
         usuario_uuid: Uuid,
     ) -> Result<Option<EnderecoUsuario>, String> {
-        self.repo.buscar_por_uuid_e_usuario(uuid, usuario_uuid).await
+        let endereco = self.repo.buscar_por_uuid(uuid).await.map_err(|e| e.to_string())?;
+        Ok(endereco.filter(|e| e.usuario_uuid == usuario_uuid))
     }
 
     /// Atualiza um endereço existente (apenas se pertencer ao usuário)
@@ -105,8 +106,8 @@ impl EnderecoUsuarioService {
         // Valida propriedade antes de deletar
         self.buscar_endereco(uuid, usuario_uuid).await?
             .ok_or("Endereço não encontrado ou não pertence ao usuário")?;
-        
-        self.repo.deletar(uuid).await
+
+        self.repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 
     // /// Define um endereço como "padrão" para o usuário

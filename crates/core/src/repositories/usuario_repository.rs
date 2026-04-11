@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Usuario, Model}, repositories::Repository};
+use crate::ports::UsuarioRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct UsuarioRepository { pool: Arc<PgPool> }
 
@@ -97,5 +99,33 @@ impl Repository<Usuario> for UsuarioRepository {
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Usuario>, String> {
         Err("não se aplica".into())
+    }
+}
+
+#[async_trait::async_trait]
+impl UsuarioRepositoryPort for UsuarioRepository {
+    async fn criar(&self, entity: &Usuario) -> DomainResult<Uuid> {
+        <Self as Repository<Usuario>>::criar(self, entity).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Usuario>> {
+        <Self as Repository<Usuario>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_email(&self, email: &str) -> DomainResult<Option<Usuario>> {
+        self.buscar_por_email(email).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_username(&self, username: &str) -> DomainResult<Option<Usuario>> {
+        self.buscar_por_username(username).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_celular(&self, celular: &str) -> DomainResult<Option<Usuario>> {
+        self.buscar_por_celular(celular).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Usuario>> {
+        <Self as Repository<Usuario>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, entity: Usuario) -> DomainResult<()> {
+        <Self as Repository<Usuario>>::atualizar(self, entity).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> DomainResult<()> {
+        self.marcar_primeiro_acesso(uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

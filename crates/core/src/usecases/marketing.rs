@@ -6,7 +6,7 @@ use rust_decimal::Decimal;
 
 use crate::{
     models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
-    services::MarketingService
+    services::MarketingService,
 };
 
 pub struct MarketingUsecase {

@@ -1,20 +1,22 @@
+use std::sync::Arc;
+
 use aws_sdk_s3::{config::Credentials, primitives::ByteStream};
 use uuid::Uuid;
 
 use crate::{
-    repositories::{ProdutoRepository, Repository as _},
+    ports::ProdutoRepositoryPort,
     models::Produto,
 };
 
 pub struct UploadImagemUsecase {
-    produto_repo: ProdutoRepository,
+    produto_repo: Arc<dyn ProdutoRepositoryPort>,
     bucket: String,
     endpoint: String,
 }
 
 impl UploadImagemUsecase {
     pub fn new(
-        produto_repo: ProdutoRepository,
+        produto_repo: Arc<dyn ProdutoRepositoryPort>,
         bucket: String,
         endpoint: String,
     ) -> Self {

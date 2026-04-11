@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Adicional, Model}, repositories::Repository};
+use crate::ports::AdicionalRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct AdicionalRepository { pool: Arc<PgPool> }
 
@@ -96,5 +98,33 @@ impl Repository<Adicional> for AdicionalRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl AdicionalRepositoryPort for AdicionalRepository {
+    async fn criar(&self, adicional: &Adicional) -> DomainResult<Uuid> {
+        <Self as Repository<Adicional>>::criar(self, adicional).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Adicional>> {
+        <Self as Repository<Adicional>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Adicional>> {
+        <Self as Repository<Adicional>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Adicional>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_disponiveis(&self, loja_uuid: Uuid) -> DomainResult<Vec<Adicional>> {
+        self.buscar_disponiveis(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, adicional: Adicional) -> DomainResult<()> {
+        <Self as Repository<Adicional>>::atualizar(self, adicional).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar_disponibilidade(&self, uuid: Uuid, disponivel: bool) -> DomainResult<()> {
+        self.atualizar_disponibilidade(uuid, disponivel).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Adicional>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

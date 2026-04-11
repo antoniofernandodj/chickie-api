@@ -4,15 +4,15 @@ use argon2::{
     Argon2,
 };
 use crate::models::{Usuario, ClasseUsuario};
-use crate::repositories::{UsuarioRepository, Repository as _};
+use crate::ports::UsuarioRepositoryPort;
 
 pub struct UsuarioService {
-    repo: Arc<UsuarioRepository>,
+    repo: Arc<dyn UsuarioRepositoryPort>,
 }
 
 #[allow(dead_code)]
 impl UsuarioService {
-    pub fn new(repo: Arc<UsuarioRepository>) -> Self { Self { repo } }
+    pub fn new(repo: Arc<dyn UsuarioRepositoryPort>) -> Self { Self { repo } }
     pub async fn registrar(
         &self,
         nome: String,
@@ -100,7 +100,7 @@ impl UsuarioService {
     }
 
     pub async fn listar(&self) -> Result<Vec<Usuario>, String> {
-        self.repo.listar_todos().await
+        self.repo.listar_todos().await.map_err(|e| e.to_string())
     }
 
     pub async fn verificar_email_disponivel(&self, email: &str) -> Result<bool, String> {

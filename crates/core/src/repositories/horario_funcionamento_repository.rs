@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{HorarioFuncionamento, Model}, repositories::Repository};
+use crate::ports::HorarioFuncionamentoRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct HorarioFuncionamentoRepository { pool: Arc<PgPool> }
 
@@ -186,5 +188,24 @@ impl Repository<HorarioFuncionamento> for HorarioFuncionamentoRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl HorarioFuncionamentoRepositoryPort for HorarioFuncionamentoRepository {
+    async fn adicionar_sem_sobrescrever(&self, horario: &HorarioFuncionamento) -> DomainResult<()> {
+        self.adicionar_sem_sobrescrever(horario).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<HorarioFuncionamento>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_loja_e_dia(&self, loja_uuid: Uuid, dia: i32) -> DomainResult<Option<HorarioFuncionamento>> {
+        self.buscar_por_dia(loja_uuid, dia).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn definir_ativo(&self, loja_uuid: Uuid, dia: i32, ativo: bool) -> DomainResult<()> {
+        self.definir_ativo(loja_uuid, dia, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar_por_dia(&self, loja_uuid: Uuid, dia: i32) -> DomainResult<()> {
+        self.deletar_por_dia(loja_uuid, dia).await.map_err(|e| DomainError::Internal(e))
     }
 }

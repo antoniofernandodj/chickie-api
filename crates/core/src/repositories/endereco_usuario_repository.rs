@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{EnderecoUsuario, Model}, repositories::Repository};
+use crate::ports::EnderecoUsuarioRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct EnderecoUsuarioRepository { pool: Arc<PgPool> }
 
@@ -87,5 +89,24 @@ impl Repository<EnderecoUsuario> for EnderecoUsuarioRepository {
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<EnderecoUsuario>, String> {
         Err("nao se aplica - enderecos de usuario nao estao vinculados a lojas".into())
+    }
+}
+
+#[async_trait::async_trait]
+impl EnderecoUsuarioRepositoryPort for EnderecoUsuarioRepository {
+    async fn criar(&self, endereco: &EnderecoUsuario) -> DomainResult<Uuid> {
+        <Self as Repository<EnderecoUsuario>>::criar(self, endereco).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<EnderecoUsuario>> {
+        <Self as Repository<EnderecoUsuario>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<EnderecoUsuario>> {
+        self.buscar_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, endereco: EnderecoUsuario) -> DomainResult<()> {
+        <Self as Repository<EnderecoUsuario>>::atualizar(self, endereco).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<EnderecoUsuario>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

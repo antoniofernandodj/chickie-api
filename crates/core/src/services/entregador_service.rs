@@ -6,26 +6,26 @@ use argon2::{
 };
 
 use crate::models::Entregador;
-use crate::repositories::{EntregadorRepository, UsuarioRepository, Repository as _};
+use crate::ports::{EntregadorRepositoryPort, UsuarioRepositoryPort};
 
 #[derive(Clone)]
 pub struct EntregadorService {
-    repo: Arc<EntregadorRepository>,
-    usuario_repo: Arc<UsuarioRepository>,
+    repo: Arc<dyn EntregadorRepositoryPort>,
+    usuario_repo: Arc<dyn UsuarioRepositoryPort>,
 }
 
 #[allow(dead_code)]
 impl EntregadorService {
-    pub fn new(repo: Arc<EntregadorRepository>, usuario_repo: Arc<UsuarioRepository>) -> Self {
+    pub fn new(repo: Arc<dyn EntregadorRepositoryPort>, usuario_repo: Arc<dyn UsuarioRepositoryPort>) -> Self {
         Self { repo, usuario_repo }
     }
 
     pub async fn listar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
-        self.repo.buscar_por_loja(loja_uuid).await
+        self.repo.buscar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_disponiveis(&self, loja_uuid: Uuid) -> Result<Vec<Entregador>, String> {
-        self.repo.buscar_disponiveis(loja_uuid).await
+        self.repo.buscar_disponiveis(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar(
@@ -54,7 +54,7 @@ impl EntregadorService {
             }
         }
 
-        self.repo.atualizar(entregador).await
+        self.repo.atualizar(entregador).await.map_err(|e| e.to_string())
     }
 
     pub async fn trocar_email_senha(
@@ -63,7 +63,7 @@ impl EntregadorService {
         novo_email: Option<String>,
         nova_senha: Option<String>,
     ) -> Result<(), String> {
-        let mut usuario = self.usuario_repo.buscar_por_uuid(usuario_uuid).await?
+        let mut usuario = self.usuario_repo.buscar_por_uuid(usuario_uuid).await.map_err(|e| e.to_string())?
             .ok_or("Usuário não encontrado")?;
 
         if let Some(email) = novo_email {
@@ -78,17 +78,17 @@ impl EntregadorService {
                 .to_string();
         }
 
-        self.usuario_repo.atualizar(usuario).await
+        self.usuario_repo.atualizar(usuario).await.map_err(|e| e.to_string())
     }
 
     pub async fn definir_disponivel(&self, uuid: Uuid, disponivel: bool) -> Result<(), String> {
-        let mut entregador = self.repo.buscar_por_uuid(uuid).await?
+        let mut entregador = self.repo.buscar_por_uuid(uuid).await.map_err(|e| e.to_string())?
             .ok_or("Entregador não encontrado")?;
         entregador.disponivel = disponivel;
-        self.repo.atualizar(entregador).await
+        self.repo.atualizar(entregador).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        self.repo.deletar(uuid).await
+        self.repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 }

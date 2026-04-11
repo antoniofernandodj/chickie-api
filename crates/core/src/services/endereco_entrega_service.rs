@@ -2,15 +2,15 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::models::EnderecoEntrega;
-use crate::repositories::{EnderecoEntregaRepository};
+use crate::ports::EnderecoEntregaRepositoryPort;
 
 #[derive(Clone)]
 pub struct EnderecoEntregaService {
-    repo: Arc<EnderecoEntregaRepository>,
+    repo: Arc<dyn EnderecoEntregaRepositoryPort>,
 }
 
 impl EnderecoEntregaService {
-    pub fn new(repo: Arc<EnderecoEntregaRepository>) -> Self {
+    pub fn new(repo: Arc<dyn EnderecoEntregaRepositoryPort>) -> Self {
         Self { repo }
     }
 
@@ -29,7 +29,7 @@ impl EnderecoEntregaService {
         // latitude: Option<f64>,
         // longitude: Option<f64>,
     ) -> Result<EnderecoEntrega, String> {
-        
+
         let endereco = EnderecoEntrega::new(
             pedido_uuid,
             loja_uuid,
@@ -44,7 +44,7 @@ impl EnderecoEntregaService {
             // longitude,
         );
 
-        self.repo.criar_para_pedido(&endereco, pedido_uuid, loja_uuid).await?;
+        self.repo.criar(&endereco).await.map_err(|e| e.to_string())?;
         Ok(endereco)
     }
 
@@ -53,7 +53,7 @@ impl EnderecoEntregaService {
         &self,
         pedido_uuid: Uuid,
     ) -> Result<Option<EnderecoEntrega>, String> {
-        self.repo.buscar_por_pedido(pedido_uuid).await
+        self.repo.buscar_por_pedido(pedido_uuid).await.map_err(|e| e.to_string())
     }
 
     /// Lista endereços de entrega de uma loja (para relatórios/auditoria)
@@ -61,6 +61,6 @@ impl EnderecoEntregaService {
         &self,
         loja_uuid: Uuid,
     ) -> Result<Vec<EnderecoEntrega>, String> {
-        self.repo.buscar_por_loja(loja_uuid).await
+        self.repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 }

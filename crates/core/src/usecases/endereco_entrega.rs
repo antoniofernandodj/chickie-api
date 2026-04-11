@@ -2,8 +2,10 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::models::{EnderecoEntrega, Usuario};
-use crate::services::EnderecoEntregaService;
+use crate::{
+    models::{EnderecoEntrega, Usuario},
+    services::EnderecoEntregaService,
+};
 
 pub struct ListarEnderecosEntregaPorLojaUsecase {
     pub endereco_entrega_service: Arc<EnderecoEntregaService>,

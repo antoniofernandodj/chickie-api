@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Produto, Model}, repositories::Repository};
+use crate::ports::ProdutoRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct ProdutoRepository { pool: Arc<PgPool> }
 
@@ -120,5 +122,40 @@ impl Repository<Produto> for ProdutoRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl ProdutoRepositoryPort for ProdutoRepository {
+    async fn criar(&self, produto: &Produto) -> DomainResult<Uuid> {
+        <Self as Repository<Produto>>::criar(self, produto).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Produto>> {
+        <Self as Repository<Produto>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Produto>> {
+        <Self as Repository<Produto>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_categoria(&self, categoria_uuid: Uuid) -> DomainResult<Vec<Produto>> {
+        self.buscar_por_categoria(categoria_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Produto>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, produto: Produto) -> DomainResult<()> {
+        <Self as Repository<Produto>>::atualizar(self, produto).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Produto>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar_disponibilidade(&self, uuid: Uuid, disponivel: bool) -> DomainResult<()> {
+        self.atualizar_disponibilidade(uuid, disponivel).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar_imagem_url(&self, uuid: Uuid, imagem_url: &str) -> DomainResult<()> {
+        sqlx::query("UPDATE produtos SET imagem_url = $1 WHERE uuid = $2")
+            .bind(imagem_url).bind(uuid)
+            .execute(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))?;
+        Ok(())
     }
 }

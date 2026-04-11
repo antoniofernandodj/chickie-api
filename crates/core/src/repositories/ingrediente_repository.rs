@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Ingrediente, Model}, repositories::Repository};
+use crate::ports::IngredienteRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct IngredienteRepository { pool: Arc<PgPool> }
 
@@ -79,5 +81,24 @@ impl Repository<Ingrediente> for IngredienteRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl IngredienteRepositoryPort for IngredienteRepository {
+    async fn criar(&self, ingrediente: &Ingrediente) -> DomainResult<Uuid> {
+        <Self as Repository<Ingrediente>>::criar(self, ingrediente).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Ingrediente>> {
+        sqlx::query_as::<_, Ingrediente>("SELECT * FROM ingredientes WHERE loja_uuid = $1")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))
+    }
+    async fn atualizar(&self, ingrediente: Ingrediente) -> DomainResult<()> {
+        <Self as Repository<Ingrediente>>::atualizar(self, ingrediente).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Ingrediente>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

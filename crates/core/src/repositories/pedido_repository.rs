@@ -7,6 +7,8 @@ use serde::Serialize;
 use utoipa::ToSchema;
 use crate::{
     repositories::Repository,
+    ports::PedidoRepositoryPort,
+    domain::errors::{DomainError, DomainResult},
     models::{
         Model,
         Pedido,
@@ -499,5 +501,75 @@ impl Repository<Pedido> for PedidoRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl PedidoRepositoryPort for PedidoRepository {
+    async fn criar(&self, pedido: &Pedido) -> DomainResult<Uuid> {
+        <Self as Repository<Pedido>>::criar(self, pedido).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Pedido>> {
+        <Self as Repository<Pedido>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_completo(&self, uuid: Uuid) -> DomainResult<Option<Pedido>> {
+        let pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1")
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))? {
+            Some(p) => p,
+            None => return Ok(None),
+        };
+        // Hydrate with items, parts, adicionais
+        let mut pedidos = vec![pedido];
+        pedidos = self.hidratar_pedidos(pedidos).await.map_err(|e| DomainError::Internal(e))?;
+        Ok(Some(pedidos.remove(0)))
+    }
+    async fn buscar_completos_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
+        self.buscar_completos_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_completos_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
+        self.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Pedido>> {
+        <Self as Repository<Pedido>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar_status(&self, uuid: Uuid, novo_status: &str) -> DomainResult<()> {
+        sqlx::query("UPDATE pedidos SET status = $1 WHERE uuid = $2")
+            .bind(novo_status).bind(uuid)
+            .execute(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))?;
+        Ok(())
+    }
+    async fn atualizar(&self, pedido: Pedido) -> DomainResult<()> {
+        <Self as Repository<Pedido>>::atualizar(self, pedido).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atribuir_entregador(&self, pedido_uuid: Uuid, entregador_uuid: Uuid) -> DomainResult<()> {
+        self.atribuir_entregador(pedido_uuid, entregador_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn remover_entregador(&self, pedido_uuid: Uuid) -> DomainResult<()> {
+        self.remover_entregador(pedido_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_com_entregador(&self, uuid: Uuid) -> DomainResult<Option<crate::ports::PedidoComEntregador>> {
+        let r = PedidoRepository::buscar_com_entregador(self, uuid).await.map_err(|e| DomainError::Internal(e))?;
+        Ok(r.map(|r| {
+            let pedido = Pedido {
+                uuid: r.uuid, usuario_uuid: r.usuario_uuid, loja_uuid: r.loja_uuid,
+                entregador_uuid: r.entregador_uuid, status: r.status, total: r.total,
+                subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
+                forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
+                tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
+                atualizado_em: r.atualizado_em, itens: vec![], partes: vec![],
+            };
+            crate::ports::PedidoComEntregador {
+                pedido,
+                entregador_nome: Some(r.entregador_nome),
+                veiculo: Some(r.veiculo),
+                placa: Some(r.placa),
+            }
+        }))
+    }
+    async fn buscar_pedido_com_entrega(&self, pedido_uuid: Uuid, _loja_uuid: Uuid) -> DomainResult<Option<crate::ports::PedidoComEntrega>> {
+        self.buscar_pedido_com_entrega(pedido_uuid, _loja_uuid).await.map_err(|e| DomainError::Internal(e.to_string()))
     }
 }

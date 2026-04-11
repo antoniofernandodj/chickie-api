@@ -64,5 +64,12 @@ impl From<&str> for DomainError {
     }
 }
 
+/// Allow services returning Result<_, String> to use ? with DomainResult
+impl From<DomainError> for String {
+    fn from(err: DomainError) -> Self {
+        err.to_string()
+    }
+}
+
 /// Result type alias for domain operations
 pub type DomainResult<T> = Result<T, DomainError>;

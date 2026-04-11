@@ -4,7 +4,10 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::{models::{Adicional, Produto, Usuario}, services::CatalogoService};
+use crate::{
+    models::{Adicional, Produto, Usuario},
+    services::CatalogoService,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AtualizarProdutoRequest {

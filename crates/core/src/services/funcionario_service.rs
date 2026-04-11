@@ -8,22 +8,22 @@ use argon2::{
 };
 
 use crate::models::Funcionario;
-use crate::repositories::{FuncionarioRepository, UsuarioRepository, Repository as _};
+use crate::ports::{FuncionarioRepositoryPort, UsuarioRepositoryPort};
 
 #[derive(Clone)]
 pub struct FuncionarioService {
-    repo: Arc<FuncionarioRepository>,
-    usuario_repo: Arc<UsuarioRepository>,
+    repo: Arc<dyn FuncionarioRepositoryPort>,
+    usuario_repo: Arc<dyn UsuarioRepositoryPort>,
 }
 
 #[allow(dead_code)]
 impl FuncionarioService {
-    pub fn new(repo: Arc<FuncionarioRepository>, usuario_repo: Arc<UsuarioRepository>) -> Self {
+    pub fn new(repo: Arc<dyn FuncionarioRepositoryPort>, usuario_repo: Arc<dyn UsuarioRepositoryPort>) -> Self {
         Self { repo, usuario_repo }
     }
 
     pub async fn listar_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<Funcionario>, String> {
-        self.repo.buscar_por_loja(loja_uuid).await
+        self.repo.buscar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar(
@@ -69,7 +69,7 @@ impl FuncionarioService {
             }
         }
 
-        self.repo.atualizar(funcionario).await
+        self.repo.atualizar(funcionario).await.map_err(|e| e.to_string())
     }
 
     pub async fn trocar_email_senha(
@@ -93,10 +93,10 @@ impl FuncionarioService {
                 .to_string();
         }
 
-        self.usuario_repo.atualizar(usuario).await
+        self.usuario_repo.atualizar(usuario).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar(&self, uuid: Uuid) -> Result<(), String> {
-        self.repo.deletar(uuid).await
+        self.repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 }

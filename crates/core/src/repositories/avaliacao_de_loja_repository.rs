@@ -4,6 +4,8 @@ use sqlx::postgres::PgPool;
 use sqlx::Row;
 use uuid::Uuid;
 use crate::{models::{AvaliacaoDeLoja, Model}, repositories::Repository};
+use crate::ports::AvaliacaoDeLojaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct AvaliacaoDeLojaRepository { pool: Arc<PgPool> }
 
@@ -91,5 +93,18 @@ impl Repository<AvaliacaoDeLoja> for AvaliacaoDeLojaRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl AvaliacaoDeLojaRepositoryPort for AvaliacaoDeLojaRepository {
+    async fn criar(&self, avaliacao: &AvaliacaoDeLoja) -> DomainResult<Uuid> {
+        <Self as Repository<AvaliacaoDeLoja>>::criar(self, avaliacao).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeLoja>> {
+        sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja WHERE loja_uuid = $1")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))
     }
 }

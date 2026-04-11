@@ -7,25 +7,24 @@ use crate::models::{
     Adicional, CategoriaProdutos, Produto
 };
 
-use crate::repositories::{
-    ProdutoRepository,
-    CategoriaProdutosRepository,
-    AdicionalRepository,
-    Repository as _
+use crate::ports::{
+    ProdutoRepositoryPort,
+    CategoriaRepositoryPort,
+    AdicionalRepositoryPort,
 };
 
 #[derive(Clone)]
 pub struct CatalogoService {
-    produto_repo: Arc<ProdutoRepository>,
-    categoria_repo: Arc<CategoriaProdutosRepository>,
-    adicional_repo: Arc<AdicionalRepository>,
+    produto_repo: Arc<dyn ProdutoRepositoryPort>,
+    categoria_repo: Arc<dyn CategoriaRepositoryPort>,
+    adicional_repo: Arc<dyn AdicionalRepositoryPort>,
 }
 
 impl CatalogoService {
     pub fn new(
-        produto_repo: Arc<ProdutoRepository>,
-        categoria_repo: Arc<CategoriaProdutosRepository>,
-        adicional_repo: Arc<AdicionalRepository>,
+        produto_repo: Arc<dyn ProdutoRepositoryPort>,
+        categoria_repo: Arc<dyn CategoriaRepositoryPort>,
+        adicional_repo: Arc<dyn AdicionalRepositoryPort>,
     ) -> Self {
         Self { produto_repo, categoria_repo, adicional_repo }
     }
@@ -100,7 +99,7 @@ impl CatalogoService {
         &self,
         loja_uuid: Uuid
     ) -> Result<Vec<Produto>, String> {
-        self.produto_repo.listar_todos_por_loja(loja_uuid).await
+        self.produto_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_produto(
@@ -143,14 +142,14 @@ impl CatalogoService {
         &self,
         loja_uuid: Uuid,
     ) -> Result<Vec<Adicional>, String> {
-        self.adicional_repo.buscar_por_loja(loja_uuid).await
+        self.adicional_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_adicionais_disponiveis(
         &self,
         loja_uuid: Uuid,
     ) -> Result<Vec<Adicional>, String> {
-        self.adicional_repo.buscar_disponiveis(loja_uuid).await
+        self.adicional_repo.listar_disponiveis(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_disponibilidade(
@@ -166,7 +165,7 @@ impl CatalogoService {
             return Err("Adicional não pertence a esta loja".to_string());
         }
 
-        self.adicional_repo.atualizar_disponibilidade(adicional_uuid, disponivel).await
+        self.adicional_repo.atualizar_disponibilidade(adicional_uuid, disponivel).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_adicional(
@@ -204,14 +203,14 @@ impl CatalogoService {
             return Err("Adicional não pertence a esta loja".to_string());
         }
 
-        self.adicional_repo.deletar(adicional_uuid).await
+        self.adicional_repo.deletar(adicional_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_categorias(
         &self,
         loja_uuid: Uuid,
     ) -> Result<Vec<CategoriaProdutos>, String> {
-        self.categoria_repo.buscar_por_loja(loja_uuid).await
+        self.categoria_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_categoria(
@@ -252,7 +251,7 @@ impl CatalogoService {
         }
 
         // Verificar se a categoria está vazia (sem produtos)
-        let produtos = self.produto_repo.buscar_por_categoria(uuid).await?;
+        let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
         if !produtos.is_empty() {
             return Err(format!(
                 "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
@@ -260,7 +259,7 @@ impl CatalogoService {
             ));
         }
 
-        self.categoria_repo.deletar(uuid).await
+        self.categoria_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn buscar_produto_por_uuid(
@@ -275,14 +274,14 @@ impl CatalogoService {
         &self,
         categoria_uuid: Uuid,
     ) -> Result<Vec<Produto>, String> {
-        self.produto_repo.buscar_por_categoria(categoria_uuid).await
+        self.produto_repo.listar_por_categoria(categoria_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_produto(
         &self,
         uuid: Uuid,
     ) -> Result<(), String> {
-        self.produto_repo.deletar(uuid).await
+        self.produto_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_disponibilidade_produto(
@@ -298,7 +297,7 @@ impl CatalogoService {
             return Err("Produto não pertence a esta loja".to_string());
         }
 
-        self.produto_repo.atualizar_disponibilidade(produto_uuid, disponivel).await
+        self.produto_repo.atualizar_disponibilidade(produto_uuid, disponivel).await.map_err(|e| e.to_string())
     }
 
 }

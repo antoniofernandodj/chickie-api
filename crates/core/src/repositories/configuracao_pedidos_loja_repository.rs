@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{ConfiguracaoDePedidosLoja, Model, TipoCalculoPedido}, repositories::Repository};
+use crate::ports::ConfiguracaoPedidosLojaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct ConfiguracaoPedidosLojaRepository { pool: Arc<PgPool> }
 
@@ -172,5 +174,15 @@ impl Repository<ConfiguracaoDePedidosLoja> for ConfiguracaoPedidosLojaRepository
         .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl ConfiguracaoPedidosLojaRepositoryPort for ConfiguracaoPedidosLojaRepository {
+    async fn salvar(&self, config: &ConfiguracaoDePedidosLoja) -> DomainResult<()> {
+        self.salvar(config).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Option<ConfiguracaoDePedidosLoja>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

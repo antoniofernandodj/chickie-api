@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Cupom, Model, StatusCupom}, repositories::Repository};
+use crate::ports::CupomRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct CupomRepository { pool: Arc<PgPool> }
 
@@ -98,5 +100,33 @@ impl Repository<Cupom> for CupomRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl CupomRepositoryPort for CupomRepository {
+    async fn criar(&self, cupom: &Cupom) -> DomainResult<Uuid> {
+        <Self as Repository<Cupom>>::criar(self, cupom).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Cupom>> {
+        <Self as Repository<Cupom>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_codigo(&self, codigo: &str, loja_uuid: Uuid) -> DomainResult<Option<Cupom>> {
+        self.buscar_por_codigo(codigo, loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_ativos(&self, loja_uuid: Uuid) -> DomainResult<Vec<Cupom>> {
+        self.buscar_ativos(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Cupom>> {
+        <Self as Repository<Cupom>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Cupom>> {
+        <Self as Repository<Cupom>>::listar_todos_por_loja(self, loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, cupom: Cupom) -> DomainResult<()> {
+        <Self as Repository<Cupom>>::atualizar(self, cupom).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Cupom>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

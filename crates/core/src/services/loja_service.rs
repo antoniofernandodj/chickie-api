@@ -21,36 +21,35 @@ use crate::models::{
     Usuario
 };
 
-use crate::repositories::{
-    LojaRepository,
-    ConfiguracaoPedidosLojaRepository,
-    HorarioFuncionamentoRepository,
-    FuncionarioRepository,
-    EntregadorRepository,
-    ClienteRepository,
-    UsuarioRepository,
-    Repository as _
+use crate::ports::{
+    LojaRepositoryPort,
+    ConfiguracaoPedidosLojaRepositoryPort,
+    HorarioFuncionamentoRepositoryPort,
+    FuncionarioRepositoryPort,
+    EntregadorRepositoryPort,
+    ClienteRepositoryPort,
+    UsuarioRepositoryPort,
 };
 
 pub struct LojaService {
-    loja_repo: Arc<LojaRepository>,
-    config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
-    horario_repo: Arc<HorarioFuncionamentoRepository>,
-    funcionario_repo: Arc<FuncionarioRepository>,
-    entregador_repo: Arc<EntregadorRepository>,
-    cliente_repo: Arc<ClienteRepository>,
-    usuario_repo: Arc<UsuarioRepository>,
+    loja_repo: Arc<dyn LojaRepositoryPort>,
+    config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+    horario_repo: Arc<dyn HorarioFuncionamentoRepositoryPort>,
+    funcionario_repo: Arc<dyn FuncionarioRepositoryPort>,
+    entregador_repo: Arc<dyn EntregadorRepositoryPort>,
+    cliente_repo: Arc<dyn ClienteRepositoryPort>,
+    usuario_repo: Arc<dyn UsuarioRepositoryPort>,
 }
 
 impl LojaService {
     pub fn new(
-        loja_repo: Arc<LojaRepository>,
-        config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
-        horario_repo: Arc<HorarioFuncionamentoRepository>,
-        funcionario_repo: Arc<FuncionarioRepository>,
-        entregador_repo: Arc<EntregadorRepository>,
-        cliente_repo: Arc<ClienteRepository>,
-        usuario_repo: Arc<UsuarioRepository>,
+        loja_repo: Arc<dyn LojaRepositoryPort>,
+        config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+        horario_repo: Arc<dyn HorarioFuncionamentoRepositoryPort>,
+        funcionario_repo: Arc<dyn FuncionarioRepositoryPort>,
+        entregador_repo: Arc<dyn EntregadorRepositoryPort>,
+        cliente_repo: Arc<dyn ClienteRepositoryPort>,
+        usuario_repo: Arc<dyn UsuarioRepositoryPort>,
     ) -> Self {
 
         Self {
@@ -276,23 +275,23 @@ impl LojaService {
     }
     
     pub async fn listar(&self) -> Result<Vec<Loja>, String> {
-        self.loja_repo.listar_todos().await
+        self.loja_repo.listar_todos().await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_por_criador(&self, admin_uuid: Uuid) -> Result<Vec<Loja>, String> {
-        self.loja_repo.buscar_por_criador(admin_uuid).await
+        self.loja_repo.buscar_por_criador(admin_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn pesquisar(&self, termo: &str) -> Result<Vec<Loja>, String> {
-        self.loja_repo.pesquisar(termo).await
+        self.loja_repo.pesquisar(termo).await.map_err(|e| e.to_string())
     }
 
     pub async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
-        self.loja_repo.buscar_por_uuid(uuid).await
+        self.loja_repo.buscar_por_uuid(uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
-        self.loja_repo.buscar_por_slug(slug).await
+        self.loja_repo.buscar_por_slug(slug).await.map_err(|e| e.to_string())
     }
 
     pub async fn verificar_slug_disponivel(&self, slug: &str) -> Result<bool, String> {

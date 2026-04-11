@@ -5,7 +5,7 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
-use crate::repositories::{ConfiguracaoPedidosLojaRepository, CupomRepository, EnderecoEntregaRepository, PedidoRepository, PromocaoRepository, Repository as _};
+use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador};
 use crate::utils::agora;
 
 
@@ -55,26 +55,26 @@ impl DadosEnderecoEntrega {
 
 #[derive(Clone)]
 pub struct PedidoService {
-    pedido_repo: Arc<PedidoRepository>,
-    config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
-    cupom_repo: Arc<CupomRepository>,
-    promocao_repo: Arc<PromocaoRepository>,
-    endereco_entrega_repo: Arc<EnderecoEntregaRepository>,
+    pedido_repo: Arc<dyn PedidoRepositoryPort>,
+    config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+    cupom_repo: Arc<dyn CupomRepositoryPort>,
+    promocao_repo: Arc<dyn PromocaoRepositoryPort>,
+    endereco_entrega_repo: Arc<dyn EnderecoEntregaRepositoryPort>,
 }
 
 impl PedidoService {
     pub fn new(
-        pedido_repo: Arc<PedidoRepository>,
-        config_repo: Arc<ConfiguracaoPedidosLojaRepository>,
-        cupom_repo: Arc<CupomRepository>,
-        promocao_repo: Arc<PromocaoRepository>,
-        endereco_entrega_repo: Arc<EnderecoEntregaRepository>,
+        pedido_repo: Arc<dyn PedidoRepositoryPort>,
+        config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+        cupom_repo: Arc<dyn CupomRepositoryPort>,
+        promocao_repo: Arc<dyn PromocaoRepositoryPort>,
+        endereco_entrega_repo: Arc<dyn EnderecoEntregaRepositoryPort>,
     ) -> Self {
         Self { pedido_repo, config_repo, cupom_repo, promocao_repo, endereco_entrega_repo }
     }
 
     pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
-        self.pedido_repo.criar(pedido).await
+        self.pedido_repo.criar(pedido).await.map_err(|e| e.to_string())
     }
 
     // TODO: Depois verificar como integrara logica de descontos e cupons
@@ -115,11 +115,11 @@ impl PedidoService {
     // }
 
     pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_loja(loja_uuid).await
+        self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_por_usuario(&self, usuario_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await
+        self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
     }
 
     /// Lógica para verificar promoções ativas da loja
@@ -242,10 +242,10 @@ impl PedidoService {
     pub async fn buscar_pedido_com_entrega(
         &self,
         pedido_uuid: Uuid,
-        loja_uuid: uuid::Uuid
+        _loja_uuid: uuid::Uuid
     ) -> Result<PedidoComEntrega, String> {
-        
-        let pedido = self.pedido_repo.buscar_completo(pedido_uuid, loja_uuid).await?
+
+        let pedido = self.pedido_repo.buscar_completo(pedido_uuid).await.map_err(|e| e.to_string())?
             .ok_or("Pedido não encontrado")?;
 
         let endereco_entrega = self.endereco_entrega_repo
@@ -409,7 +409,7 @@ impl PedidoService {
     pub async fn buscar_pedido_com_entregador(
         &self,
         pedido_uuid: Uuid,
-    ) -> Result<crate::repositories::PedidoComEntregador, String> {
+    ) -> Result<PedidoComEntregador, String> {
         self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
             .ok_or("Pedido não encontrado".to_string())
     }

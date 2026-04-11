@@ -1,11 +1,17 @@
 // Clean Architecture layers
 pub mod domain;     // Entities, enums, errors (pure domain, no infrastructure)
 pub mod ports;      // Interface contracts (traits without sqlx)
-pub mod adapters;   // Infrastructure implementations (sqlx, aws, etc.)
+pub mod adapters;   // Infrastructure implementations (sqlx adapters)
 
-// Legacy modules — being migrated to the new structure
-pub mod models;
-pub mod repositories;
+// Application layer — services and usecases depend on ports (traits)
 pub mod services;
 pub mod usecases;
+
+// Data layer — concrete repository implementations (implement port traits)
+pub mod repositories;
+
+// Models — domain entities with sqlx FromRow + serde derives
+pub mod models;
+
+// Utilities
 pub mod utils;

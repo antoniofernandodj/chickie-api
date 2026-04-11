@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Cliente, Model}, repositories::Repository};
+use crate::ports::ClienteRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct ClienteRepository { pool: Arc<PgPool> }
 
@@ -73,5 +75,15 @@ impl Repository<Cliente> for ClienteRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl ClienteRepositoryPort for ClienteRepository {
+    async fn criar(&self, cliente: &Cliente) -> DomainResult<Uuid> {
+        <Self as Repository<Cliente>>::criar(self, cliente).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Cliente>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

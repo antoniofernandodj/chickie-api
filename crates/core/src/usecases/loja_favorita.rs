@@ -2,8 +2,10 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::models::{LojaFavorita, Usuario};
-use crate::services::LojaFavoritaService;
+use crate::{
+    models::{LojaFavorita, Usuario},
+    services::LojaFavoritaService,
+};
 
 pub struct AdicionarLojaFavoritaUsecase {
     pub service: Arc<LojaFavoritaService>,

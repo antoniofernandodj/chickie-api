@@ -1,8 +1,8 @@
 use std::sync::Arc;
-use crate::models::Loja;
-use crate::services::LojaService;
 
 use uuid::Uuid;
+
+use crate::{models::Loja, services::LojaService};
 
 pub struct LojaUsecase {
     loja_service: Arc<LojaService>,

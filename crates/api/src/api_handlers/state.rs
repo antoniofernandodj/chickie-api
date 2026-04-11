@@ -5,6 +5,28 @@ use sqlx::PgPool;
 
 
 use chickie_core::{
+    ports::{
+        UsuarioRepositoryPort,
+        LojaRepositoryPort,
+        ProdutoRepositoryPort,
+        PedidoRepositoryPort,
+        CupomRepositoryPort,
+        AdicionalRepositoryPort,
+        CategoriaRepositoryPort,
+        PromocaoRepositoryPort,
+        AvaliacaoDeLojaRepositoryPort,
+        AvaliacaoDeProdutoRepositoryPort,
+        EnderecoEntregaRepositoryPort,
+        EnderecoUsuarioRepositoryPort,
+        EnderecoLojaRepositoryPort,
+        LojaFavoritaRepositoryPort,
+        IngredienteRepositoryPort,
+        HorarioFuncionamentoRepositoryPort,
+        ConfiguracaoPedidosLojaRepositoryPort,
+        FuncionarioRepositoryPort,
+        EntregadorRepositoryPort,
+        ClienteRepositoryPort,
+    },
     repositories::{
         AdicionalRepository,
         AvaliacaoDeLojaRepository,
@@ -69,7 +91,7 @@ pub struct AppState {
     pub cupom_repo: Arc<CupomRepository>,
     pub usuario_repo: Arc<UsuarioRepository>,
     pub loja_repo: Arc<LojaRepository>,
-    pub produto_repo: Arc<ProdutoRepository>,
+    pub produto_repo: Arc<dyn ProdutoRepositoryPort>,
     // Raw pool for administrative operations (e.g. wipe database)
     pub db: Arc<PgPool>,
 }
@@ -122,102 +144,106 @@ impl AppState {
         // 3. Inicialização dos Services
         let usuario_service = Arc::new(
             UsuarioService::new(
-                Arc::clone(&usuario_repo)
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
             )
         );
 
         let loja_service = Arc::new(
             LojaService::new(
-                Arc::clone(&loja_repo),
-                Arc::clone(&config_partes_repo),
-                Arc::clone(&horario_repo),
-                Arc::clone(&funcionario_repo),
-                Arc::clone(&entregador_repo),
-                Arc::clone(&cliente_repo),
-                Arc::clone(&usuario_repo)
+                Arc::clone(&loja_repo) as Arc<dyn LojaRepositoryPort>,
+                Arc::clone(&config_partes_repo) as Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+                Arc::clone(&horario_repo) as Arc<dyn HorarioFuncionamentoRepositoryPort>,
+                Arc::clone(&funcionario_repo) as Arc<dyn FuncionarioRepositoryPort>,
+                Arc::clone(&entregador_repo) as Arc<dyn EntregadorRepositoryPort>,
+                Arc::clone(&cliente_repo) as Arc<dyn ClienteRepositoryPort>,
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
             )
         );
 
         let catalogo_service = Arc::new(
             CatalogoService::new(
-                Arc::clone(&produto_repo),
-                Arc::clone(&categorias_de_produtos_repo),
-                Arc::clone(&adicional_repo)
+                Arc::clone(&produto_repo) as Arc<dyn ProdutoRepositoryPort>,
+                Arc::clone(&categorias_de_produtos_repo) as Arc<dyn CategoriaRepositoryPort>,
+                Arc::clone(&adicional_repo) as Arc<dyn AdicionalRepositoryPort>
             )
         );
 
         let pedido_service = Arc::new(
             PedidoService::new(
-                Arc::clone(&pedido_repo),
-                Arc::clone(&config_partes_repo),
-                Arc::clone(&cupom_repo),
-                Arc::clone(&promocao_repo),
-                Arc::clone(&endereco_entrega_repo),
+                Arc::clone(&pedido_repo) as Arc<dyn PedidoRepositoryPort>,
+                Arc::clone(&config_partes_repo) as Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
+                Arc::clone(&cupom_repo) as Arc<dyn CupomRepositoryPort>,
+                Arc::clone(&promocao_repo) as Arc<dyn PromocaoRepositoryPort>,
+                Arc::clone(&endereco_entrega_repo) as Arc<dyn EnderecoEntregaRepositoryPort>,
             )
         );
 
         let marketing_service = Arc::new(
             MarketingService::new(
-                Arc::clone(&cupom_repo),
-                Arc::clone(&promocao_repo),
-                Arc::clone(&avaliacoes_de_loja_repo),
-                Arc::clone(&avaliacoes_de_produto_repo)
+                Arc::clone(&cupom_repo) as Arc<dyn CupomRepositoryPort>,
+                Arc::clone(&promocao_repo) as Arc<dyn PromocaoRepositoryPort>,
+                Arc::clone(&avaliacoes_de_loja_repo) as Arc<dyn AvaliacaoDeLojaRepositoryPort>,
+                Arc::clone(&avaliacoes_de_produto_repo) as Arc<dyn AvaliacaoDeProdutoRepositoryPort>
             )
         );
 
         let endereco_entrega_service = Arc::new(
             EnderecoEntregaService::new(
-                Arc::clone(&endereco_entrega_repo)
+                Arc::clone(&endereco_entrega_repo) as Arc<dyn EnderecoEntregaRepositoryPort>
             )
         );
 
         let endereco_usuario_service = Arc::new(
             EnderecoUsuarioService::new(
-                Arc::clone(&endereco_usuario_repo)
+                Arc::clone(&endereco_usuario_repo) as Arc<dyn EnderecoUsuarioRepositoryPort>
             )
         );
 
         let endereco_loja_service = Arc::new(
             EnderecoLojaService::new(
-                Arc::clone(&endereco_loja_repo)
+                Arc::clone(&endereco_loja_repo) as Arc<dyn EnderecoLojaRepositoryPort>
             )
         );
 
         let loja_favorita_service = Arc::new(
             LojaFavoritaService::new(
-                Arc::clone(&loja_favorita_repo)
+                Arc::clone(&loja_favorita_repo) as Arc<dyn LojaFavoritaRepositoryPort>
             )
         );
 
+        let ingrediente_repo = Arc::new(IngredienteRepository::new(pool.clone()));
         let ingrediente_service = Arc::new(
             IngredienteService::new(
-                Arc::new(IngredienteRepository::new(pool.clone()))
+                Arc::clone(&ingrediente_repo) as Arc<dyn IngredienteRepositoryPort>
             )
         );
 
+        let horario_repo = Arc::new(HorarioFuncionamentoRepository::new(pool.clone()));
         let horario_funcionamento_service = Arc::new(
             HorarioFuncionamentoService::new(
-                Arc::new(HorarioFuncionamentoRepository::new(pool.clone()))
+                Arc::clone(&horario_repo) as Arc<dyn HorarioFuncionamentoRepositoryPort>
             )
         );
 
         let config_pedido_service = Arc::new(
             ConfiguracaoPedidosLojaService::new(
-                Arc::clone(&config_partes_repo)
+                Arc::clone(&config_partes_repo) as Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>
             )
         );
 
+        let funcionario_repo_svc = Arc::new(FuncionarioRepository::new(pool.clone()));
         let funcionario_service = Arc::new(
             FuncionarioService::new(
-                Arc::new(FuncionarioRepository::new(pool.clone())),
-                Arc::clone(&usuario_repo)
+                Arc::clone(&funcionario_repo_svc) as Arc<dyn FuncionarioRepositoryPort>,
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
             )
         );
 
+        let entregador_repo_svc = Arc::new(EntregadorRepository::new(pool.clone()));
         let entregador_service = Arc::new(
             EntregadorService::new(
-                Arc::new(EntregadorRepository::new(pool.clone())),
-                Arc::clone(&usuario_repo)
+                Arc::clone(&entregador_repo_svc) as Arc<dyn EntregadorRepositoryPort>,
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
             )
         );
 
@@ -229,7 +255,7 @@ impl AppState {
 
         let upload_imagem_usecase = Arc::new(
             UploadImagemUsecase::new(
-                ProdutoRepository::new(pool.clone()),
+                Arc::clone(&produto_repo) as Arc<dyn ProdutoRepositoryPort>,
                 bucket,
                 endpoint.clone(),
             )
@@ -259,7 +285,7 @@ impl AppState {
                 cupom_repo: Arc::clone(&cupom_repo),
                 usuario_repo: Arc::clone(&usuario_repo),
                 loja_repo: Arc::clone(&loja_repo),
-                produto_repo: Arc::clone(&produto_repo),
+                produto_repo: Arc::clone(&produto_repo) as Arc<dyn ProdutoRepositoryPort>,
                 db: pool,
             }
         );

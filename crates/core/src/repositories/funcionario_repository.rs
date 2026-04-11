@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Funcionario, Model}, repositories::Repository};
+use crate::ports::FuncionarioRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct FuncionarioRepository { pool: Arc<PgPool> }
 
@@ -89,5 +91,24 @@ impl Repository<Funcionario> for FuncionarioRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl FuncionarioRepositoryPort for FuncionarioRepository {
+    async fn criar(&self, funcionario: &Funcionario) -> DomainResult<Uuid> {
+        <Self as Repository<Funcionario>>::criar(self, funcionario).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Funcionario>> {
+        <Self as Repository<Funcionario>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Funcionario>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, funcionario: Funcionario) -> DomainResult<()> {
+        <Self as Repository<Funcionario>>::atualizar(self, funcionario).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Funcionario>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

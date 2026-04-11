@@ -24,11 +24,11 @@ impl LojaRepositoryAdapter {
 #[async_trait]
 impl LojaRepositoryPort for LojaRepositoryAdapter {
     async fn criar(&self, entity: &Loja) -> DomainResult<Uuid> {
-        self.inner.criar(entity).await.map_err(|e| DomainError::Internal(e))
+        Repository::criar(&*self.inner, entity).await.map_err(|e| DomainError::Internal(e))
     }
 
     async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Loja>> {
-        self.inner.buscar_por_uuid(uuid).await.map_err(|e| DomainError::Internal(e))
+        Repository::buscar_por_uuid(&*self.inner, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 
     async fn buscar_por_slug(&self, slug: &str) -> DomainResult<Option<Loja>> {
@@ -36,7 +36,7 @@ impl LojaRepositoryPort for LojaRepositoryAdapter {
     }
 
     async fn listar_todos(&self) -> DomainResult<Vec<Loja>> {
-        self.inner.listar_todos().await.map_err(|e| DomainError::Internal(e))
+        Repository::listar_todos(&*self.inner).await.map_err(|e| DomainError::Internal(e))
     }
 
     async fn buscar_por_criador(&self, criador_uuid: Uuid) -> DomainResult<Vec<Loja>> {

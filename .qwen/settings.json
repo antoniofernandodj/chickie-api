@@ -28,7 +28,9 @@
       "Bash(docker stop *)",
       "Bash(docker rm *)",
       "Bash(docker compose config)",
-      "Bash(docker compose restart *)"
+      "Bash(docker compose restart *)",
+      "Bash(do *)",
+      "Bash(done)"
     ]
   },
   "$version": 3

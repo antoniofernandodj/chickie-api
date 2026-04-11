@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Entregador, Model}, repositories::Repository};
+use crate::ports::EntregadorRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct EntregadorRepository { pool: Arc<PgPool> }
 
@@ -90,4 +92,26 @@ impl Repository<Entregador> for EntregadorRepository {
             .map_err(|e| e.to_string())
     }
 
+}
+
+#[async_trait::async_trait]
+impl EntregadorRepositoryPort for EntregadorRepository {
+    async fn criar(&self, entregador: &Entregador) -> DomainResult<Uuid> {
+        <Self as Repository<Entregador>>::criar(self, entregador).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Entregador>> {
+        <Self as Repository<Entregador>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Entregador>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_disponiveis(&self, loja_uuid: Uuid) -> DomainResult<Vec<Entregador>> {
+        self.buscar_disponiveis(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, entregador: Entregador) -> DomainResult<()> {
+        <Self as Repository<Entregador>>::atualizar(self, entregador).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Entregador>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
 }

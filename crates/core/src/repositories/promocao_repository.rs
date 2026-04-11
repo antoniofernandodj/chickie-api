@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{Promocao, Model, StatusCupom}, repositories::Repository};
+use crate::ports::PromocaoRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct PromocaoRepository { pool: Arc<PgPool> }
 
@@ -109,5 +111,27 @@ impl Repository<Promocao> for PromocaoRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl PromocaoRepositoryPort for PromocaoRepository {
+    async fn criar(&self, promocao: &Promocao) -> DomainResult<Uuid> {
+        <Self as Repository<Promocao>>::criar(self, promocao).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Promocao>> {
+        <Self as Repository<Promocao>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<Promocao>> {
+        <Self as Repository<Promocao>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Promocao>> {
+        <Self as Repository<Promocao>>::listar_todos_por_loja(self, loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, promocao: Promocao) -> DomainResult<()> {
+        <Self as Repository<Promocao>>::atualizar(self, promocao).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<Promocao>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

@@ -4,29 +4,28 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::{Cupom, Promocao, AvaliacaoDeLoja, AvaliacaoDeProduto};
-use crate::repositories::{
-    CupomRepository,
-    PromocaoRepository,
-    AvaliacaoDeLojaRepository,
-    AvaliacaoDeProdutoRepository,
-    Repository as _
+use crate::ports::{
+    CupomRepositoryPort,
+    PromocaoRepositoryPort,
+    AvaliacaoDeLojaRepositoryPort,
+    AvaliacaoDeProdutoRepositoryPort,
 };
 
 #[derive(Clone)]
 pub struct MarketingService {
-    cupom_repo: Arc<CupomRepository>,
-    promocao_repo: Arc<PromocaoRepository>,
-    avaliacao_loja_repo: Arc<AvaliacaoDeLojaRepository>,
-    avaliacao_prod_repo: Arc<AvaliacaoDeProdutoRepository>,
+    cupom_repo: Arc<dyn CupomRepositoryPort>,
+    promocao_repo: Arc<dyn PromocaoRepositoryPort>,
+    avaliacao_loja_repo: Arc<dyn AvaliacaoDeLojaRepositoryPort>,
+    avaliacao_prod_repo: Arc<dyn AvaliacaoDeProdutoRepositoryPort>,
 }
 
 #[allow(dead_code)]
 impl MarketingService {
     pub fn new(
-        cupom_repo: Arc<CupomRepository>,
-        promocao_repo: Arc<PromocaoRepository>,
-        avaliacao_loja_repo: Arc<AvaliacaoDeLojaRepository>,
-        avaliacao_prod_repo: Arc<AvaliacaoDeProdutoRepository>,
+        cupom_repo: Arc<dyn CupomRepositoryPort>,
+        promocao_repo: Arc<dyn PromocaoRepositoryPort>,
+        avaliacao_loja_repo: Arc<dyn AvaliacaoDeLojaRepositoryPort>,
+        avaliacao_prod_repo: Arc<dyn AvaliacaoDeProdutoRepositoryPort>,
     ) -> Self {
         Self { cupom_repo, promocao_repo, avaliacao_loja_repo, avaliacao_prod_repo }
     }
@@ -142,7 +141,7 @@ impl MarketingService {
     }
     
     pub async fn listar_cupons(&self, loja_uuid: Uuid) -> Result<Vec<Cupom>, String> {
-        self.cupom_repo.listar_todos_por_loja(loja_uuid).await
+        self.cupom_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_cupom(
@@ -166,15 +165,15 @@ impl MarketingService {
         cupom.valor_minimo = valor_minimo;
         cupom.data_validade = data_validade;
         cupom.limite_uso = limite_uso;
-        self.cupom_repo.atualizar(cupom).await
+        self.cupom_repo.atualizar(cupom).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_cupom(&self, uuid: Uuid) -> Result<(), String> {
-        self.cupom_repo.deletar(uuid).await
+        self.cupom_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_promocoes(&self, loja_uuid: Uuid) -> Result<Vec<Promocao>, String> {
-        self.promocao_repo.listar_todos_por_loja(loja_uuid).await
+        self.promocao_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_promocao(
@@ -211,10 +210,10 @@ impl MarketingService {
         );
         promocao.uuid = uuid;
 
-        self.promocao_repo.atualizar(promocao).await
+        self.promocao_repo.atualizar(promocao).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_promocao(&self, uuid: Uuid) -> Result<(), String> {
-        self.promocao_repo.deletar(uuid).await
+        self.promocao_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 }

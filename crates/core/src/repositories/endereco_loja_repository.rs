@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{EnderecoLoja, Model}, repositories::Repository};
+use crate::ports::EnderecoLojaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct EnderecoLojaRepository { pool: Arc<PgPool> }
 
@@ -83,5 +85,27 @@ impl Repository<EnderecoLoja> for EnderecoLojaRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl EnderecoLojaRepositoryPort for EnderecoLojaRepository {
+    async fn criar(&self, endereco: &EnderecoLoja) -> DomainResult<Uuid> {
+        <Self as Repository<EnderecoLoja>>::criar(self, endereco).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<EnderecoLoja>> {
+        <Self as Repository<EnderecoLoja>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<EnderecoLoja>> {
+        sqlx::query_as::<_, EnderecoLoja>("SELECT * FROM enderecos_loja WHERE loja_uuid = $1")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))
+    }
+    async fn atualizar(&self, endereco: EnderecoLoja) -> DomainResult<()> {
+        <Self as Repository<EnderecoLoja>>::atualizar(self, endereco).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<EnderecoLoja>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

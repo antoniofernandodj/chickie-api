@@ -12,8 +12,8 @@ use crate::{
         FuncionarioService,
         EntregadorService,
         MarketingService,
-        EnderecoLojaService
-    }
+        EnderecoLojaService,
+    },
 };
 
 pub struct AdminUsecase {

@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{CategoriaProdutos, Model}, repositories::Repository};
+use crate::ports::CategoriaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct CategoriaProdutosRepository { pool: Arc<PgPool> }
 
@@ -85,5 +87,33 @@ impl Repository<CategoriaProdutos> for CategoriaProdutosRepository {
             .fetch_all(self.pool())
             .await
             .map_err(|e| e.to_string())
+    }
+}
+
+#[async_trait::async_trait]
+impl CategoriaRepositoryPort for CategoriaProdutosRepository {
+    async fn criar(&self, categoria: &CategoriaProdutos) -> DomainResult<Uuid> {
+        <Self as Repository<CategoriaProdutos>>::criar(self, categoria).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<CategoriaProdutos>> {
+        <Self as Repository<CategoriaProdutos>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_todos(&self) -> DomainResult<Vec<CategoriaProdutos>> {
+        <Self as Repository<CategoriaProdutos>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<CategoriaProdutos>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, categoria: CategoriaProdutos) -> DomainResult<()> {
+        <Self as Repository<CategoriaProdutos>>::atualizar(self, categoria).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<CategoriaProdutos>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn contar_produtos(&self, categoria_uuid: Uuid) -> DomainResult<i64> {
+        sqlx::query_scalar("SELECT COUNT(*) FROM produtos WHERE categoria_uuid = $1")
+            .bind(categoria_uuid)
+            .fetch_one(&*self.pool)
+            .await.map_err(|e| DomainError::Internal(e.to_string()))
     }
 }

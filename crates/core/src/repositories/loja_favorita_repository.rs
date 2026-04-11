@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{LojaFavorita, Model}, repositories::Repository};
+use crate::ports::LojaFavoritaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct LojaFavoritaRepository { pool: Arc<PgPool> }
 
@@ -83,5 +85,21 @@ impl Repository<LojaFavorita> for LojaFavoritaRepository {
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<LojaFavorita>, String> {
         self.buscar_por_loja(loja_uuid).await
+    }
+}
+
+#[async_trait::async_trait]
+impl LojaFavoritaRepositoryPort for LojaFavoritaRepository {
+    async fn criar(&self, favorita: &LojaFavorita) -> DomainResult<Uuid> {
+        <Self as Repository<LojaFavorita>>::criar(self, favorita).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<LojaFavorita>> {
+        self.buscar_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_usuario_e_loja(&self, usuario_uuid: Uuid, loja_uuid: Uuid) -> DomainResult<Option<LojaFavorita>> {
+        self.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        <Self as Repository<LojaFavorita>>::deletar(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
 }

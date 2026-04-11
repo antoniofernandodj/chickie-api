@@ -2,18 +2,20 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::models::{Adicional, Usuario};
-use crate::repositories::AdicionalRepository;
+use crate::{
+    models::{Adicional, Usuario},
+    ports::AdicionalRepositoryPort,
+};
 
 pub struct AdicionalUsecase {
-    repo: Arc<AdicionalRepository>,
+    repo: Arc<dyn AdicionalRepositoryPort>,
     usuario: Usuario,
     loja_uuid: Uuid,
 }
 
 impl AdicionalUsecase {
     pub fn new(
-        repo: Arc<AdicionalRepository>,
+        repo: Arc<dyn AdicionalRepositoryPort>,
         usuario: Usuario,
         loja_uuid: Uuid,
     ) -> Self {

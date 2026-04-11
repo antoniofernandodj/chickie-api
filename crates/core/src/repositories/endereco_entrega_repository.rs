@@ -3,6 +3,8 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
 use crate::{models::{EnderecoEntrega, Model}, repositories::Repository};
+use crate::ports::EnderecoEntregaRepositoryPort;
+use crate::domain::errors::{DomainError, DomainResult};
 
 pub struct EnderecoEntregaRepository { pool: Arc<PgPool> }
 
@@ -127,5 +129,24 @@ impl Repository<EnderecoEntrega> for EnderecoEntregaRepository {
 
     async fn listar_todos_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<EnderecoEntrega>, String> {
         self.buscar_por_loja(loja_uuid).await
+    }
+}
+
+#[async_trait::async_trait]
+impl EnderecoEntregaRepositoryPort for EnderecoEntregaRepository {
+    async fn criar(&self, endereco: &EnderecoEntrega) -> DomainResult<Uuid> {
+        <Self as Repository<EnderecoEntrega>>::criar(self, endereco).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<EnderecoEntrega>> {
+        <Self as Repository<EnderecoEntrega>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> DomainResult<Option<EnderecoEntrega>> {
+        self.buscar_por_pedido(pedido_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<EnderecoEntrega>> {
+        self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn atualizar(&self, endereco: EnderecoEntrega) -> DomainResult<()> {
+        <Self as Repository<EnderecoEntrega>>::atualizar(self, endereco).await.map_err(|e| DomainError::Internal(e))
     }
 }
