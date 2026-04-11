@@ -1,9 +1,9 @@
+use crate::api_handlers::dto::AppError;
+use crate::api_handlers::AppState;
 use axum::{Extension, Json, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::api_handlers::dto::AppError;
 use chickie_core::{models::{self, Usuario}, usecases::CatalogoUsecase};
-use crate::api_handlers::AppState;
 
 
 pub async fn listar_produtos(

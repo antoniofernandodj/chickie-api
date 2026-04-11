@@ -4,14 +4,8 @@ use axum::{
 };
 use std::sync::Arc;
 use uuid::Uuid;
-
-use chickie_core::{
-    models::Usuario,
-};
-
-use crate::{
-    api_handlers::{AppState, dto::AppError},
-};
+use chickie_core::{models::Usuario};
+use crate::{api_handlers::{AppState, dto::AppError}};
 
 pub async fn subir_imagem_produto(
     State(state): State<Arc<AppState>>,

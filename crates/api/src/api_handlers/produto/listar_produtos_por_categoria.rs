@@ -1,8 +1,7 @@
+use crate::api_handlers::{AppState, dto::AppError};
 use axum::{Extension, Json, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
-
-use crate::api_handlers::{AppState, dto::AppError};
 use chickie_core::{
     models::{Usuario, Produto},
     usecases::CatalogoUsecase,
