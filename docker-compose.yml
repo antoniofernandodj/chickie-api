@@ -4,6 +4,10 @@ services:
   postgres:
     image: postgres:15.2
     container_name: postgres
+    # Production: use environment variables directly
+    # Development: use secrets env file locally
+    env_file:
+      - database.secrets.env
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
@@ -14,21 +18,64 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - mynetwork
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: chickie-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: chickie
+      RABBITMQ_DEFAULT_PASS: chickie_password
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"       # AMQP port
+      - "15672:15672"     # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mynetwork
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   api:
     build:
       context: .
       dockerfile: dockerfiles/api.dockerfile
     container_name: chickie-api
+    # Production: use environment variables only
+    # Development: use secrets env file locally
+    env_file:
+      - database.secrets.env
     environment:
       DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
       APP_PORT: "3000"
-      RUST_LOG: info
+      RUST_LOG: debug
       JWT_SECRET: secret
+      MODE: development
+      RABBITMQ_URL: amqp://chickie:chickie_password@rabbitmq:5672
+      # S3 configuration (local development uses mock/placeholder values)
+      S3_BUCKET_NAME_1: chickie-uploads-dev
+      S3_ENDPOINT: http://localhost:9000
+      S3_REGION: us-east-1
     ports:
       - "3000:3000"
+    volumes:
+      # Mount migrations for development (hot reload of schema changes)
+      - ./migrations:/app/migrations
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - mynetwork
 
@@ -37,11 +84,28 @@ services:
       context: .
       dockerfile: dockerfiles/worker.dockerfile
     container_name: chickie-worker
+    # Production: use environment variables only
+    # Development: use secrets env file locally
+    env_file:
+      - database.secrets.env
     environment:
       DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
-      RUST_LOG: info
+      RABBITMQ_URL: amqp://chickie:chickie_password@rabbitmq:5672
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: chickie
+      RABBITMQ_PASS: chickie_password
+      RABBITMQ_VHOST: /
+      RABBITMQ_EXCHANGE: chickie_exchange
+      RUST_LOG: debug
+    volumes:
+      # Mount current directory for development (watch mode, if needed)
+      - .:/app/src:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - mynetwork
 
@@ -50,14 +114,25 @@ services:
       context: .
       dockerfile: dockerfiles/scheduler.dockerfile
     container_name: chickie-scheduler
+    # Production: use environment variables only
+    # Development: use secrets env file locally
+    env_file:
+      - database.secrets.env
     environment:
       DATABASE_URL: postgres://myuser:mypassword@postgres:5432/mydatabase
-      RUST_LOG: info
+      RUST_LOG: debug
       SCHEDULER_PORT: "8080"
+      RABBITMQ_URL: amqp://chickie:chickie_password@rabbitmq:5672
     ports:
       - "8080:8080"
+    volumes:
+      # Mount scheduler config for development (hot reload)
+      - ./scheduler.toml:/app/scheduler.toml:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - mynetwork
     healthcheck:
@@ -69,6 +144,7 @@ services:
 
 volumes:
   postgres_data:
+  rabbitmq_data:
 
 networks:
   mynetwork:

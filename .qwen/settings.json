@@ -26,7 +26,9 @@
       "Bash(jq *)",
       "Bash(docker logs *)",
       "Bash(docker stop *)",
-      "Bash(docker rm *)"
+      "Bash(docker rm *)",
+      "Bash(docker compose config)",
+      "Bash(docker compose restart *)"
     ]
   },
   "$version": 3

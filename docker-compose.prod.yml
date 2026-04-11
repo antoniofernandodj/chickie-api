@@ -1,0 +1,68 @@
+# Production Docker Compose
+# Use this file for production deployments (Dokploy, etc.)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  postgres:
+    # Production: NO env_file, use secrets from environment variables or secret manager
+    env_file: []
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432"  # Don't expose publicly, use internal networking
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    # Production: NO env_file, use secrets from environment variables
+    env_file: []
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "5672"  # Don't expose management UI in production
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  api:
+    # Production: NO env_file, use secrets from environment variables
+    env_file: []
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      APP_PORT: "3000"
+      RUST_LOG: info
+      JWT_SECRET: ${JWT_SECRET}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      S3_BUCKET_NAME_1: ${S3_BUCKET_NAME_1}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      MODE: production
+    ports:
+      - "3000:3000"
+    volumes: []  # No volume mounts in production
+
+  worker:
+    # Production: NO env_file, use secrets from environment variables
+    env_file: []
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      RUST_LOG: info
+    volumes: []  # No volume mounts in production
+
+  scheduler:
+    # Production: NO env_file, use secrets from environment variables
+    env_file: []
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      RUST_LOG: info
+      SCHEDULER_PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes: []  # No volume mounts in production
