@@ -35,6 +35,7 @@ _(nenhum bug conhecido)_
 | 19 | **Campo pizza_mode na categoria** | `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model, repository, service, handlers criar/atualizar categoria. | 2026-04-07 |
 | 20 | **Listar pedidos por usuário** | Novo endpoint `GET /api/pedidos/meus` retorna todos os pedidos do usuário autenticado com hidratação completa (itens, partes, adicionais). Usa `buscar_completos_por_usuario` do repository. | 2026-04-07 |
 | 21 | **Atribuir entregador ao pedido** | Endpoints `PUT /api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` e `DELETE` para vincular/remover entregador. Migration `0005` adicionou `entregador_uuid` à tabela `pedidos`. Stack completa: model, repository, service, usecase, handlers. | 2026-04-07 |
+| 24 | **Clean Architecture aplicada** | Ports (23 traits), adapters, DomainError, services usam traits, database movido para api/infrastructure, documentação completa com tutorial em CLEAN_ARCHITECTURE_GUIDE.md | 2026-04-11 |
 
 ## 📋 Funcionalidades Pendentes
 
@@ -62,8 +63,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 10 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 |
+| ✅ Concluídas | 11 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 10 concluídas recentemente**
+**Total: 11 pendências ativas, 11 concluídas recentemente**

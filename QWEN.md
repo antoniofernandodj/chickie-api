@@ -34,64 +34,114 @@ API REST em Rust (Axum + Tokio) para o sistema de pedidos e entregas **Chickie**
 
 ## Estrutura de Módulos
 
+### Core (crates/core/src/)
+
 ```
-src/
-├── main.rs                 # Bootstrap, tracing, bind do servidor
-├── database.rs             # Criação do pool PostgreSQL
-├── utils.rs                # Utilitários gerais (ex: agora())
+crates/core/src/
+├── domain/                     # Camada de domínio puro
+│   ├── errors/mod.rs           # DomainError enum + DomainResult<T>
+│   └── enums/                  # Enums puros (sem sqlx Encode/Decode)
+│       ├── classe_usuario.rs
+│       ├── estado_pedido.rs
+│       ├── status_cupom.rs
+│       ├── tipo_calculo.rs
+│       └── tipo_escopo.rs
 │
-├── models/                 # Structs de domínio (Serialize/Deserialize)
+├── ports/                      # Contratos (traits sem sqlx)
+│   ├── mod.rs                  # Re-exports de todos os ports
+│   ├── repository.rs           # RepositoryPort<T> genérico
+│   ├── storage.rs              # ImageStoragePort
+│   ├── usuario_port.rs
+│   ├── loja_port.rs
+│   ├── pedido_port.rs
+│   ├── produto_port.rs
+│   ├── categoria_port.rs
+│   ├── adicional_port.rs
+│   ├── cupom_port.rs
+│   ├── promocao_port.rs
+│   ├── endereco_entrega_port.rs
+│   ├── endereco_usuario_port.rs
+│   ├── endereco_loja_port.rs
+│   ├── avaliacao_loja_port.rs
+│   ├── avaliacao_produto_port.rs
+│   ├── config_pedido_port.rs
+│   ├── horario_port.rs
+│   ├── funcionario_port.rs
+│   ├── entregador_port.rs
+│   ├── cliente_port.rs
+│   ├── ingrediente_port.rs
+│   └── loja_favorita_port.rs
+│
+├── adapters/                   # Implementações sqlx dos ports
+│   ├── mod.rs
+│   ├── usuario_adapter.rs
+│   └── loja_adapter.rs
+│
+├── models/                     # Entidades (FromRow + Serialize/Deserialize)
 │   ├── mod.rs
 │   ├── usuario.rs
 │   ├── loja.rs
 │   ├── pedido.rs
 │   ├── produto.rs
-│   ├── avaliacao.rs
-│   ├── cupom.rs
-│   └── ...
+│   └── ...                     # Uma por entidade
 │
-├── repositories/           # Acesso direto ao banco (queries SQL)
-│   ├── mod.rs              # Trait Repository<T> com defaults
-│   ├── usuario_repository.rs
-│   ├── loja_repository.rs
-│   ├── pedido_repository.rs
-│   └── ...                 # Um arquivo por entidade
+├── repositories/               # Queries SQL, implementam ports
+│   ├── mod.rs                  # Trait Repository<T> com defaults
+│   ├── usuario_repository.rs   # impl UsuarioRepositoryPort
+│   ├── loja_repository.rs      # impl LojaRepositoryPort
+│   └── ...                     # impl PortTrait para cada repo
 │
-├── services/               # Regras de negócio, orquestra repositories
+├── services/                   # Regras de negócio, dependem de PORTS
 │   ├── mod.rs
-│   ├── usuario_service.rs
-│   ├── loja_service.rs
+│   ├── usuario_service.rs      # usa Arc<dyn UsuarioRepositoryPort>
+│   ├── loja_service.rs         # usa Arc<dyn ...Port> para 7 repos
 │   ├── pedido_service.rs
-│   ├── catalogo_service.rs
-│   ├── marketing_service.rs
-│   ├── endereco_entrega_service.rs
-│   ├── endereco_usuario_service.rs
-│   └── loja_favorita_service.rs
+│   └── ...                     # 15 services no total
 │
-├── usecases/               # Casos de uso (orquestram services + usuário)
+├── usecases/                   # Orquestradores para API
 │   ├── mod.rs
-│   ├── catalogo.rs         # CatalogoUsecase, CreateProdutoRequest
-│   ├── pedido.rs
-│   └── marketing.rs        # MarketingUsecase
+│   ├── pedido.rs               # PedidoUsecase → PedidoService
+│   ├── catalogo.rs             # CatalogoUsecase → CatalogoService
+│   ├── marketing.rs
+│   ├── admin.rs
+│   └── ...                     # 9 usecases
 │
-└── api/                    # Handlers Axum, rotas, AppState
-    ├── mod.rs              # Declaração de módulos e re-exports
-    ├── routers.rs          # Definição de todas as rotas
-    ├── state.rs            # AppState (estado global compartilhado)
-    ├── auth.rs             # JWT middleware + criação de token
-    ├── dto/mod.rs          # Request DTOs + AppError + Claims
-    ├── wipe.rs             # ⚠️ Endpoint de wipe do banco (dev only)
+└── utils/                      # Utilitários
+```
+
+### API (crates/api/src/)
+
+```
+crates/api/src/
+├── main.rs                     # Bootstrap, tracing, bind
+├── infrastructure/
+│   └── database.rs             # Pool PostgreSQL + migrations
+│
+└── api_handlers/
+    ├── mod.rs                  # Declaração de módulos
+    ├── routers.rs              # Definição de todas as rotas
+    ├── state.rs                # AppState (injeção de dependência)
+    ├── auth.rs                 # JWT middleware
+    ├── dto/mod.rs              # Request DTOs + AppError + Claims
+    ├── openapi.rs              # Swagger/OpenAPI
     │
-    ├── usuario/            # Handlers de usuário
-    ├── loja/               # Handlers de loja
-    ├── pedido/             # Handlers de pedido
-    ├── produto/            # Handlers de produto
-    ├── cupom/              # Handlers de cupom
-    ├── catalogo/           # Handlers de catálogo (adicionais, categorias)
-    ├── endereco_entrega/   # Handlers de endereço de entrega
-    ├── endereco_usuario/   # Handlers de endereço de usuário
-    ├── loja_favorita/      # Handlers de lojas favoritas
-    └── marketing/          # Handlers de avaliação (loja/produto)
+    ├── usuario/                # Handlers de usuário
+    ├── loja/                   # Handlers de loja
+    ├── pedido/                 # Handlers de pedido
+    ├── produto/                # Handlers de produto
+    ├── cupom/                  # Handlers de cupom
+    ├── catalogo/               # Handlers de catálogo
+    ├── endereco_entrega/       # Handlers de endereço de entrega
+    ├── endereco_usuario/       # Handlers de endereço de usuário
+    ├── endereco_loja/          # Handlers de endereço de loja
+    ├── loja_favorita/          # Handlers de favoritos
+    ├── marketing/              # Handlers de avaliação
+    ├── funcionario/            # Handlers de funcionário
+    ├── entregador/             # Handlers de entregador
+    ├── ingrediente/            # Handlers de ingrediente
+    ├── horario/                # Handlers de horário
+    ├── config_pedido/          # Handlers de config de pedido
+    └── routers/                # Arquivos de rotas individuais
 ```
 
 ---
@@ -106,6 +156,20 @@ esta pilha.
 ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
 - Sempre que eu mencionar documentação completa estou falando de @API.md,
 @QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
+
+### Regra Arquitetural Obrigatória
+
+**TODO endpoint segue estritamente:**
+
+```
+Handler → Usecase → Service → Port (trait) → Repository → Database
+```
+
+- Handlers **NUNCA** contêm lógica de negócio, queries SQL, ou chamadas diretas a repositórios
+- Services dependem de **port traits** (`Arc<dyn XPort>`), não de repositórios concretos
+- Repositories implementam seus respectivos ports (`impl XPort for YRepository`)
+- `DomainError` é o tipo de erro do domínio; `AppError` na API faz o mapeamento para HTTP
+- Para criar novas entidades do zero, consulte `CLEAN_ARCHITECTURE_GUIDE.md`
 
 ## Microserviços (Visão Futura)
 
@@ -130,23 +194,43 @@ ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
 - **Hexagonal (Ports & Adapters):** domínio isolado de infraestrutura
 - **Clean Architecture:** camadas com dependência unidirecional
 - **Domain-Driven Design:** agregados, value objects, repositórios
-- **Repository Pattern:** trait genérica `Repository<T>` com defaults
+- **Repository Pattern:** trait genérica `Repository<T>` + traits específicas por entidade (ports)
 
 ### Camadas
 
 ```
-┌─────────────────────────────────────────┐
-│           API Layer (Axum)              │  ← Handlers, rotas, DTOs
-├─────────────────────────────────────────┤
-│        Use Case Layer                   │  ← Casos de uso orquestradores
-├─────────────────────────────────────────┤
-│        Service Layer                    │  ← Regras de negócio
-├─────────────────────────────────────────┤
-│     Repository Layer (sqlx)             │  ← Acesso ao banco
-├─────────────────────────────────────────┤
-│        Domain Layer (models)            │  ← Entidades, value objects
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│           API Layer (Axum)                              │
+│  Handlers → DTOs → chamam usecases → retornam response   │
+├─────────────────────────────────────────────────────────┤
+│        Use Case Layer                                   │
+│  Orquestram services, carregam contexto (usuario, loja)  │
+├─────────────────────────────────────────────────────────┤
+│        Service Layer                                    │
+│  Regras de negócio, dependem de PORT TRAITS              │
+├─────────────────────────────────────────────────────────┤
+│        Port Layer (Traits)                              │
+│  23 traits sem sqlx — contratos de interface             │
+├─────────────────────────────────────────────────────────┤
+│     Repository Layer (sqlx)                             │
+│  20 repositórios implementando port traits               │
+├─────────────────────────────────────────────────────────┤
+│        Domain Layer                                     │
+│  DomainError, enums puros, models (FromRow + serde)      │
+└─────────────────────────────────────────────────────────┘
 ```
+
+### Port Traits
+
+Definidos em `ports/`, são contratos que services e usecases dependem. **Nenhum port menciona sqlx.**
+
+| Port | Métodos principais |
+|------|-------------------|
+| `UsuarioRepositoryPort` | criar, buscar_por_uuid, buscar_por_email, listar_todos, atualizar |
+| `LojaRepositoryPort` | criar, buscar_por_uuid, buscar_por_slug, pesquisar, listar_todos |
+| `PedidoRepositoryPort` | criar, buscar_completo, buscar_completos_por_loja, atualizar_status |
+| `ProdutoRepositoryPort` | criar, buscar_por_uuid, listar_por_loja, atualizar, deletar |
+| `... + 19 outros` | cada entidade tem seu port |
 
 ### Trait `Repository<T>`
 
@@ -159,12 +243,29 @@ Definida em `repositories/mod.rs`, fornece métodos default para eliminar repeti
 | `deletar`                | ✅ Sim   | Deleta por UUID com msg de erro  |
 | `criar`                  | ❌ Não   | Insert específico por entidade   |
 | `atualizar`              | ❌ Não   | Update específico por entidade   |
-| `listar_todos_por_loja`  | ❌ Não   | Filtra por loja (varia por repo) |
 
 Cada repositório implementa também:
 - `fn table_name(&self) -> &'static str` — nome da tabela
 - `fn entity_name(&self) -> &'static str` — nome da entidade (para erros)
 - `fn pool(&self) -> &PgPool` — acesso ao pool
+- `impl XPort for YRepository` — conecta ao layer de ports
+
+### DomainError
+
+Definido em `domain/errors/mod.rs`:
+
+```rust
+pub enum DomainError {
+    NotFound { entity, id },
+    BusinessRule(String),
+    Validation(String),
+    Conflict { entity, field },
+    InvalidState { current, attempted, allowed },
+    Internal(String),
+}
+```
+
+`AppError` na API converte `DomainError` para status HTTP corretos (404, 400, 403, 409, 422, 500).
 
 ---
 

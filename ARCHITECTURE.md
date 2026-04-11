@@ -231,4 +231,46 @@ docker compose exec rabbitmq rabbitmqctl list_queues name messages consumers
 ✅ **Production**: Use environment variables or secret manager  
 ✅ **Never commit** `.env` files to version control  
 ✅ **RabbitMQ UI** not exposed in production  
-✅ **PostgreSQL port** not publicly accessible in production  
+## Clean Architecture
+
+### Layer Structure
+
+```
+Domain (errors, enums)
+  ↑
+Ports (23 traits — no sqlx)
+  ↑
+Repositories (20 impls — sqlx queries, implement ports)
+  ↑
+Services (15 — business rules, depend on ports)
+  ↑
+Usecases (9 — orchestrators for API)
+  ↑
+API Handlers (Axum — extract request, call usecase, return response)
+```
+
+### Key Rules
+
+1. **Handlers never contain business logic** — they delegate to usecases
+2. **Services depend on port traits** (`Arc<dyn XPort>`), not concrete repositories
+3. **Ports never mention sqlx** — they are pure interface contracts
+4. **Repositories implement ports** — `impl XPort for YRepository`
+5. **DomainError is the domain error type** — `AppError` maps it to HTTP status codes
+
+### Dependency Injection
+
+All wiring happens in `AppState::new()` (api/src/api_handlers/state.rs):
+
+```rust
+// Concrete repo → trait object
+let usuario_repo = Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>;
+
+// Service receives trait object
+let usuario_service = Arc::new(
+    UsuarioService::new(usuario_repo)
+);
+```
+
+### Adding New Entities
+
+See [`CLEAN_ARCHITECTURE_GUIDE.md`](./CLEAN_ARCHITECTURE_GUIDE.md) for a complete step-by-step tutorial using `Pagamento` as example.  

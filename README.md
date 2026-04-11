@@ -515,6 +515,27 @@ Deploy via **Dokploy** com Docker. A imagem é construída e publicada no regist
 
 ---
 
+## Arquitetura
+
+Este projeto segue Clean Architecture / Hexagonal:
+
+```
+Handler → Usecase → Service → Port (trait) → Repository → Database
+```
+
+- **23 port traits** definem contratos sem dependência de banco
+- **20 repositories** implementam os ports com sqlx
+- **15 services** aplicam regras de negócio usando ports
+- **DomainError** tipifica erros do domínio
+- **AppError** mapeia DomainError → HTTP status
+
+### Tutorial
+
+Para criar novas entidades, repositórios, services e endpoints, consulte:
+- [`CLEAN_ARCHITECTURE_GUIDE.md`](./CLEAN_ARCHITECTURE_GUIDE.md) — tutorial passo-a-passo completo
+
+---
+
 ## 📄 Licença
 
 MIT
