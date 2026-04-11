@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use uuid::Uuid;
-use crate::models::{Model, ParteDeItemPedido};
+use crate::models::Model;
 use chrono::Utc;
 use sqlx::FromRow;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-// --- AdicionalDeItemDePedido ---
+// --- AdicionalDeItemDePedido (agora dentro do JSONB) ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct AdicionalDeItemDePedido {
     pub uuid: Uuid,
     pub item_uuid: Uuid,
@@ -37,19 +38,55 @@ impl AdicionalDeItemDePedido {
     }
 }
 
-// --- ItemPedido ---
+// --- ParteDeItemPedido (agora dentro do JSONB) ---
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+pub struct ParteDeItemPedido {
+    pub uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub item_uuid: Option<Uuid>,
+    pub produto_nome: String,
+    pub produto_uuid: Uuid,
+    pub preco_unitario: Decimal,
+    pub posicao: i32,
+    #[serde(default)]
+    pub adicionais: Vec<AdicionalDeItemDePedido>,
+}
+
+impl ParteDeItemPedido {
+    pub fn new(
+        produto_uuid: Uuid,
+        produto_nome: String,
+        loja_uuid: Uuid,
+        preco_unitario: Decimal,
+        posicao: i32,
+    ) -> Self {
+        Self {
+            uuid: Uuid::new_v4(),
+            loja_uuid,
+            item_uuid: None,
+            produto_nome,
+            produto_uuid,
+            preco_unitario,
+            posicao,
+            adicionais: vec![],
+        }
+    }
+}
+
+// --- ItemPedido (agora dentro do JSONB) ---
+
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct ItemPedido {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
     pub pedido_uuid: Uuid,
     pub quantidade: i32,
     pub observacoes: Option<String>,
-    #[sqlx(skip)]
-    pub adicionais: Vec<AdicionalDeItemDePedido>,
-    #[sqlx(skip)]
+    #[serde(default)]
     pub partes: Vec<ParteDeItemPedido>,
+    #[serde(default)]
+    pub adicionais: Vec<AdicionalDeItemDePedido>,
 }
 
 impl ItemPedido {
@@ -66,8 +103,8 @@ impl ItemPedido {
             loja_uuid,
             quantidade,
             observacoes,
-            adicionais: Vec::new(),
             partes,
+            adicionais: Vec::new(),
         }
     }
 }
@@ -203,9 +240,17 @@ pub struct Pedido {
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
+    /// Campo JSONB que armazena itens/partes/adicionais (mapeado pelo sqlx)
+    #[sqlx(json)]
+    #[serde(default)]
+    pub itens_json: Vec<JsonValue>,
+    /// Itens parseados (não mapeado pelo sqlx)
     #[sqlx(skip)]
+    #[serde(default)]
     pub itens: Vec<ItemPedido>,
+    /// Legacy: partes agora estão dentro de cada item
     #[sqlx(skip)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub partes: Vec<ParteDeItemPedido>
 }
 
@@ -234,6 +279,7 @@ impl Pedido {
             tempo_estimado_min: None,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
+            itens_json: vec![],
             itens: Vec::new(),
             partes: Vec::new()
         }

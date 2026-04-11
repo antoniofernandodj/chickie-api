@@ -14,8 +14,6 @@ use crate::{
         Pedido,
         EstadoDePedido,
         ItemPedido,
-        AdicionalDeItemDePedido,
-        ParteDeItemPedido
     },
 };
 
@@ -90,66 +88,42 @@ impl PedidoRepository {
     }
 
     /// Busca um pedido completo com todos os seus itens, adicionais e partes
+    /// Agora usa JSONB em vez de múltiplas tabelas
     pub async fn buscar_completo(
         &self,
         uuid: Uuid,
         loja_uuid: Uuid,
     ) -> Result<Option<Pedido>, String> {
-        // 1. Busca o pedido base
-        let mut pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1 AND loja_uuid = $2")
+        let mut pedido = match sqlx::query_as::<_, Pedido>(
+            "SELECT * FROM pedidos WHERE uuid = $1 AND loja_uuid = $2"
+        )
             .bind(uuid)
             .bind(loja_uuid)
             .fetch_optional(&*self.pool)
             .await
             .map_err(|e| e.to_string())?
-            {
-                Some(p) => p,
-                None => return Ok(None),
-            };
+        {
+            Some(p) => p,
+            None => return Ok(None),
+        };
 
-        // 2. Busca todos os itens do pedido
-        let mut itens = sqlx::query_as::<_, ItemPedido>("SELECT * FROM itens_pedido WHERE pedido_uuid = $1 ORDER BY criado_em ASC")
-            .bind(uuid)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        for item in &mut itens {
-            item.adicionais = self.buscar_adicionais_de_item_de_pedido(&item).await?;
-            item.partes = self.buscar_partes_de_item_de_pedido(&item).await?;
-        }
-
-        pedido.itens = itens;
+        // Parse JSONB para Vec<ItemPedido>
+        pedido.itens = Self::parsear_itens_jsonb(&pedido.itens_json)?;
+        
         Ok(Some(pedido))
     }
 
-    async fn buscar_partes_de_item_de_pedido(
-        &self,
-        item: &ItemPedido,
-    ) -> Result<Vec<ParteDeItemPedido>, std::string::String> {
-
-        let stmt = "SELECT * FROM partes_item_pedido WHERE item_uuid = $1 ORDER BY posicao ASC";
-        let partes = sqlx::query_as::<_, ParteDeItemPedido>(stmt)
-            .bind(item.uuid)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string());
-
-        partes
-    }
-
-    async fn buscar_adicionais_de_item_de_pedido(
-        &self,
-        item: &ItemPedido
-    ) -> Result<Vec<AdicionalDeItemDePedido>, String> {
-
-        let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>("SELECT * FROM adicionais_item_pedido WHERE item_uuid = $1")
-            .bind(item.uuid)
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string());
-
-        adicionais
+    /// Helper para parsear JSONB em Vec<ItemPedido>
+    fn parsear_itens_jsonb(
+        itens_json: &[serde_json::Value]
+    ) -> Result<Vec<ItemPedido>, String> {
+        let json_str = serde_json::to_string(itens_json)
+            .map_err(|e| e.to_string())?;
+        
+        let itens: Vec<ItemPedido> = serde_json::from_str(&json_str)
+            .map_err(|e| format!("Erro ao parsear itens JSONB: {}", e))?;
+        
+        Ok(itens)
     }
 
     /// Mesma logica mas para multiplos pedidos (ex: listar pedidos de uma loja)
@@ -182,6 +156,7 @@ impl PedidoRepository {
     }
 
     /// Extrai a logica de hidratacao para reuso entre os metodos acima
+    /// Agora usa JSONB em vez de queries em múltiplas tabelas
     async fn hidratar_pedidos(
         &self,
         pedidos: Vec<Pedido>,
@@ -190,68 +165,12 @@ impl PedidoRepository {
             return Ok(vec![]);
         }
 
-        // Coleta todos os UUIDs dos pedidos para buscar itens em uma so query
-        let uuids_pedidos: Vec<String> = pedidos
-            .iter()
-            .map(|p| format!("'{}'", p.uuid))
-            .collect();
-
-        let stmt = "SELECT * FROM itens_pedido WHERE pedido_uuid = ANY($1) ORDER BY pedido_uuid, criado_em ASC";
-        let mut itens = // Seguro e idiomatico PostgreSQL
-            sqlx::query_as::<_, ItemPedido>(stmt)
-            .bind(&uuids_pedidos)  // &[Uuid]
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-        // Busca adicionais e partes de todos os itens em duas queries unicas
-        if !itens.is_empty() {
-            let uuids_itens: Vec<String> = itens
-                .iter()
-                .map(|i| format!("'{}'", i.uuid))
-                .collect();
-
-            let placeholder_itens = uuids_itens.join(", ");
-
-            let adicionais = sqlx::query_as::<_, AdicionalDeItemDePedido>(
-                &format!("SELECT * FROM adicionais_item_pedido WHERE item_uuid IN ({})", placeholder_itens)
-            )
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-            let partes = sqlx::query_as::<_, ParteDeItemPedido>(&format!(
-                "SELECT * FROM partes_item_pedido WHERE item_uuid IN ({}) ORDER BY item_uuid, posicao ASC", placeholder_itens
-            ))
-            .fetch_all(&*self.pool)
-            .await
-            .map_err(|e| e.to_string())?;
-
-            // Distribui adicionais e partes nos itens correspondentes
-            for item in &mut itens {
-                item.adicionais = adicionais
-                    .iter()
-                    .filter(|a| a.item_uuid == item.uuid)
-                    .cloned()
-                    .collect();
-
-                item.partes = partes
-                    .iter()
-                    .filter(|s| s.item_uuid == Some(item.uuid))
-                    .cloned()
-                    .collect();
-            }
-        }
-
-        // Distribui itens nos pedidos correspondentes
+        // Parse JSONB para cada pedido
         let pedidos_hidratados = pedidos
             .into_iter()
             .map(|mut pedido| {
-                pedido.itens = itens
-                    .iter()
-                    .filter(|i| i.pedido_uuid == pedido.uuid)
-                    .cloned()
-                    .collect();
+                pedido.itens = Self::parsear_itens_jsonb(&pedido.itens_json)
+                    .unwrap_or_default();
                 pedido
             })
             .collect();
@@ -351,16 +270,25 @@ impl Repository<Pedido> for PedidoRepository {
         &self,
         pedido: &Pedido
     ) -> Result<Uuid, String> {
+        // Serializar itens para JSONB
+        let itens_json = serde_json::to_value(&pedido.itens)
+            .map_err(|e| format!("Erro ao serializar itens para JSON: {}", e))?;
+
         let mut tx = self
             .pool
             .begin()
             .await
             .map_err(|e| e.to_string())?;
 
-        tracing::info!("[PEDIDO] Inserindo pedido uuid={}", pedido.uuid);
+        tracing::info!("[PEDIDO] Inserindo pedido uuid={} com {} itens (JSONB)", pedido.uuid, pedido.itens.len());
+        
         let stmt = "
-            INSERT INTO pedidos (uuid, usuario_uuid, loja_uuid, entregador_uuid, status, total, subtotal, taxa_entrega, desconto, forma_pagamento, observacoes, tempo_estimado_min)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            INSERT INTO pedidos (
+                uuid, usuario_uuid, loja_uuid, entregador_uuid, status, 
+                total, subtotal, taxa_entrega, desconto, forma_pagamento, 
+                observacoes, tempo_estimado_min, itens
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
         ";
 
         sqlx::query(stmt)
@@ -376,6 +304,7 @@ impl Repository<Pedido> for PedidoRepository {
             .bind(&pedido.forma_pagamento)
             .bind(&pedido.observacoes)
             .bind(&pedido.tempo_estimado_min)
+            .bind(&itens_json)
             .execute(&mut *tx)
             .await
             .map_err(|e| {
@@ -383,79 +312,8 @@ impl Repository<Pedido> for PedidoRepository {
                 e.to_string()
             })?;
 
-        tracing::info!("[PEDIDO] Pedido inserido, processando {} itens", pedido.itens.len());
-
-        for i in pedido.itens.iter() {
-            // 1. Inserir o Item
-            let stmt = "
-                INSERT INTO itens_pedido (uuid, pedido_uuid, loja_uuid, quantidade, observacoes)
-                VALUES ($1, $2, $3, $4, $5)
-            ";
-
-            sqlx::query(stmt)
-                .bind(i.uuid)
-                .bind(i.pedido_uuid)
-                .bind(i.loja_uuid)
-                .bind(i.quantidade)
-                .bind(&i.observacoes)
-                .execute(&mut *tx) // Usa a transacao existente
-                .await
-                .map_err(|e| {
-                    tracing::error!("[ERRO FK] Falha ao inserir item de pedido: {:?}. Erro: {}", i, e);
-                    e.to_string()
-                })?;
-
-            if !i.partes.is_empty() {
-                for parte in i.partes.iter() {
-
-                    let stmt = "
-                        INSERT INTO partes_item_pedido (uuid, loja_uuid, item_uuid, produto_uuid, produto_nome, preco_unitario, posicao)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7);
-                    ";
-
-                    sqlx::query(stmt)
-                        .bind(&parte.uuid)
-                        .bind(&parte.loja_uuid)
-                        .bind(&parte.item_uuid)
-                        .bind(&parte.produto_uuid)
-                        .bind(&parte.produto_nome)
-                        .bind(&parte.preco_unitario)
-                        .bind(&parte.posicao)
-                        .execute(&mut *tx) // MUITO IMPORTANTE: &mut *tx aqui
-                        .await
-                        .map_err(|e| {
-                            tracing::error!("[ERRO FK] Falha ao inserir parte de item: {:?}. Erro: {}", i, e);
-                            tracing::error!("p: {:?}, i: {:?}", parte.posicao, parte.item_uuid);
-                            e.to_string()
-                        })?;
-                }
-            }
-
-            // 3. Inserir Adicionais
-            for a in i.adicionais.iter() {
-
-                let stmt = "
-                    INSERT INTO adicionais_item_pedido (uuid, item_uuid, loja_uuid, nome, descricao, preco)
-                    VALUES ($1, $2, $3, $4, $5, $6)
-                ";
-
-                sqlx::query(stmt)
-                    .bind(a.uuid)
-                    .bind(a.item_uuid)
-                    .bind(a.loja_uuid)
-                    .bind(&a.nome)
-                    .bind(&a.descricao)
-                    .bind(a.preco)
-                    .execute(&mut *tx)
-                    .await
-                    .map_err(|e| {
-                        tracing::error!("[ERRO FK] Falha ao inserir adicional de item: {:?}. Erro: {}", i, e);
-                        e.to_string()
-                    })?;
-            }
-        }
-
-        tracing::info!("[PEDIDO] Commitando transacao");
+        tracing::info!("[PEDIDO] Pedido inserido com sucesso uuid={}", pedido.uuid);
+        
         tx.commit().await.map_err(|e| {
             tracing::info!("[PEDIDO] Erro no commit: {}", e);
             e.to_string()
@@ -559,7 +417,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
-                atualizado_em: r.atualizado_em, itens: vec![], partes: vec![],
+                atualizado_em: r.atualizado_em, itens_json: vec![], itens: vec![], partes: vec![],
             };
             crate::ports::PedidoComEntregador {
                 pedido,

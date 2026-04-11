@@ -12,12 +12,11 @@ services:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydatabase
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - mynetwork
+    network_mode: "host"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
       interval: 10s
@@ -32,13 +31,12 @@ services:
       RABBITMQ_DEFAULT_USER: chickie
       RABBITMQ_DEFAULT_PASS: chickie_password
       RABBITMQ_DEFAULT_VHOST: /
-    ports:
-      - "5672:5672"       # AMQP port
-      - "15672:15672"     # Management UI
+    # ports:
+    #   - "5672:5672"       # AMQP port
+    #   - "15672:15672"     # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - mynetwork
+    network_mode: "host"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_running"]
       interval: 10s
@@ -66,8 +64,8 @@ services:
       S3_BUCKET_NAME_1: chickie-uploads-dev
       S3_ENDPOINT: http://localhost:9000
       S3_REGION: us-east-1
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     volumes:
       # Mount migrations for development (hot reload of schema changes)
       - ./migrations:/app/migrations
@@ -76,8 +74,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks:
-      - mynetwork
+    network_mode: "host"
 
   worker:
     build:
@@ -106,8 +103,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks:
-      - mynetwork
+    network_mode: "host"
 
   scheduler:
     build:
@@ -123,8 +119,8 @@ services:
       RUST_LOG: debug
       SCHEDULER_PORT: "8080"
       RABBITMQ_URL: amqp://chickie:chickie_password@rabbitmq:5672
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     volumes:
       # Mount scheduler config for development (hot reload)
       - ./scheduler.toml:/app/scheduler.toml:ro
@@ -133,8 +129,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks:
-      - mynetwork
+    network_mode: "host"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s

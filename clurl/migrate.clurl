@@ -1,0 +1,5 @@
+RUN cargo run --bin chickie -- migrate
+
+[Asserts]
+exit-code == 0
+stdout contains "Migrações aplicadas com sucesso"

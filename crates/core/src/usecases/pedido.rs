@@ -57,7 +57,13 @@ impl PedidoUsecase {
                     .map_err(|e| e.to_string())?
                     .ok_or_else(|| format!("Produto {} não encontrado", parte_req.produto_uuid))?;
 
-                partes_item.push(ParteDeItemPedido::new(&produto, parte_req.posicao));
+                partes_item.push(ParteDeItemPedido::new(
+                    produto.uuid,
+                    produto.nome.clone(),
+                    produto.loja_uuid,
+                    produto.preco,
+                    parte_req.posicao,
+                ));
             }
             partes_por_item.push(partes_item);
         }

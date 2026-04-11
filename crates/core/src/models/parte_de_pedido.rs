@@ -1,8 +1,12 @@
+// Reexportar tipos de pedido.rs para evitar duplicação
+// Apenas ParteDeItemPedido é usado externamente
+pub use crate::models::pedido::ParteDeItemPedido;
+
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use sqlx::FromRow;
 use chrono::Utc;
-use crate::models::{Adicional, AdicionalDeItemDePedido, Model, Produto};
+use crate::models::Model;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
@@ -57,7 +61,6 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
         &self,
         buf: &mut sqlx::postgres::PgArgumentBuffer,
     ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync + 'static>> {
-        // ✅ Encode como TEXT (string) no PostgreSQL
         <&str as sqlx::Encode<sqlx::Postgres>>::encode(self.as_str(), buf)
     }
 
@@ -68,16 +71,14 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TipoCalculoPedido {
 
 // ---------------------------------------------------------------------------
 // ConfiguracaoSaboresLoja — configuração POR LOJA
-// Define quantos sabores são permitidos por padrão e qual cálculo usar.
-// Uma loja pode ter apenas uma configuração ativa.
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct ConfiguracaoDePedidosLoja {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
-    pub max_partes: i32,               // máximo de sabores por item (ex: 4)
-    pub tipo_calculo: TipoCalculoPedido, // como calcular o preço final
+    pub max_partes: i32,
+    pub tipo_calculo: TipoCalculoPedido,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -103,74 +104,10 @@ impl ConfiguracaoDePedidosLoja {
 }
 
 // ---------------------------------------------------------------------------
-// ParteDeItemPedido — snapshot dos partes escolhidos em um item de pedido
-// Cada linha = 1 parte escolhida pelo cliente para aquele item.
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
-pub struct ParteDeItemPedido {
-    pub uuid: Uuid,
-    pub loja_uuid: Uuid,
-    pub item_uuid: Option<Uuid>,
-    pub produto_nome: String,
-    pub produto_uuid: Uuid,
-    pub preco_unitario: Decimal,
-    pub posicao: i32,
-    #[sqlx(skip)]
-    pub adicionais: Vec<AdicionalDeItemDePedido>
-}
-
-#[allow(dead_code)]
-impl ParteDeItemPedido {
-    pub fn new(
-        produto: &Produto,
-        posicao: i32,
-    ) -> Self {
-
-        Self {
-            uuid: Uuid::new_v4(),
-            loja_uuid: produto.loja_uuid,
-            item_uuid: None,
-            produto_uuid: produto.uuid,
-            produto_nome: produto.nome.clone(),
-            preco_unitario: produto.preco,
-            posicao,
-            adicionais: vec![]
-        }
-    }
-
-    pub fn set_item_uuid(&mut self, item_uuid: Uuid) {
-        self.item_uuid = Some(item_uuid)
-    }
-
-    pub fn adicionar_adicional(
-        &mut self,
-        adicional: &Adicional
-    ) -> Result<Uuid, String> {
-        if self.loja_uuid != adicional.loja_uuid {
-            return Err("Adicional pertence a outra loja".to_string());
-        }
-
-        let novo = AdicionalDeItemDePedido::new(
-            adicional.nome.clone(),
-            adicional.descricao.clone(),
-            adicional.loja_uuid,
-            self.uuid,
-            adicional.preco,
-        );
-
-        let uuid = novo.uuid;
-        self.adicionais.push(novo);
-        Ok(uuid)
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Lógica de cálculo — funções puras, sem banco de dados
+// Lógica de cálculo — funções puras
 // ---------------------------------------------------------------------------
 
 /// Calcula o preço unitário de um item com múltiplos sabores.
-/// Retorna Decimal::ZERO se não houver sabores.
 pub fn calcular_preco_por_partes(
     sabores: &[ParteDeItemPedido],
     tipo: &TipoCalculoPedido,
@@ -180,15 +117,10 @@ pub fn calcular_preco_por_partes(
     }
 
     match tipo {
-        // Cada sabor contribui igualmente: média simples dos preços
-        // Ex: [30.0, 40.0, 35.0, 50.0] → (30+40+35+50) / 4 = 38.75
         &TipoCalculoPedido::MediaPonderada => {
             let soma: Decimal = sabores.iter().map(|s| s.preco_unitario).sum();
             soma / Decimal::from(sabores.len())
         }
-
-        // Preço = o sabor mais caro
-        // Ex: [30.0, 40.0, 35.0, 50.0] → 50.0
         &TipoCalculoPedido::MaisCaro => {
             sabores
                 .iter()
@@ -197,12 +129,6 @@ pub fn calcular_preco_por_partes(
         }
     }
 }
-
-impl Model for ParteDeItemPedido {
-    fn get_uuid(&self) -> Uuid { self.uuid }
-    fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
-}
-
 
 impl Model for ConfiguracaoDePedidosLoja {
     fn get_uuid(&self) -> Uuid { self.uuid }
