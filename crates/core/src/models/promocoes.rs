@@ -268,8 +268,8 @@ pub struct Promocao {
     pub tipo_desconto: String,
     pub valor_desconto: Option<Decimal>,
     pub valor_minimo: Option<Decimal>,
-    pub data_inicio: String,
-    pub data_fim: String,
+    pub data_inicio: chrono::DateTime<chrono::Utc>,
+    pub data_fim: chrono::DateTime<chrono::Utc>,
     pub dias_semana_validos: Option<Vec<i32>>,
     pub tipo_escopo: String,
     pub produto_uuid: Option<Uuid>,
@@ -296,6 +296,14 @@ impl Promocao {
         categoria_uuid: Option<Uuid>,
         prioridade: i32,
     ) -> Self {
+        // Parse datetime strings to DateTime<Utc>
+        let data_inicio = chrono::DateTime::parse_from_rfc3339(&data_inicio)
+            .map(|dt| dt.with_timezone(&chrono::Utc))
+            .unwrap_or_else(|_| chrono::Utc::now());
+        let data_fim = chrono::DateTime::parse_from_rfc3339(&data_fim)
+            .map(|dt| dt.with_timezone(&chrono::Utc))
+            .unwrap_or_else(|_| chrono::Utc::now());
+        
         Self {
             uuid: Uuid::new_v4(),
             loja_uuid,
@@ -326,7 +334,7 @@ impl Promocao {
         }
     }
 
-    pub fn eh_aplicavel(&self, valor_pedido: Decimal, data_hora: String, dia_semana: u8) -> bool {
+    pub fn eh_aplicavel(&self, valor_pedido: Decimal, data_hora: chrono::DateTime<chrono::Utc>, dia_semana: u8) -> bool {
         if self.status != StatusCupom::Ativo {
             return false;
         }

@@ -213,11 +213,11 @@ pub struct CreateProdutoArgs {
     pub descricao: Option<String>,
     #[arg(long)]
     pub preco: f64,
-    #[arg(long)]
+    #[arg(long, action = clap::ArgAction::SetTrue)]
     pub disponivel: bool,
     #[arg(long)]
     pub tempo_preparo_min: i32,
-    #[arg(long)]
+    #[arg(long, action = clap::ArgAction::SetTrue)]
     pub destaque: bool,
 }
 
@@ -666,7 +666,7 @@ pub struct CreatePromocaoArgs {
     pub data_inicio: String,
     #[arg(long)]
     pub data_fim: String,
-    #[arg(long)]
+    #[arg(long, value_delimiter = ' ', num_args = 1..)]
     pub dias_semana: Vec<i32>,
     #[arg(long)]
     pub tipo_escopo: String,
@@ -704,7 +704,7 @@ pub struct UpdatePromocaoArgs {
     pub data_inicio: Option<String>,
     #[arg(long)]
     pub data_fim: Option<String>,
-    #[arg(long)]
+    #[arg(long, value_delimiter = ' ', num_args = 1..)]
     pub dias_semana: Option<Vec<i32>>,
     #[arg(long)]
     pub tipo_escopo: Option<String>,
@@ -898,7 +898,7 @@ pub struct ToggleDisponibilidadeAdicionalArgs {
     pub loja_uuid: Uuid,
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long)]
+    #[arg(long, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 
@@ -908,7 +908,7 @@ pub struct ToggleDisponibilidadeProdutoArgs {
     pub loja_uuid: Uuid,
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long)]
+    #[arg(long, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 
@@ -962,7 +962,7 @@ pub struct TrocarEmailSenhaEntregadorArgs {
 pub struct ToggleDisponibilidadeEntregadorArgs {
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long)]
+    #[arg(long, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 

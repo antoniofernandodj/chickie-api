@@ -240,8 +240,8 @@ pub struct Pedido {
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
-    /// Campo JSONB que armazena itens/partes/adicionais (mapeado pelo sqlx)
-    #[sqlx(json)]
+    /// Campo JSONB que armazena itens/partes/adicionais (NÃO mapeado pelo sqlx - campo computado)
+    #[sqlx(skip)]
     #[serde(default)]
     pub itens_json: Vec<JsonValue>,
     /// Itens parseados (não mapeado pelo sqlx)

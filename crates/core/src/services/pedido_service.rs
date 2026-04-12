@@ -6,7 +6,6 @@ use rust_decimal::Decimal;
 
 use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
 use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador};
-use crate::utils::agora;
 
 
 use crate::models::EnderecoEntrega;
@@ -127,16 +126,11 @@ impl PedidoService {
         &self,
         pedido: &Pedido
     ) -> Result<(Decimal, String), String> {
-        // Assumindo que existe um método buscar_ativas no repo (ou listar_todos filtrado)
-        // Para simplificar, vamos simular a busca:
-
-
         // Ideal: filtrar por loja_uuid e status ativo
         let promocoes = self.promocao_repo.listar_todos().await?;
-        let agora = agora(); // String de data hora atual
+        let agora = chrono::Utc::now();
 
         // Helper simples para obter dia da semana (0=Domingo, 6=Sábado)
-        // Nota: Em produção, use chrono para parsing correto da string
         let dia_semana_atual = chrono::Utc::now().weekday().num_days_from_sunday() as u8;
 
         let mut melhor_desconto = Decimal::ZERO;
@@ -148,7 +142,7 @@ impl PedidoService {
             // Usa o método eh_aplicavel do modelo Promocao
             if promo.eh_aplicavel(
                 pedido.subtotal,
-                agora.clone(),
+                agora,
                 dia_semana_atual
             ) {
 

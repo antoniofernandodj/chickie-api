@@ -119,6 +119,11 @@ pub async fn run_create_promocao(state: &AppState, args: CreatePromocaoArgs) {
     let dias_semana: Option<Vec<u8>> = Some(
         args.dias_semana.iter().map(|&d| d as u8).collect()
     );
+    
+    // Parse datetime strings properly
+    let data_inicio = args.data_inicio.clone();
+    let data_fim = args.data_fim.clone();
+    
     match state
         .marketing_service
         .criar_promocao(
@@ -128,8 +133,8 @@ pub async fn run_create_promocao(state: &AppState, args: CreatePromocaoArgs) {
             args.tipo_desconto,
             Some(parse_decimal(args.valor_desconto)),
             args.valor_minimo.map(parse_decimal),
-            args.data_inicio,
-            args.data_fim,
+            data_inicio,
+            data_fim,
             dias_semana,
             args.tipo_escopo,
             args.produto_uuid,
@@ -159,52 +164,46 @@ pub async fn run_list_promocoes(state: &AppState, args: ListPromocoesArgs) {
 
 pub async fn run_update_promocao(state: &AppState, args: UpdatePromocaoArgs) {
     // Fetch existing promotion first to get current values, then merge with provided args
-    match state.marketing_service.buscar_cupom(args.uuid).await {
-        Ok(_) => {
-            // We need to fetch the promocao itself, not cupom. Use buscar_por_uuid from repo.
-            match state.promocao_repo.buscar_por_uuid(args.uuid).await {
-                Ok(Some(existing)) => {
-                    let nome = args.nome.unwrap_or(existing.nome);
-                    let descricao = args.descricao.unwrap_or(existing.descricao);
-                    let tipo_desconto = args.tipo_desconto.unwrap_or(existing.tipo_desconto);
-                    let valor_desconto = args.valor_desconto.map(|v| parse_decimal(v));
-                    let valor_minimo = args.valor_minimo.map(|v| parse_decimal(v));
-                    let data_inicio = args.data_inicio.unwrap_or(existing.data_inicio);
-                    let data_fim = args.data_fim.unwrap_or(existing.data_fim);
-                    let dias_semana: Option<Vec<u8>> = args.dias_semana.as_ref().map(|d| d.iter().map(|&x| x as u8).collect());
-                    let tipo_escopo = args.tipo_escopo.unwrap_or(existing.tipo_escopo);
-                    let produto_uuid = args.produto_uuid.or(existing.produto_uuid);
-                    let categoria_uuid = args.categoria_uuid.or(existing.categoria_uuid);
-                    let prioridade = args.prioridade.unwrap_or(existing.prioridade);
+    match state.promocao_repo.buscar_por_uuid(args.uuid).await {
+        Ok(Some(existing)) => {
+            let nome = args.nome.unwrap_or(existing.nome);
+            let descricao = args.descricao.unwrap_or(existing.descricao);
+            let tipo_desconto = args.tipo_desconto.unwrap_or(existing.tipo_desconto);
+            let valor_desconto = args.valor_desconto.map(|v| parse_decimal(v));
+            let valor_minimo = args.valor_minimo.map(|v| parse_decimal(v));
+            let data_inicio = args.data_inicio.unwrap_or_else(|| existing.data_inicio.to_rfc3339());
+            let data_fim = args.data_fim.unwrap_or_else(|| existing.data_fim.to_rfc3339());
+            let dias_semana: Option<Vec<u8>> = args.dias_semana.as_ref().map(|d| d.iter().map(|&x| x as u8).collect());
+            let tipo_escopo = args.tipo_escopo.unwrap_or(existing.tipo_escopo);
+            let produto_uuid = args.produto_uuid.or(existing.produto_uuid);
+            let categoria_uuid = args.categoria_uuid.or(existing.categoria_uuid);
+            let prioridade = args.prioridade.unwrap_or(existing.prioridade);
 
-                    match state
-                        .marketing_service
-                        .atualizar_promocao(
-                            args.uuid,
-                            args.loja_uuid,
-                            nome,
-                            descricao,
-                            tipo_desconto,
-                            valor_desconto,
-                            valor_minimo,
-                            data_inicio,
-                            data_fim,
-                            dias_semana,
-                            tipo_escopo,
-                            produto_uuid,
-                            categoria_uuid,
-                            prioridade,
-                        )
-                        .await
-                    {
-                        Ok(()) => print_ok("Promoção atualizada"),
-                        Err(e) => print_err(&format!("{:?}", e)),
-                    }
-                }
-                Ok(None) => print_err("Promoção não encontrada"),
+            match state
+                .marketing_service
+                .atualizar_promocao(
+                    args.uuid,
+                    args.loja_uuid,
+                    nome,
+                    descricao,
+                    tipo_desconto,
+                    valor_desconto,
+                    valor_minimo,
+                    data_inicio,
+                    data_fim,
+                    dias_semana,
+                    tipo_escopo,
+                    produto_uuid,
+                    categoria_uuid,
+                    prioridade,
+                )
+                .await
+            {
+                Ok(()) => print_ok("Promoção atualizada"),
                 Err(e) => print_err(&format!("{:?}", e)),
             }
         }
+        Ok(None) => print_err("Promoção não encontrada"),
         Err(e) => print_err(&format!("{:?}", e)),
     }
 }

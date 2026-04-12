@@ -90,9 +90,8 @@ RUN cargo run --quiet -p chickie-cli -- \
     --categoria-uuid {{avail_categoria_uuid}} \
     --nome "Availability Product" \
     --preco 25.0 \
-    --disponivel true \
-    --tempo-preparo-min 20 \
-    --destaque false
+    --disponivel \
+    --tempo-preparo-min 20
 
 [Captures]
 avail_produto_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/

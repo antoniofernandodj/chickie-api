@@ -28,7 +28,7 @@ RUN cargo run --quiet -p chickie-cli -- \
     --valor-desconto 10.0 \
     --data-inicio "2026-01-01T00:00:00Z" \
     --data-fim "2026-12-31T23:59:59Z" \
-    --dias-semana 1 2 3 4 5 \
+    --dias-semana "1 2 3 4 5" \
     --tipo-escopo "loja" \
     --prioridade 1
 
