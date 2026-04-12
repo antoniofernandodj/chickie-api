@@ -13,7 +13,13 @@ use tokio::signal;
 use tokio::time::{sleep, Duration};
 use std::io::{self, Write};
 
-use jobs::{CronJob, backup::BackupJob, cleanup::CleanupJob, health_check::HealthCheckJob};
+use jobs::{
+    CronJob,
+    backup::BackupJob,
+    cleanup::CleanupJob,
+    health_check::HealthCheckJob,
+    soft_delete_cleanup::SoftDeleteCleanupJob,
+};
 use axum::{response::Json, routing::get, Router};
 use serde_json::json;
 use std::net::SocketAddr;
@@ -65,6 +71,7 @@ fn create_job_registry() -> HashMap<&'static str, Arc<dyn CronJob>> {
     registry.insert("backup_job", Arc::new(BackupJob));
     registry.insert("cleanup_job", Arc::new(CleanupJob));
     registry.insert("health_check_job", Arc::new(HealthCheckJob));
+    registry.insert("soft_delete_cleanup_job", Arc::new(SoftDeleteCleanupJob));
     registry
 }
 

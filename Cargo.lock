@@ -1198,6 +1198,7 @@ dependencies = [
  "futures",
  "serde",
  "serde_json",
+ "sqlx",
  "tokio",
  "toml",
  "tracing",

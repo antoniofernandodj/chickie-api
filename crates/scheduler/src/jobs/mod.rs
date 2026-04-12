@@ -10,3 +10,4 @@ pub trait CronJob: Send + Sync {
 pub mod backup;
 pub mod cleanup;
 pub mod health_check;
+pub mod soft_delete_cleanup;
