@@ -337,4 +337,11 @@ impl LojaService {
 
         self.loja_repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
     }
+
+    /// Deleta permanentemente todas as lojas marcadas para remoção há mais de 30 dias.
+    /// Retorna o número de lojas deletadas.
+    pub async fn deletar_pendentes_antigas(&self) -> Result<u64, String> {
+        let thirty_days_ago = chrono::Utc::now() - chrono::Duration::days(30);
+        self.loja_repo.deletar_pendentes_antigas(thirty_days_ago).await.map_err(|e| e.to_string())
+    }
 }

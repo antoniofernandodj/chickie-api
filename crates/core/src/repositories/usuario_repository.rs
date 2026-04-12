@@ -107,6 +107,18 @@ impl UsuarioRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> Result<u64, String> {
+        let result = sqlx::query(
+            "UPDATE usuarios SET deletado = true, atualizado_em = NOW() WHERE marcado_para_remocao IS NOT NULL AND marcado_para_remocao <= $1 AND deletado = false"
+        )
+        .bind(limite)
+        .execute(self.pool())
+        .await
+        .map_err(|e| e.to_string())?;
+
+        Ok(result.rows_affected())
+    }
 }
 
 #[async_trait::async_trait]
@@ -227,5 +239,9 @@ impl UsuarioRepositoryPort for UsuarioRepository {
     }
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
         self.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64> {
+        self.deletar_pendentes_antigos(limite).await.map_err(|e| DomainError::Internal(e))
     }
 }

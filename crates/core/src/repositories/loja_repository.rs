@@ -124,6 +124,18 @@ impl LojaRepository {
         .await
         .map_err(|e| e.to_string())
     }
+
+    pub async fn deletar_pendentes_antigas(&self, limite: chrono::DateTime<chrono::Utc>) -> Result<u64, String> {
+        let result = sqlx::query(
+            "UPDATE lojas SET deletado = true, atualizado_em = NOW() WHERE marcado_para_remocao IS NOT NULL AND marcado_para_remocao <= $1 AND deletado = false"
+        )
+        .bind(limite)
+        .execute(self.pool())
+        .await
+        .map_err(|e| e.to_string())?;
+
+        Ok(result.rows_affected())
+    }
 }
 
 #[async_trait::async_trait]
@@ -257,5 +269,9 @@ impl LojaRepositoryPort for LojaRepository {
     }
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>> {
         self.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn deletar_pendentes_antigas(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64> {
+        self.deletar_pendentes_antigas(limite).await.map_err(|e| DomainError::Internal(e))
     }
 }

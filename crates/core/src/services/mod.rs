@@ -12,6 +12,7 @@ mod configuracao_pedidos_loja_service;
 mod funcionario_service;
 mod entregador_service;
 mod endereco_loja_service;
+mod soft_delete_service;
 
 pub use usuario_service::UsuarioService;
 pub use loja_service::LojaService;
@@ -27,3 +28,4 @@ pub use configuracao_pedidos_loja_service::ConfiguracaoPedidosLojaService;
 pub use funcionario_service::FuncionarioService;
 pub use entregador_service::EntregadorService;
 pub use endereco_loja_service::EnderecoLojaService;
+pub use soft_delete_service::SoftDeleteService;

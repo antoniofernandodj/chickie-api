@@ -74,4 +74,8 @@ impl UsuarioRepositoryPort for UsuarioRepositoryAdapter {
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
         self.inner.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
     }
+
+    async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64> {
+        self.inner.deletar_pendentes_antigos(limite).await.map_err(|e| DomainError::Internal(e))
+    }
 }

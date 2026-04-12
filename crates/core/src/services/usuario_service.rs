@@ -165,4 +165,11 @@ impl UsuarioService {
 
         self.repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
     }
+
+    /// Deleta permanentemente todos os usuários marcados para remoção há mais de 30 dias.
+    /// Retorna o número de usuários deletados.
+    pub async fn deletar_pendentes_antigos(&self) -> Result<u64, String> {
+        let thirty_days_ago = chrono::Utc::now() - chrono::Duration::days(30);
+        self.repo.deletar_pendentes_antigos(thirty_days_ago).await.map_err(|e| e.to_string())
+    }
 }

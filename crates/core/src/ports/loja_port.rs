@@ -20,4 +20,7 @@ pub trait LojaRepositoryPort: Send + Sync {
 
     // Listar lojas pendentes de remoção (para o scheduler)
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>>;
+
+    // Deletar permanentemente lojas marcadas há mais de 30 dias
+    async fn deletar_pendentes_antigas(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64>;
 }

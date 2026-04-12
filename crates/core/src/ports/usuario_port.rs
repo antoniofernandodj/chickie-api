@@ -22,4 +22,7 @@ pub trait UsuarioRepositoryPort: Send + Sync {
 
     // Listar usuários pendentes de remoção (para o scheduler)
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>>;
+
+    // Deletar permanentemente usuários marcados há mais de 30 dias
+    async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64>;
 }
