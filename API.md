@@ -1457,6 +1457,242 @@ Content-Type: application/json
 
 ---
 
+### 7.5.1 Listar Avaliações de Loja
+
+```
+GET /api/marketing/{loja_uuid}/avaliacoes-loja
+Authorization: Bearer <token>
+```
+
+> Retorna todas as avaliações de uma loja, ordenadas da mais recente para a mais antiga.
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440040",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nota": 4.5,
+    "comentario": "Ótima pizza!",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 7.5.2 Buscar Avaliação de Loja por UUID
+
+```
+GET /api/marketing/avaliacoes-loja/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440040",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nota": 4.5,
+  "comentario": "Ótima pizza!",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+**Response `404`:**
+```json
+{
+  "error": "Avaliação de loja não encontrada"
+}
+```
+
+---
+
+### 7.5.3 Atualizar Avaliação de Loja
+
+```
+PUT /api/marketing/avaliacoes-loja/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "nota": 3.5,
+  "comentario": "Melhou depois da última visita"
+}
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440040",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "nota": 3.5,
+  "comentario": "Melhou depois da última visita",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+---
+
+### 7.5.4 Deletar Avaliação de Loja
+
+```
+DELETE /api/marketing/avaliacoes-loja/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+**Response `404`:**
+```json
+{
+  "error": "Avaliação de loja não encontrada"
+}
+```
+
+---
+
+### 7.5.5 Listar Avaliações de Produto por Loja
+
+```
+GET /api/marketing/{loja_uuid}/avaliacoes-produto
+Authorization: Bearer <token>
+```
+
+> Retorna todas as avaliações de produtos de uma loja, ordenadas da mais recente para a mais antiga.
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440041",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+    "nota": 5.0,
+    "descricao": "Pizza deliciosa!",
+    "comentario": "Melhor pizza que já comi",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 7.5.6 Listar Avaliações de Produto por Produto
+
+```
+GET /api/marketing/avaliacoes-produto/produto/{produto_uuid}
+Authorization: Bearer <token>
+```
+
+> Retorna todas as avaliações de um produto específico.
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440041",
+    "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+    "nota": 5.0,
+    "descricao": "Pizza deliciosa!",
+    "comentario": "Melhor pizza que já comi",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 7.5.7 Buscar Avaliação de Produto por UUID
+
+```
+GET /api/marketing/avaliacoes-produto/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440041",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "nota": 5.0,
+  "descricao": "Pizza deliciosa!",
+  "comentario": "Melhor pizza que já comi",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+**Response `404`:**
+```json
+{
+  "error": "Avaliação de produto não encontrada"
+}
+```
+
+---
+
+### 7.5.8 Atualizar Avaliação de Produto
+
+```
+PUT /api/marketing/avaliacoes-produto/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "nota": 4.0,
+  "descricao": "Boa pizza, mas poderia ser melhor",
+  "comentario": "Massa boa, molho médio"
+}
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440041",
+  "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "produto_uuid": "550e8400-e29b-41d4-a716-446655440013",
+  "nota": 4.0,
+  "descricao": "Boa pizza, mas poderia ser melhor",
+  "comentario": "Massa boa, molho médio",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+---
+
+### 7.5.9 Deletar Avaliação de Produto
+
+```
+DELETE /api/marketing/avaliacoes-produto/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+**Response `404`:**
+```json
+{
+  "error": "Avaliação de produto não encontrada"
+}
+```
+
+---
+
 ### 7.6 Criar Promoção
 
 ```
@@ -2605,6 +2841,15 @@ DELETE /api/wipe
 | 32 | `GET` | `/api/marketing/cupons` | 🔒 | — |
 | 33 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
 | 34 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
+| 34.1 | `GET` | `/api/marketing/{loja_uuid}/avaliacoes-loja` | 🔒 | — |
+| 34.2 | `GET` | `/api/marketing/avaliacoes-loja/{uuid}` | 🔒 | — |
+| 34.3 | `PUT` | `/api/marketing/avaliacoes-loja/{uuid}` | 🔒 | — |
+| 34.4 | `DELETE` | `/api/marketing/avaliacoes-loja/{uuid}` | 🔒 | — |
+| 34.5 | `GET` | `/api/marketing/{loja_uuid}/avaliacoes-produto` | 🔒 | — |
+| 34.6 | `GET` | `/api/marketing/avaliacoes-produto/produto/{produto_uuid}` | 🔒 | — |
+| 34.7 | `GET` | `/api/marketing/avaliacoes-produto/{uuid}` | 🔒 | — |
+| 34.8 | `PUT` | `/api/marketing/avaliacoes-produto/{uuid}` | 🔒 | — |
+| 34.9 | `DELETE` | `/api/marketing/avaliacoes-produto/{uuid}` | 🔒 | — |
 | 35 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
 | 36 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
 | 37 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
@@ -2646,4 +2891,4 @@ DELETE /api/wipe
 | 73 | `GET` | `/api/ok` | — | — |
 | 74 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 76 endpoints**
+**Total: 85 endpoints**

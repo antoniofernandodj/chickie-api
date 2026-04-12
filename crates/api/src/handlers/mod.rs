@@ -116,7 +116,16 @@ pub use marketing::{
     criar_promocao,
     listar_promocoes,
     atualizar_promocao,
-    deletar_promocao
+    deletar_promocao,
+    listar_avaliacoes_loja,
+    buscar_avaliacao_loja,
+    atualizar_avaliacao_loja,
+    deletar_avaliacao_loja,
+    listar_avaliacoes_produto_por_loja,
+    listar_avaliacoes_produto_por_produto,
+    buscar_avaliacao_produto,
+    atualizar_avaliacao_produto,
+    deletar_avaliacao_produto
 };
 
 pub use ingrediente::{

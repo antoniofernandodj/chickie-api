@@ -26,6 +26,7 @@ _(nenhum bug conhecido)_
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
 | 25 | **CRUD completo de cupons** | Novos endpoints padronizados em `/api/cupons/`: POST (criar), GET (listar todos), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Rotas legadas mantidas em `/api/marketing/` para compatibilidade. MarketingService atualizado com `buscar_cupom` e `listar_todos_cupons`. | 2026-04-12 |
+| 26 | **CRUD completo de avaliações** | Novos endpoints para avaliações de loja e produto: GET (listar por loja/produto), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Ports, repositories, service, usecase e handlers atualizados. | 2026-04-12 |
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
 | 15 | **Campos TIME com tipo correto** | `horario_abertura`/`horario_fechamento` (`loja`) e `abertura`/`fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. | 2026-04-05 |
 | 16 | **Endpoint minhas lojas** | `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. | 2026-04-05 |

@@ -200,14 +200,27 @@ pub struct LoginRequest {
 
 #[derive(serde::Deserialize, ToSchema)]
 pub struct AvaliarLojaRequest {
-    pub nota: Decimal,
+    pub nota: rust_decimal::Decimal,
     pub comentario: Option<String>,
 }
 
 #[derive(serde::Deserialize, ToSchema)]
 pub struct AvaliarProdutoRequest {
-    pub produto_uuid: Uuid,
-    pub nota: Decimal,
+    pub produto_uuid: uuid::Uuid,
+    pub nota: rust_decimal::Decimal,
+    pub descricao: String,
+    pub comentario: Option<String>,
+}
+
+#[derive(serde::Deserialize, ToSchema)]
+pub struct AtualizarAvaliacaoLojaRequest {
+    pub nota: rust_decimal::Decimal,
+    pub comentario: Option<String>,
+}
+
+#[derive(serde::Deserialize, ToSchema)]
+pub struct AtualizarAvaliacaoProdutoRequest {
+    pub nota: rust_decimal::Decimal,
     pub descricao: String,
     pub comentario: Option<String>,
 }

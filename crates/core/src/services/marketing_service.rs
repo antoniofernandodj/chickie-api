@@ -243,4 +243,77 @@ impl MarketingService {
     pub async fn atualizar_cupom_status(&self, cupom: Cupom) -> Result<(), String> {
         self.cupom_repo.atualizar(cupom).await.map_err(|e| e.to_string())
     }
+
+    // === AvaliacaoDeLoja CRUD ===
+
+    pub async fn buscar_avaliacao_loja_por_uuid(&self, uuid: Uuid) -> Result<AvaliacaoDeLoja, String> {
+        self.avaliacao_loja_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Avaliação de loja não encontrada".to_string())
+    }
+
+    pub async fn listar_avaliacoes_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
+        self.avaliacao_loja_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_avaliacao_loja_por_usuario_e_loja(
+        &self, usuario_uuid: Uuid, loja_uuid: Uuid
+    ) -> Result<Option<AvaliacaoDeLoja>, String> {
+        self.avaliacao_loja_repo.buscar_por_usuario_e_loja(usuario_uuid, loja_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn atualizar_avaliacao_loja(
+        &self, uuid: Uuid, nota: Decimal, comentario: Option<String>
+    ) -> Result<AvaliacaoDeLoja, String> {
+        let mut avaliacao = self.avaliacao_loja_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Avaliação de loja não encontrada".to_string())?;
+        avaliacao.nota = nota;
+        avaliacao.comentario = comentario;
+        self.avaliacao_loja_repo.atualizar(avaliacao.clone()).await.map_err(|e| e.to_string())?;
+        Ok(avaliacao)
+    }
+
+    pub async fn deletar_avaliacao_loja(&self, uuid: Uuid) -> Result<(), String> {
+        self.avaliacao_loja_repo.deletar(uuid).await.map_err(|e| e.to_string())
+    }
+
+    // === AvaliacaoDeProduto CRUD ===
+
+    pub async fn buscar_avaliacao_produto_por_uuid(&self, uuid: Uuid) -> Result<AvaliacaoDeProduto, String> {
+        self.avaliacao_prod_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Avaliação de produto não encontrada".to_string())
+    }
+
+    pub async fn listar_avaliacoes_produto_por_produto(&self, produto_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
+        self.avaliacao_prod_repo.listar_por_produto(produto_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn listar_avaliacoes_produto_por_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
+        self.avaliacao_prod_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_avaliacao_produto_por_usuario_e_produto(
+        &self, usuario_uuid: Uuid, produto_uuid: Uuid
+    ) -> Result<Option<AvaliacaoDeProduto>, String> {
+        self.avaliacao_prod_repo.buscar_por_usuario_e_produto(usuario_uuid, produto_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn atualizar_avaliacao_produto(
+        &self, uuid: Uuid, nota: Decimal, descricao: String, comentario: Option<String>
+    ) -> Result<AvaliacaoDeProduto, String> {
+        let mut avaliacao = self.avaliacao_prod_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Avaliação de produto não encontrada".to_string())?;
+        avaliacao.nota = nota;
+        avaliacao.descricao = descricao;
+        avaliacao.comentario = comentario;
+        self.avaliacao_prod_repo.atualizar(avaliacao.clone()).await.map_err(|e| e.to_string())?;
+        Ok(avaliacao)
+    }
+
+    pub async fn deletar_avaliacao_produto(&self, uuid: Uuid) -> Result<(), String> {
+        self.avaliacao_prod_repo.deletar(uuid).await.map_err(|e| e.to_string())
+    }
 }

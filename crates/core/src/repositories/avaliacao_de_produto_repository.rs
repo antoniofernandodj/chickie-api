@@ -110,10 +110,85 @@ impl AvaliacaoDeProdutoRepositoryPort for AvaliacaoDeProdutoRepository {
     async fn criar(&self, avaliacao: &AvaliacaoDeProduto) -> DomainResult<Uuid> {
         <Self as Repository<AvaliacaoDeProduto>>::criar(self, avaliacao).await.map_err(|e| DomainError::Internal(e))
     }
+
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<AvaliacaoDeProduto>> {
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE uuid = $1")
+            .bind(uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
     async fn listar_por_produto(&self, produto_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeProduto>> {
-        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE produto_uuid = $1")
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE produto_uuid = $1 ORDER BY criado_em DESC")
             .bind(produto_uuid)
             .fetch_all(&*self.pool)
-            .await.map_err(|e| DomainError::Internal(e.to_string()))
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeProduto>> {
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE loja_uuid = $1 ORDER BY criado_em DESC")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn buscar_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeProduto>> {
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE usuario_uuid = $1 ORDER BY criado_em DESC")
+            .bind(usuario_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn buscar_por_usuario_e_produto(&self, usuario_uuid: Uuid, produto_uuid: Uuid) -> DomainResult<Option<AvaliacaoDeProduto>> {
+        sqlx::query_as::<_, AvaliacaoDeProduto>("SELECT * FROM avaliacoes_produto WHERE usuario_uuid = $1 AND produto_uuid = $2")
+            .bind(usuario_uuid)
+            .bind(produto_uuid)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn atualizar(&self, avaliacao: AvaliacaoDeProduto) -> DomainResult<()> {
+        let uuid = avaliacao.uuid;
+        let result = sqlx::query(
+            "UPDATE avaliacoes_produto SET nota = $1, descricao = $2, comentario = $3 WHERE uuid = $4"
+        )
+        .bind(avaliacao.nota)
+        .bind(avaliacao.descricao)
+        .bind(&avaliacao.comentario)
+        .bind(uuid)
+        .execute(&*self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        if result.rows_affected() == 0 {
+            Err(DomainError::NotFound {
+                entity: "Avaliação",
+                id: uuid.to_string(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+
+    async fn deletar(&self, uuid: Uuid) -> DomainResult<()> {
+        let result = sqlx::query("DELETE FROM avaliacoes_produto WHERE uuid = $1")
+            .bind(uuid)
+            .execute(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        if result.rows_affected() == 0 {
+            Err(DomainError::NotFound {
+                entity: "Avaliação",
+                id: uuid.to_string(),
+            })
+        } else {
+            Ok(())
+        }
     }
 }

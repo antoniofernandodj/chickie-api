@@ -7,9 +7,7 @@ use rust_decimal::Decimal;
 use crate::{
     models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
     services::MarketingService,
-};
-
-pub struct MarketingUsecase {
+};pub struct MarketingUsecase {
     pub marketing_service: Arc<MarketingService>,
     pub loja_uuid: Uuid,
     pub usuario: Usuario,
@@ -141,5 +139,57 @@ impl MarketingUsecase {
 
     pub async fn deletar_promocao(&self, uuid: Uuid) -> Result<(), String> {
         self.marketing_service.deletar_promocao(uuid).await
+    }
+
+    // === AvaliacaoDeLoja CRUD ===
+
+    pub async fn buscar_avaliacao_loja(&self, uuid: Uuid) -> Result<AvaliacaoDeLoja, String> {
+        self.marketing_service.buscar_avaliacao_loja_por_uuid(uuid).await
+    }
+
+    pub async fn listar_avaliacoes_loja(&self) -> Result<Vec<AvaliacaoDeLoja>, String> {
+        self.marketing_service.listar_avaliacoes_loja(self.loja_uuid).await
+    }
+
+    pub async fn buscar_minha_avaliacao_loja(&self) -> Result<Option<AvaliacaoDeLoja>, String> {
+        self.marketing_service.buscar_avaliacao_loja_por_usuario_e_loja(self.usuario.uuid, self.loja_uuid).await
+    }
+
+    pub async fn atualizar_avaliacao_loja(
+        &self, uuid: Uuid, nota: Decimal, comentario: Option<String>
+    ) -> Result<AvaliacaoDeLoja, String> {
+        self.marketing_service.atualizar_avaliacao_loja(uuid, nota, comentario).await
+    }
+
+    pub async fn deletar_avaliacao_loja(&self, uuid: Uuid) -> Result<(), String> {
+        self.marketing_service.deletar_avaliacao_loja(uuid).await
+    }
+
+    // === AvaliacaoDeProduto CRUD ===
+
+    pub async fn buscar_avaliacao_produto(&self, uuid: Uuid) -> Result<AvaliacaoDeProduto, String> {
+        self.marketing_service.buscar_avaliacao_produto_por_uuid(uuid).await
+    }
+
+    pub async fn listar_avaliacoes_produto_por_loja(&self) -> Result<Vec<AvaliacaoDeProduto>, String> {
+        self.marketing_service.listar_avaliacoes_produto_por_loja(self.loja_uuid).await
+    }
+
+    pub async fn listar_avaliacoes_produto_por_produto(&self, produto_uuid: Uuid) -> Result<Vec<AvaliacaoDeProduto>, String> {
+        self.marketing_service.listar_avaliacoes_produto_por_produto(produto_uuid).await
+    }
+
+    pub async fn buscar_minha_avaliacao_produto(&self, produto_uuid: Uuid) -> Result<Option<AvaliacaoDeProduto>, String> {
+        self.marketing_service.buscar_avaliacao_produto_por_usuario_e_produto(self.usuario.uuid, produto_uuid).await
+    }
+
+    pub async fn atualizar_avaliacao_produto(
+        &self, uuid: Uuid, nota: Decimal, descricao: String, comentario: Option<String>
+    ) -> Result<AvaliacaoDeProduto, String> {
+        self.marketing_service.atualizar_avaliacao_produto(uuid, nota, descricao, comentario).await
+    }
+
+    pub async fn deletar_avaliacao_produto(&self, uuid: Uuid) -> Result<(), String> {
+        self.marketing_service.deletar_avaliacao_produto(uuid).await
     }
 }
