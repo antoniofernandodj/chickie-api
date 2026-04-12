@@ -14,4 +14,4 @@ sync:
 	git checkout $(b)
 
 test:
-	clurl tests/00-tests.clurl
+	export DATABASE_URL="postgres://myuser:mypassword@localhost:5432/mydatabase" && clurl tests/00-tests.clurl

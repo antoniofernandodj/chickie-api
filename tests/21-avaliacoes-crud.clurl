@@ -1,0 +1,267 @@
+# ============================================================
+# Avaliacoes CRUD Tests - Store and Product Reviews
+# Uses users and stores from previous tests
+# ============================================================
+
+# --- Create a category and product for product review tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-categoria \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Review Test Category" \
+    --ordem 1
+
+[Captures]
+review_categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Review Test Category"
+
+# --- Create a product for product review tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --categoria-uuid {{review_categoria_uuid}} \
+    --nome "Review Test Product" \
+    --preco 35.00 \
+    --disponivel \
+    --tempo-preparo-min 25
+
+[Captures]
+review_produto_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Review Test Product"
+
+# ─────────────────────────────────────────────────────────────────────
+# Store Reviews (Avaliacoes de Loja) - Full CRUD
+# ─────────────────────────────────────────────────────────────────────
+
+# --- Create a store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    avaliar-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --usuario-uuid {{admin_uuid}} \
+    --nota 4.5 \
+    --comentario "Ótima pizza!"
+
+[Captures]
+store_review_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "4.5"
+stdout contains "Ótima pizza!"
+
+# --- List store reviews ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-loja \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Ótima pizza!"
+
+# --- Get store review by UUID ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-avaliacao-loja {{store_review_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "4.5"
+stdout contains "Ótima pizza!"
+
+# --- Update store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-avaliacao-loja \
+    --uuid {{store_review_uuid}} \
+    --nota 3.5 \
+    --comentario "Melhou depois da última visita"
+
+[Asserts]
+exit-code == 0
+stdout contains "Avaliação de loja atualizada"
+stdout contains "3.5"
+stdout contains "Melhou depois da última visita"
+
+# --- Create a second store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    avaliar-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --usuario-uuid {{review_user_uuid}} \
+    --nota 5.0 \
+    --comentario "Excelente atendimento!"
+
+[Captures]
+store_review_2_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Excelente atendimento!"
+
+# --- List should show both reviews ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-loja \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "3.5"
+stdout contains "5"
+
+# --- Delete second store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-avaliacao-loja {{store_review_2_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Avaliação de loja deletada"
+
+# --- Verify deletion - list should show only one ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-loja \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "3.5"
+
+# ─────────────────────────────────────────────────────────────────────
+# Product Reviews (Avaliacoes de Produto) - Full CRUD
+# ─────────────────────────────────────────────────────────────────────
+
+# --- Create a product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    avaliar-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --usuario-uuid {{admin_uuid}} \
+    --produto-uuid {{review_produto_uuid}} \
+    --nota 5.0 \
+    --descricao "Pizza deliciosa!" \
+    --comentario "Melhor pizza que já comi"
+
+[Captures]
+product_review_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Pizza deliciosa!"
+stdout contains "Melhor pizza que já comi"
+
+# --- List product reviews by store ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-produto \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Pizza deliciosa!"
+
+# --- List product reviews by product ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-produto-por-produto \
+    --produto-uuid {{review_produto_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Pizza deliciosa!"
+
+# --- Get product review by UUID ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-avaliacao-produto {{product_review_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "5.0"
+stdout contains "Pizza deliciosa!"
+
+# --- Update product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-avaliacao-produto \
+    --uuid {{product_review_uuid}} \
+    --nota 4.0 \
+    --descricao "Boa pizza, mas poderia ser melhor" \
+    --comentario "Massa boa, molho médio"
+
+[Asserts]
+exit-code == 0
+stdout contains "Avaliação de produto atualizada"
+stdout contains "Boa pizza, mas poderia ser melhor"
+
+# --- Create a second product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    avaliar-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --usuario-uuid {{review_user_uuid}} \
+    --produto-uuid {{review_produto_uuid}} \
+    --nota 4.5 \
+    --descricao "Muito bom!" \
+    --comentario "Voltaria a comer"
+
+[Captures]
+product_review_2_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Muito bom!"
+
+# --- List should show both reviews ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-produto-por-produto \
+    --produto-uuid {{review_produto_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- Delete second product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-avaliacao-produto {{product_review_2_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Avaliação de produto deletada"
+
+# --- Verify deletion - list by product should show only one ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-avaliacoes-produto-por-produto \
+    --produto-uuid {{review_produto_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# ─────────────────────────────────────────────────────────────────────
+# Error Handling Tests
+# ─────────────────────────────────────────────────────────────────────
+
+# --- Get non-existent store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-avaliacao-loja 00000000-0000-0000-0000-000000000000
+
+[Asserts]
+exit-code == 0
+stderr contains "não encontrada"
+
+# --- Get non-existent product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-avaliacao-produto 00000000-0000-0000-0000-000000000000
+
+[Asserts]
+exit-code == 0
+stderr contains "não encontrada"
+
+# --- Delete non-existent store review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-avaliacao-loja 00000000-0000-0000-0000-000000000000
+
+[Asserts]
+exit-code == 0
+stderr contains "not found"
+
+# --- Delete non-existent product review ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-avaliacao-produto 00000000-0000-0000-0000-000000000000
+
+[Asserts]
+exit-code == 0
+stderr contains "not found"

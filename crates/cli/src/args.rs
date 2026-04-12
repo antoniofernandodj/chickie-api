@@ -755,6 +755,68 @@ pub struct AvaliarProdutoArgs {
     pub comentario: Option<String>,
 }
 
+// ── Avaliacoes CRUD ──
+
+#[derive(clap::Args)]
+pub struct ListAvaliacoesLojaArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct GetAvaliacaoLojaArgs {
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct UpdateAvaliacaoLojaArgs {
+    #[arg(long)]
+    pub uuid: Uuid,
+    #[arg(long)]
+    pub nota: f64,
+    #[arg(long)]
+    pub comentario: Option<String>,
+}
+
+#[derive(clap::Args)]
+pub struct DeleteAvaliacaoLojaArgs {
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ListAvaliacoesProdutoArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ListAvaliacoesProdutoPorProdutoArgs {
+    #[arg(long)]
+    pub produto_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct GetAvaliacaoProdutoArgs {
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct UpdateAvaliacaoProdutoArgs {
+    #[arg(long)]
+    pub uuid: Uuid,
+    #[arg(long)]
+    pub nota: f64,
+    #[arg(long)]
+    pub descricao: String,
+    #[arg(long)]
+    pub comentario: Option<String>,
+}
+
+#[derive(clap::Args)]
+pub struct DeleteAvaliacaoProdutoArgs {
+    pub uuid: Uuid,
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Favoritos
 // ─────────────────────────────────────────────────────────────────────────────

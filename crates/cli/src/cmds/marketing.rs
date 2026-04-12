@@ -260,3 +260,110 @@ pub async fn run_avaliar_produto(state: &AppState, args: AvaliarProdutoArgs) {
         Err(e) => print_err(&format!("{:?}", e)),
     }
 }
+
+// ── Avaliacoes CRUD ──
+
+pub async fn run_list_avaliacoes_loja(state: &AppState, args: ListAvaliacoesLojaArgs) {
+    match state
+        .marketing_service
+        .listar_avaliacoes_loja(args.loja_uuid)
+        .await
+    {
+        Ok(avaliacoes) => json_print(&avaliacoes),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_get_avaliacao_loja(state: &AppState, args: GetAvaliacaoLojaArgs) {
+    match state
+        .marketing_service
+        .buscar_avaliacao_loja_por_uuid(args.uuid)
+        .await
+    {
+        Ok(a) => json_print(&a),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_update_avaliacao_loja(state: &AppState, args: UpdateAvaliacaoLojaArgs) {
+    match state
+        .marketing_service
+        .atualizar_avaliacao_loja(args.uuid, parse_decimal(args.nota), args.comentario)
+        .await
+    {
+        Ok(a) => {
+            print_ok("Avaliação de loja atualizada");
+            json_print(&a);
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_delete_avaliacao_loja(state: &AppState, args: DeleteAvaliacaoLojaArgs) {
+    match state
+        .marketing_service
+        .deletar_avaliacao_loja(args.uuid)
+        .await
+    {
+        Ok(()) => print_ok("Avaliação de loja deletada"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_list_avaliacoes_produto(state: &AppState, args: ListAvaliacoesProdutoArgs) {
+    match state
+        .marketing_service
+        .listar_avaliacoes_produto_por_loja(args.loja_uuid)
+        .await
+    {
+        Ok(avaliacoes) => json_print(&avaliacoes),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_list_avaliacoes_produto_por_produto(state: &AppState, args: ListAvaliacoesProdutoPorProdutoArgs) {
+    match state
+        .marketing_service
+        .listar_avaliacoes_produto_por_produto(args.produto_uuid)
+        .await
+    {
+        Ok(avaliacoes) => json_print(&avaliacoes),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_get_avaliacao_produto(state: &AppState, args: GetAvaliacaoProdutoArgs) {
+    match state
+        .marketing_service
+        .buscar_avaliacao_produto_por_uuid(args.uuid)
+        .await
+    {
+        Ok(a) => json_print(&a),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_update_avaliacao_produto(state: &AppState, args: UpdateAvaliacaoProdutoArgs) {
+    match state
+        .marketing_service
+        .atualizar_avaliacao_produto(args.uuid, parse_decimal(args.nota), args.descricao, args.comentario)
+        .await
+    {
+        Ok(a) => {
+            print_ok("Avaliação de produto atualizada");
+            json_print(&a);
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_delete_avaliacao_produto(state: &AppState, args: DeleteAvaliacaoProdutoArgs) {
+    match state
+        .marketing_service
+        .deletar_avaliacao_produto(args.uuid)
+        .await
+    {
+        Ok(()) => print_ok("Avaliação de produto deletada"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}

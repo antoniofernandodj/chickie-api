@@ -211,6 +211,24 @@ pub enum Commands {
     AvaliarLoja(AvaliarLojaArgs),
     /// Avaliar produto
     AvaliarProduto(AvaliarProdutoArgs),
+    /// Listar avaliações de loja
+    ListAvaliacoesLoja(ListAvaliacoesLojaArgs),
+    /// Buscar avaliação de loja por UUID
+    GetAvaliacaoLoja(GetAvaliacaoLojaArgs),
+    /// Atualizar avaliação de loja
+    UpdateAvaliacaoLoja(UpdateAvaliacaoLojaArgs),
+    /// Deletar avaliação de loja
+    DeleteAvaliacaoLoja(DeleteAvaliacaoLojaArgs),
+    /// Listar avaliações de produto por loja
+    ListAvaliacoesProduto(ListAvaliacoesProdutoArgs),
+    /// Listar avaliações de produto por produto
+    ListAvaliacoesProdutoPorProduto(ListAvaliacoesProdutoPorProdutoArgs),
+    /// Buscar avaliação de produto por UUID
+    GetAvaliacaoProduto(GetAvaliacaoProdutoArgs),
+    /// Atualizar avaliação de produto
+    UpdateAvaliacaoProduto(UpdateAvaliacaoProdutoArgs),
+    /// Deletar avaliação de produto
+    DeleteAvaliacaoProduto(DeleteAvaliacaoProdutoArgs),
 
     // ── Favoritos ──
     /// Adicionar loja aos favoritos
@@ -365,6 +383,15 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         // ── Marketing: Avaliações ──
         Commands::AvaliarLoja(args) => marketing::run_avaliar_loja(state, args).await,
         Commands::AvaliarProduto(args) => marketing::run_avaliar_produto(state, args).await,
+        Commands::ListAvaliacoesLoja(args) => marketing::run_list_avaliacoes_loja(state, args).await,
+        Commands::GetAvaliacaoLoja(args) => marketing::run_get_avaliacao_loja(state, args).await,
+        Commands::UpdateAvaliacaoLoja(args) => marketing::run_update_avaliacao_loja(state, args).await,
+        Commands::DeleteAvaliacaoLoja(args) => marketing::run_delete_avaliacao_loja(state, args).await,
+        Commands::ListAvaliacoesProduto(args) => marketing::run_list_avaliacoes_produto(state, args).await,
+        Commands::ListAvaliacoesProdutoPorProduto(args) => marketing::run_list_avaliacoes_produto_por_produto(state, args).await,
+        Commands::GetAvaliacaoProduto(args) => marketing::run_get_avaliacao_produto(state, args).await,
+        Commands::UpdateAvaliacaoProduto(args) => marketing::run_update_avaliacao_produto(state, args).await,
+        Commands::DeleteAvaliacaoProduto(args) => marketing::run_delete_avaliacao_produto(state, args).await,
 
         // ── Favoritos ──
         Commands::AddFavorito(args) => favoritos::run_add_favorito(state, args).await,
