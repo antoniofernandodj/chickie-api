@@ -12,39 +12,39 @@
 
 [group]
 # Phase 1: Setup (MUST run first)
-tests/00-database-setup.clurl
-tests/01-auth.clurl
-tests/02-lojas.clurl
+01-database-setup.clurl
+02-auth.clurl
+03-lojas.clurl
 
 # Phase 2: Domain CRUD (depends on Phase 1)
-tests/03-produtos.clurl
-tests/04-categorias.clurl
-tests/05-adicionais.clurl
-tests/06-pedidos.clurl
-tests/07-cupons.clurl
-tests/08-promocoes.clurl
-tests/09-avaliacoes.clurl
-tests/10-favoritos.clurl
-tests/11-horarios.clurl
-tests/12-config-pedido.clurl
-tests/13-ingredientes.clurl
+04-produtos.clurl
+05-categorias.clurl
+06-adicionais.clurl
+07-pedidos.clurl
+08-cupons.clurl
+09-promocoes.clurl
+10-avaliacoes.clurl
+11-favoritos.clurl
+12-horarios.clurl
+13-config-pedido.clurl
+14-ingredientes.clurl
 
 # Phase 3: Advanced Operations (depends on Phase 1-2)
-tests/14-funcionarios.clurl
-tests/15-enderecos-loja.clurl
-tests/16-driver-assignment.clurl
+15-funcionarios.clurl
+16-enderecos-loja.clurl
+17-driver-assignment.clurl
 
 # Phase 4: Error Handling & Integration (Final)
-tests/17-error-handling.clurl
-tests/18-integration-order-flow.clurl
-tests/19-environment.clurl
+18-error-handling.clurl
+19-integration-order-flow.clurl
+20-environment.clurl
 
 # Cleanup
-tests/00-database-setup.clurl
+01-database-setup.clurl
 
 [Options]
 # Stop executing test files when one fails
 stop-on-fail = false
 
 # Enable verbose output for all test files (set to true for debugging)
-verbose = true
+verbose = false

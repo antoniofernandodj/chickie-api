@@ -14,4 +14,4 @@ sync:
 	git checkout $(b)
 
 test:
-	clurl clurl/tests.clurl
+	clurl tests/00-tests.clurl
