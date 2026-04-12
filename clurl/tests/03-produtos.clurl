@@ -24,8 +24,9 @@ RUN cargo run --quiet -p chickie-cli -- \
     --categoria-uuid {{categoria_uuid}} \
     --nome "Test Product" \
     --preco 29.90 \
-    --disponivel \
-    --tempo-preparo-min 20
+    --disponivel true \
+    --tempo-preparo-min 20 \
+    --destaque false
 
 [Captures]
 produto_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/

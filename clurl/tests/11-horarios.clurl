@@ -37,7 +37,8 @@ exit-code == 0
 RUN cargo run --quiet -p chickie-cli -- \
     toggle-horario-ativo \
     --loja-uuid {{main_store_uuid}} \
-    --dia-semana 1
+    --dia-semana 1 \
+    --ativo false
 
 [Asserts]
 exit-code == 0
