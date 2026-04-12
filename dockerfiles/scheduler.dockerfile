@@ -22,6 +22,7 @@ RUN mkdir -p crates/core/src crates/api/src crates/worker/src crates/scheduler/s
     echo "fn main() {}" > crates/api/src/main.rs && \
     echo "fn main() {}" > crates/worker/src/main.rs && \
     echo "fn main() {}" > crates/scheduler/src/main.rs && \
+    echo "fn main() {}" > crates/cli/src/main.rs && \
     echo "pub fn dummy() {}" > crates/core/src/lib.rs
 
 RUN cargo build --release -p chickie-scheduler
