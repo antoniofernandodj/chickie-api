@@ -104,7 +104,8 @@ pub use cupom::{
     deletar_cupom,
     buscar_cupom,
     listar_todos_cupons,
-    criar_cupom_generico
+    criar_cupom_generico,
+    atualizar_status_cupom
 };
 
 pub use wipe::wipe_database;

@@ -1,4 +1,4 @@
-use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put, delete}};
+use axum::{Router, middleware::from_fn_with_state, routing::{get, post, put, delete, patch}};
 use std::sync::Arc;
 
 use crate::handlers::{AppState, auth_middleware};
@@ -11,6 +11,7 @@ use crate::handlers::{
     buscar_cupom,
     atualizar_cupom,
     deletar_cupom,
+    atualizar_status_cupom,
 };
 
 pub fn cupom_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
@@ -21,6 +22,7 @@ pub fn cupom_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{uuid}", get(buscar_cupom))
         .route("/{uuid}", put(atualizar_cupom))
         .route("/{uuid}", delete(deletar_cupom))
+        .route("/{uuid}/status", patch(atualizar_status_cupom))
         // Rotas legadas (manter compatibilidade)
         .route("/{loja_uuid}/cupons", post(criar_cupom))
         .route("/cupons/{codigo}", get(validar_cupom))

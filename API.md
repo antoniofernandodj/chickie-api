@@ -1261,6 +1261,34 @@ Authorization: Bearer <token>
 
 ---
 
+### 7.6 Atualizar Status do Cupom (Ativar/Inativar)
+
+```
+PATCH /api/cupons/{uuid}/status
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "ativo": true
+}
+```
+
+> Envie `"ativo": false` para inativar o cupom.
+
+**Response `204`:** No Content
+
+**Response `404`:**
+```json
+{
+  "error": "Cupom não encontrado"
+}
+```
+
+---
+
 ## 8. Marketing: Cupons (Legado), Avaliações e Promoções
 
 ### 8.1 Criar Cupom (Legado)
@@ -2571,6 +2599,7 @@ DELETE /api/wipe
 | 27 | `GET` | `/api/cupons/{uuid}` | 🔒 | — |
 | 28 | `PUT` | `/api/cupons/{uuid}` | 🔒 | — |
 | 29 | `DELETE` | `/api/cupons/{uuid}` | 🔒 | — |
+| 29.1 | `PATCH` | `/api/cupons/{uuid}/status` | 🔒 | — |
 | 30 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
 | 31 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
 | 32 | `GET` | `/api/marketing/cupons` | 🔒 | — |
@@ -2617,4 +2646,4 @@ DELETE /api/wipe
 | 73 | `GET` | `/api/ok` | — | — |
 | 74 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 75 endpoints**
+**Total: 76 endpoints**

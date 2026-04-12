@@ -233,4 +233,14 @@ impl MarketingService {
     pub async fn deletar_promocao(&self, uuid: Uuid) -> Result<(), String> {
         self.promocao_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
+
+    pub async fn buscar_cupom_por_uuid(&self, uuid: Uuid) -> Result<Cupom, String> {
+        self.cupom_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Cupom não encontrado".to_string())
+    }
+
+    pub async fn atualizar_cupom_status(&self, cupom: Cupom) -> Result<(), String> {
+        self.cupom_repo.atualizar(cupom).await.map_err(|e| e.to_string())
+    }
 }
