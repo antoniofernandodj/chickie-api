@@ -13,5 +13,8 @@ pub mod repositories;
 // Models — domain entities with sqlx FromRow + serde derives
 pub mod models;
 
+// Infrastructure — database pool and migrations
+pub mod database;
+
 // Utilities
 pub mod utils;
