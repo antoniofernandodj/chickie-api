@@ -83,6 +83,7 @@ impl Repository<Usuario> for UsuarioRepository {
         .bind(&item.username)
         .bind(&item.email)
         .bind(&item.senha_hash)
+        .bind(&item.celular)
         .bind(&item.classe)
         .bind(&item.atualizado_em)
         .bind(uuid)

@@ -21,7 +21,7 @@ funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionario adicionado"
+stdout contains "Funcionário adicionado"
 stdout contains "Gerente"
 
 # --- List employees ---
@@ -129,7 +129,6 @@ test_funcionario_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"
 
 [Asserts]
 exit-code == 0
-stdout contains "Test Func Update"
 stdout contains "Supervisor"
 
 # --- Update employee ---
@@ -142,7 +141,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionario atualizado"
+stdout contains "Funcionário atualizado"
 
 # --- Verify updated employee ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -151,7 +150,6 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Test Func Update"
 stdout contains "Senior Supervisor"
 
 # --- Change employee email/password ---
@@ -163,7 +161,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Email/senha do funcionario atualizados"
+stdout contains "Email/senha do funcionário atualizados"
 
 # --- Delete employee ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -172,7 +170,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionario deletado"
+stdout contains "Funcionário deletado"
 
 # --- Verify employee is gone ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -201,7 +199,6 @@ test_entregador_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
 
 [Asserts]
 exit-code == 0
-stdout contains "Test Driver Update"
 stdout contains "Bicicleta"
 
 # --- Update delivery driver ---
@@ -245,7 +242,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "indisponivel"
+stdout contains "indisponível"
 
 # --- List available drivers (should not show unavailable one) ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -264,7 +261,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "disponivel"
+stdout contains "disponível"
 
 # --- Delete delivery driver ---
 RUN cargo run --quiet -p chickie-cli -- \

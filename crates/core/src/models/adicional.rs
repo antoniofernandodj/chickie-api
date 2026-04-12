@@ -29,7 +29,7 @@ impl Adicional {
         Self {
             nome,
             loja_uuid,
-            disponivel: false,
+            disponivel: true,
             descricao,
             preco,
             uuid: Uuid::new_v4(),
