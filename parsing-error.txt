@@ -245,3 +245,596 @@ If this fails with `parse error: line X: invalid assert`, it confirms the parser
 | `20-environment.clurl` | 3 | 3 | 0 | ✅ Works |
 
 **Total: 107 entries | 106 passed | 1 failed | 2 parse errors**
+
+---
+
+## Complete Test Output - All Failing Tests
+
+### Test Run Summary
+```
+Files:
+  ✓ tests/01-database-setup.clurl (2 entries, 2 passed, 0 failed)
+  ✓ tests/01-database-setup.clurl (2 entries, 2 passed, 0 failed)
+  ✓ tests/02-auth.clurl (14 entries, 14 passed, 0 failed)
+  ✓ tests/03-lojas.clurl (10 entries, 10 passed, 0 failed)
+  ✓ tests/04-produtos.clurl (12 entries, 12 passed, 0 failed)
+  ✓ tests/05-categorias.clurl (5 entries, 5 passed, 0 failed)
+  ✗ tests/06-adicionais.clurl (parse error)
+  ✓ tests/07-pedidos.clurl (4 entries, 4 passed, 0 failed)
+  ✓ tests/08-cupons.clurl (7 entries, 7 passed, 0 failed)
+  ✓ tests/09-promocoes.clurl (5 entries, 5 passed, 0 failed)
+  ✓ tests/10-avaliacoes.clurl (1 entries, 1 passed, 0 failed)
+  ✓ tests/11-favoritos.clurl (5 entries, 5 passed, 0 failed)
+  ✓ tests/12-horarios.clurl (4 entries, 4 passed, 0 failed)
+  ✓ tests/13-config-pedido.clurl (2 entries, 2 passed, 0 failed)
+  ✓ tests/14-ingredientes.clurl (3 entries, 3 passed, 0 failed)
+  ✗ tests/15-funcionarios.clurl (parse error)
+  ✓ tests/16-enderecos-loja.clurl (12 entries, 12 passed, 0 failed)
+  ✗ tests/17-driver-assignment.clurl (7 entries, 6 passed, 1 failed)
+  ✓ tests/18-error-handling.clurl (4 entries, 4 passed, 0 failed)
+  ✓ tests/19-integration-order-flow.clurl (5 entries, 5 passed, 0 failed)
+  ✓ tests/20-environment.clurl (3 entries, 3 passed, 0 failed)
+
+18 file(s) passed, 3 file(s) failed
+Total: 107 entries | 106 passed | 1 failed
+```
+
+---
+
+### Detailed Failure: tests/06-adicionais.clurl
+
+**Error Message:**
+```
+parse error in tests/06-adicionais.clurl: line 70: invalid assert
+```
+
+**Complete File Content:**
+```clurl
+# ============================================================
+# Topping (Adicional) Tests
+# Uses stores from previous tests
+# ============================================================
+
+# --- Create an adicional ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Queijo Extra" \
+    --descricao "Queijo mussarela adicional" \
+    --preco 3.50
+
+[Captures]
+adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Queijo Extra"
+
+# --- List all adicionais ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Queijo Extra"
+
+# --- Update adicional ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{adicional_uuid}} \
+    --nome "Queijo Premium" \
+    --descricao "Queijo importado especial" \
+    --preco 5.00
+
+[Asserts]
+exit-code == 0
+stdout contains "Queijo Premium"
+stdout contains "Queijo importado especial"
+
+# --- Delete adicional ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{adicional_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# ============================================================
+# Adicional Availability Toggle Tests
+# ============================================================
+
+# --- Create additional for availability test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Disponivel Test" \
+    --descricao "Test availability toggle" \
+    --preco 2.00
+
+[Captures]
+disp_adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Disponivel Test"
+
+# --- List available add-ons (should include the new one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Disponivel Test"
+
+# --- Set additional as unavailable ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}} \
+    --disponivel false
+
+[Asserts]
+exit-code == 0
+stdout contains "indisponivel"
+
+# --- List available add-ons (should NOT include the unavailable one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "Disponivel Test"
+
+# --- Set additional as available again ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}} \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "disponivel"
+
+# --- Clean up ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}}
+
+[Asserts]
+exit-code == 0
+```
+
+**Expected Results (if parser worked):**
+- All 10 tests should pass
+- Creates, lists, updates, deletes adicionais
+- Tests availability toggle functionality
+
+---
+
+### Detailed Failure: tests/15-funcionarios.clurl
+
+**Error Message:**
+```
+parse error in tests/15-funcionarios.clurl: line 118: invalid assert
+```
+
+**Complete File Content:**
+```clurl
+# ============================================================
+# Employee & Delivery Driver Tests
+# Uses admin and stores from previous tests
+# ============================================================
+
+# --- Add employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Maria Funcionaria" \
+    --username "mariafunc" \
+    --email "maria@test.com" \
+    --senha "mariapass" \
+    --celular "11900000001" \
+    --cargo "Gerente" \
+    --salario 3000.0 \
+    --data-admissao "2026-01-01"
+
+[Captures]
+funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionario adicionado"
+stdout contains "Gerente"
+
+# --- List employees ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Gerente"
+
+# --- Add delivery driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Carlos Entregador" \
+    --username "carlosentreg" \
+    --email "carlos@test.com" \
+    --senha "carlospass" \
+    --celular "11900000002" \
+    --veiculo "Moto" \
+    --placa "ABC-1234"
+
+[Captures]
+entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador adicionado"
+stdout contains "Moto"
+stdout contains "ABC-1234"
+
+# --- List delivery drivers ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Moto"
+
+# --- Update employee ---
+# SKIP: CLI command not implemented yet (run_update_funcionario just prints "em construcao")
+# RUN cargo run --quiet -p chickie-cli -- \
+#     update-funcionario \
+#     --loja-uuid {{main_store_uuid}} \
+#     --uuid {{funcionario_uuid}} \
+#     --cargo "Gerente Senior" \
+#     --salario 3500.0
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "Funcionario atualizado"
+
+# --- Update delivery driver ---
+# SKIP: CLI command not implemented yet (run_update_entregador just prints "em construcao")
+# RUN cargo run --quiet -p chickie-cli -- \
+#     update-entregador \
+#     --loja-uuid {{main_store_uuid}} \
+#     --uuid {{entregador_uuid}} \
+#     --veiculo "Van" \
+#     --placa "XYZ-5678" \
+#     --disponivel true
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "Van"
+# stdout contains "XYZ-5678"
+
+# --- Add customer ---
+# SKIP: CLI command not implemented yet (run_add_cliente just prints "em construcao")
+# RUN cargo run --quiet -p chickie-cli -- \
+#     add-cliente \
+#     --loja-uuid {{main_store_uuid}} \
+#     --nome "Ana Cliente" \
+#     --username "anacliente" \
+#     --email "ana@test.com" \
+#     --senha "anapass" \
+#     --celular "11900000003"
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "Ana Cliente"
+
+# ============================================================
+# Employee & Driver Update / Delete / Credential Tests
+# ============================================================
+
+# --- Add employee for update test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Test Func Update" \
+    --username "testfuncupdate" \
+    --email "testfuncupdate@test.com" \
+    --senha "testfuncpass" \
+    --celular "11933333333" \
+    --cargo "Supervisor" \
+    --salario 4000.0 \
+    --data-admissao "2026-06-01"
+
+[Captures]
+test_funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+test_funcionario_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Func Update"
+stdout contains "Supervisor"
+
+# --- Update employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{test_funcionario_uuid}} \
+    --cargo "Senior Supervisor" \
+    --salario 4500.0
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionario atualizado"
+
+# --- Verify updated employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Func Update"
+stdout contains "Senior Supervisor"
+
+# --- Change employee email/password ---
+RUN cargo run --quiet -p chickie-cli -- \
+    trocar-email-senha-funcionario \
+    --usuario-uuid {{test_funcionario_usuario_uuid}} \
+    --novo-email "updatedfunc@test.com" \
+    --nova-senha "newfuncpass123"
+
+[Asserts]
+exit-code == 0
+stdout contains "Email/senha do funcionario atualizados"
+
+# --- Delete employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-funcionario \
+    --uuid {{test_funcionario_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionario deletado"
+
+# --- Verify employee is gone ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "Test Func Update"
+
+# --- Add driver for update test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Test Driver Update" \
+    --username "testdriverupdate" \
+    --email "testdriverupdate@test.com" \
+    --senha "testdriverpass" \
+    --celular "11922222222" \
+    --veiculo "Bicicleta" \
+    --placa "N/A"
+
+[Captures]
+test_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+test_entregador_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Driver Update"
+stdout contains "Bicicleta"
+
+# --- Update delivery driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{test_entregador_uuid}} \
+    --veiculo "Moto" \
+    --placa "TEST-9999"
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador atualizado"
+
+# --- Verify updated driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Moto"
+stdout contains "TEST-9999"
+
+# --- Change driver email/password ---
+RUN cargo run --quiet -p chickie-cli -- \
+    trocar-email-senha-entregador \
+    --usuario-uuid {{test_entregador_usuario_uuid}} \
+    --novo-email "updateddriver@test.com" \
+    --nova-senha "newdriverpass123"
+
+[Asserts]
+exit-code == 0
+stdout contains "Email/senha do entregador atualizados"
+
+# --- Set driver as unavailable ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-entregador \
+    --uuid {{test_entregador_uuid}} \
+    --disponivel false
+
+[Asserts]
+exit-code == 0
+stdout contains "indisponivel"
+
+# --- List available drivers (should not show unavailable one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "TEST-9999"
+
+# --- Set driver as available again ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-entregador \
+    --uuid {{test_entregador_uuid}} \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "disponivel"
+
+# --- Delete delivery driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-entregador \
+    --uuid {{test_entregador_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador deletado"
+```
+
+**Expected Results (if parser worked):**
+- All employee/driver CRUD tests should pass
+- Capture `entregador_uuid` for use in `17-driver-assignment.clurl`
+- Tests creation, listing, updating, deleting employees and drivers
+- Tests credential changes and availability toggles
+
+---
+
+### Detailed Failure: tests/17-driver-assignment.clurl
+
+**Error Output:**
+```
+✗ [2] cargo run --quiet -p chickie-cli -- atribuir-entregador --pedido-uuid c9a439c0-e58f-43a5-96cb-2b1307fdd97e --loja-uuid e50958a8-6e81-4e45-9261-9927006df334 --entregador-uuid {{entregador_uuid}}
+  exit code: 2
+  stderr:
+    error: invalid value '{{entregador_uuid}}' for '--entregador-uuid <ENTREGADOR_UUID>': invalid character: found `{` at 2
+
+    For more information, try '--help'.
+   ✗ exit-code == 0 (got 2)
+```
+
+**Complete File Content:**
+```clurl
+# ============================================================
+# Delivery Driver Assignment Tests
+# Uses users, stores, and drivers from previous tests
+# ============================================================
+
+# --- Create order for driver assignment ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-pedido \
+    --usuario-uuid {{order_user_uuid}} \
+    --loja-uuid {{main_store_uuid}} \
+    --taxa-entrega 5.0 \
+    --subtotal 40.0 \
+    --forma-pagamento "PIX"
+
+[Captures]
+driver_test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
+[Asserts]
+exit-code == 0
+
+# --- Assign driver to order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    atribuir-entregador \
+    --pedido-uuid {{driver_test_pedido_uuid}} \
+    --loja-uuid {{main_store_uuid}} \
+    --entregador-uuid {{entregador_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- Remove driver from order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    remover-entregador \
+    --pedido-uuid {{driver_test_pedido_uuid}} \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador removido do pedido"
+
+# ============================================================
+# Order Driver Assignment with Store-specific Driver
+# ============================================================
+
+# --- Add driver for order test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{order_store_uuid}} \
+    --nome "Order Driver" \
+    --username "orderdriver" \
+    --email "orderdriver@test.com" \
+    --senha "orderdriverpass" \
+    --celular "11988777777" \
+    --veiculo "Moto" \
+    --placa "ORD-1234"
+
+[Captures]
+order_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Create order for testing ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-pedido \
+    --usuario-uuid {{order_user_uuid}} \
+    --loja-uuid {{order_store_uuid}} \
+    --taxa-entrega 5.0 \
+    --subtotal 30.0 \
+    --forma-pagamento "PIX"
+
+[Captures]
+test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
+[Asserts]
+exit-code == 0
+
+# --- Assign driver to order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    atribuir-entregador \
+    --pedido-uuid {{test_pedido_uuid}} \
+    --loja-uuid {{order_store_uuid}} \
+    --entregador-uuid {{order_entregador_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador atribuido"
+
+# --- Remove driver from order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    remover-entregador \
+    --pedido-uuid {{test_pedido_uuid}} \
+    --loja-uuid {{order_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador removido do pedido"
+```
+
+**Root Cause:**
+- Test [2] uses `{{entregador_uuid}}` which should be captured from `tests/15-funcionarios.clurl`
+- Since `15-funcionarios.clurl` fails to parse, the variable is never captured
+- Results in literal string `{{entregador_uuid}}` being passed to CLI instead of a UUID
+
+**Expected Results (if 15-funcionarios.clurl parsed correctly):**
+- All 7 tests should pass
+- Tests driver assignment/removal from orders
+
+---
+
