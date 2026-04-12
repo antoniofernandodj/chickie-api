@@ -58,7 +58,7 @@ exit-code == 0
 RUN cargo run --quiet -p chickie-cli -- \
     create-adicional \
     --loja-uuid {{main_store_uuid}} \
-    --nome "Disponível Test" \
+    --nome "Disponivel Test" \
     --descricao "Test availability toggle" \
     --preco 2.00
 
@@ -67,7 +67,7 @@ disp_adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 
 [Asserts]
 exit-code == 0
-stdout contains "Disponível Test"
+stdout contains "Disponivel Test"
 
 # --- List available add-ons (should include the new one) ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -76,7 +76,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Disponível Test"
+stdout contains "Disponivel Test"
 
 # --- Set additional as unavailable ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -96,7 +96,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout not contains "Disponível Test"
+stdout not contains "Disponivel Test"
 
 # --- Set additional as available again ---
 RUN cargo run --quiet -p chickie-cli -- \

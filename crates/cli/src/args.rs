@@ -898,7 +898,7 @@ pub struct ToggleDisponibilidadeAdicionalArgs {
     pub loja_uuid: Uuid,
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long, value_parser = clap::value_parser!(bool))]
+    #[arg(long, num_args = 1, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 
@@ -908,7 +908,7 @@ pub struct ToggleDisponibilidadeProdutoArgs {
     pub loja_uuid: Uuid,
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long, value_parser = clap::value_parser!(bool))]
+    #[arg(long, num_args = 1, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 
@@ -962,7 +962,7 @@ pub struct TrocarEmailSenhaEntregadorArgs {
 pub struct ToggleDisponibilidadeEntregadorArgs {
     #[arg(long)]
     pub uuid: Uuid,
-    #[arg(long, value_parser = clap::value_parser!(bool))]
+    #[arg(long, num_args = 1, value_parser = clap::value_parser!(bool))]
     pub disponivel: bool,
 }
 
