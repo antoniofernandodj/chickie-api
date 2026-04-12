@@ -41,6 +41,9 @@ impl MarketingService {
         data_validade: String,
         limite_uso: Option<i32>,
     ) -> Result<Cupom, String> {
+        let data_validade_parsed = chrono::DateTime::parse_from_rfc3339(&data_validade)
+            .map_err(|e| format!("Invalid date format for data_validade: {}", e))?
+            .with_timezone(&chrono::Utc);
 
         let cupom = Cupom::new(
             loja_uuid,
@@ -49,7 +52,7 @@ impl MarketingService {
             tipo_desconto,
             valor_desconto,
             valor_minimo,
-            data_validade,
+            data_validade_parsed,
             limite_uso
         );
 
@@ -166,6 +169,10 @@ impl MarketingService {
         data_validade: String,
         limite_uso: Option<i32>,
     ) -> Result<(), String> {
+        let data_validade_parsed = chrono::DateTime::parse_from_rfc3339(&data_validade)
+            .map_err(|e| format!("Invalid date format for data_validade: {}", e))?
+            .with_timezone(&chrono::Utc);
+
         let mut cupom = self.cupom_repo.buscar_por_uuid(uuid).await?
             .ok_or("Cupom não encontrado")?;
         cupom.codigo = codigo.to_uppercase();
@@ -173,7 +180,7 @@ impl MarketingService {
         cupom.tipo_desconto = tipo_desconto;
         cupom.valor_desconto = valor_desconto;
         cupom.valor_minimo = valor_minimo;
-        cupom.data_validade = data_validade;
+        cupom.data_validade = data_validade_parsed;
         cupom.limite_uso = limite_uso;
         self.cupom_repo.atualizar(cupom).await.map_err(|e| e.to_string())
     }

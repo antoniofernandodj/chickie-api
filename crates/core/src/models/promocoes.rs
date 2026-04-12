@@ -151,7 +151,7 @@ pub struct Cupom {
     pub tipo_desconto: String,
     pub valor_desconto: Option<Decimal>,
     pub valor_minimo: Option<Decimal>,
-    pub data_validade: String,
+    pub data_validade: chrono::DateTime<chrono::Utc>,
     pub limite_uso: Option<i32>,
     pub uso_atual: i32,
     pub status: StatusCupom,
@@ -167,13 +167,13 @@ impl Cupom {
         tipo_desconto: String,
         valor_desconto: Option<Decimal>,
         valor_minimo: Option<Decimal>,
-        data_validade: String,
+        data_validade: chrono::DateTime<chrono::Utc>,
         limite_uso: Option<i32>,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
             loja_uuid,
-            codigo: codigo.to_uppercase(),
+            codigo,
             descricao,
             tipo_desconto,
             valor_desconto,
@@ -182,7 +182,7 @@ impl Cupom {
             limite_uso,
             uso_atual: 0,
             status: StatusCupom::Ativo,
-            criado_em: Utc::now()
+            criado_em: chrono::Utc::now(),
         }
     }
 

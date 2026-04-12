@@ -59,8 +59,8 @@ stdout contains "Cupom atualizado"
 # --- Validar cupom ---
 RUN cargo run --quiet -p chickie-cli -- \
     validar-cupom \
-    --loja-uuid {{main_store_uuid}} \
-    --codigo "PROMO20"
+    "PROMO20" \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0

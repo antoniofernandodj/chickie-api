@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use chrono::Datelike;
+use chrono::{Datelike, Utc};
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
@@ -187,9 +187,8 @@ impl PedidoService {
                     return Ok((Decimal::ZERO, "Cupom inativo".to_string()));
                 }
 
-                // Verifica validade (simples comparação de string ISO 8601
-                // funciona se formato for igual)
-                if agora() > cupom.data_validade {
+                // Verifica validade
+                if Utc::now() > cupom.data_validade {
                      return Ok((Decimal::ZERO, "Cupom expirado".to_string()));
                 }
                 // Verifica valor mínimo

@@ -77,7 +77,7 @@ pub async fn run_update_cupom(state: &AppState, args: UpdateCupomArgs) {
     let tipo_desconto = args.tipo_desconto.unwrap_or(cupom_existente.tipo_desconto);
     let valor_desconto = args.valor_desconto.map(|v| parse_decimal(v));
     let valor_minimo = args.valor_minimo.map(|v| parse_decimal(v));
-    let data_validade = args.data_validade.unwrap_or(cupom_existente.data_validade);
+    let data_validade = args.data_validade.unwrap_or_else(|| cupom_existente.data_validade.to_rfc3339());
     let limite_uso = args.limite_uso.or(cupom_existente.limite_uso);
 
     match state
