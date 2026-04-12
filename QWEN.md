@@ -117,7 +117,7 @@ crates/api/src/
 ├── infrastructure/
 │   └── database.rs             # Pool PostgreSQL + migrations
 │
-└── api_handlers/
+└── handlers/
     ├── mod.rs                  # Declaração de módulos
     ├── routers.rs              # Definição de todas as rotas
     ├── state.rs                # AppState (injeção de dependência)

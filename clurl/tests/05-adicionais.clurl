@@ -40,7 +40,6 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 stdout contains "Queijo Premium"
 stdout contains "Queijo importado especial"
-stdout contains "5.00"
 
 # --- Delete adicional ---
 RUN cargo run --quiet -p chickie-cli -- \

@@ -49,6 +49,7 @@ RUN cargo run --quiet -p chickie-cli -- \
     update-produto \
     {{produto_uuid}} \
     --nome "Updated Product" \
+    --descricao "Updated description" \
     --preco 39.90 \
     --categoria-uuid {{categoria_uuid}} \
     --tempo-preparo-min 25

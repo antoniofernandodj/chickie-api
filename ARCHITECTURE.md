@@ -259,7 +259,7 @@ API Handlers (Axum — extract request, call usecase, return response)
 
 ### Dependency Injection
 
-All wiring happens in `AppState::new()` (api/src/api_handlers/state.rs):
+All wiring happens in `AppState::new()` (api/src/handlers/state.rs):
 
 ```rust
 // Concrete repo → trait object

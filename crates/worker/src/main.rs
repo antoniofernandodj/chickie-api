@@ -1,9 +1,9 @@
 pub mod worker_lib;
-mod worker_handlers;
+mod handlers;
 
 use tracing::info;
 use tracing_subscriber::FmtSubscriber;
-use worker_handlers::register::register_handlers;
+use handlers::register::register_handlers;
 use anyhow::Result;
 use worker_lib::{Worker, WorkerConfig};
 

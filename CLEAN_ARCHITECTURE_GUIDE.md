@@ -51,10 +51,10 @@ Vamos criar um CRUD completo de pagamentos para um pedido, seguindo cada camada.
 | **Port** | `ports/pagamento_port.rs` | Trait sem sqlx |
 | **Service** | `services/pagamento_service.rs` | Regras de negócio |
 | **Usecase** | `usecases/pagamento.rs` | Orquestrador para API |
-| **API Handler** | `api_handlers/pagamento/criar.rs` | Extrai request, chama usecase |
-| **API Handler** | `api_handlers/pagamento/listar.rs` | Extrai request, chama usecase |
-| **Router** | `api_handlers/routers/mod.rs` | Registra rotas |
-| **AppState** | `api_handlers/state.rs` | Injeta dependências |
+| **API Handler** | `handlers/pagamento/criar.rs` | Extrai request, chama usecase |
+| **API Handler** | `handlers/pagamento/listar.rs` | Extrai request, chama usecase |
+| **Router** | `handlers/routers/mod.rs` | Registra rotas |
+| **AppState** | `handlers/state.rs` | Injeta dependências |
 
 ---
 
@@ -447,7 +447,7 @@ pub use pagamento::PagamentoUsecase;
 
 ### Passo 7: Criar Request DTOs
 
-**Arquivo:** `crates/api/src/api_handlers/dto/mod.rs` (adicionar no final)
+**Arquivo:** `crates/api/src/handlers/dto/mod.rs` (adicionar no final)
 
 ```rust
 #[derive(Deserialize, ToSchema)]
@@ -461,7 +461,7 @@ pub struct CriarPagamentoRequest {
 
 ### Passo 8: Criar Handlers
 
-**Arquivo:** `crates/api/src/api_handlers/pagamento/mod.rs`
+**Arquivo:** `crates/api/src/handlers/pagamento/mod.rs`
 
 ```rust
 pub mod criar;
@@ -469,13 +469,13 @@ pub mod listar;
 pub mod confirmar;
 ```
 
-**Arquivo:** `crates/api/src/api_handlers/pagamento/criar.rs`
+**Arquivo:** `crates/api/src/handlers/pagamento/criar.rs`
 
 ```rust
 use axum::{extract::{Path, State}, http::StatusCode, Json};
 use std::sync::Arc;
-use crate::api_handlers::{AppState, dto::CriarPagamentoRequest};
-use crate::api_handlers::auth::UsuarioAuth;
+use crate::handlers::{AppState, dto::CriarPagamentoRequest};
+use crate::handlers::auth::UsuarioAuth;
 use chickie_core::usecases::PagamentoUsecase;
 
 pub async fn handler(
@@ -507,13 +507,13 @@ pub async fn handler(
 }
 ```
 
-**Arquivo:** `crates/api/src/api_handlers/pagamento/listar.rs`
+**Arquivo:** `crates/api/src/handlers/pagamento/listar.rs`
 
 ```rust
 use axum::{extract::{Path, State}, http::StatusCode, Json};
 use std::sync::Arc;
-use crate::api_handlers::{AppState, AppError};
-use crate::api_handlers::auth::UsuarioAuth;
+use crate::handlers::{AppState, AppError};
+use crate::handlers::auth::UsuarioAuth;
 use chickie_core::usecases::PagamentoUsecase;
 
 pub async fn handler(
@@ -546,13 +546,13 @@ pub async fn handler(
 }
 ```
 
-**Arquivo:** `crates/api/src/api_handlers/pagamento/confirmar.rs`
+**Arquivo:** `crates/api/src/handlers/pagamento/confirmar.rs`
 
 ```rust
 use axum::{extract::{Path, State}, http::StatusCode};
 use std::sync::Arc;
-use crate::api_handlers::{AppState, AppError};
-use crate::api_handlers::auth::UsuarioAuth;
+use crate::handlers::{AppState, AppError};
+use crate::handlers::auth::UsuarioAuth;
 use chickie_core::usecases::PagamentoUsecase;
 
 pub async fn handler(
@@ -576,7 +576,7 @@ pub async fn handler(
 
 ### Passo 9: Registrar Rotas
 
-**Arquivo:** `crates/api/src/api_handlers/routers/mod.rs`
+**Arquivo:** `crates/api/src/handlers/routers/mod.rs`
 
 Adicionar o módulo:
 
@@ -597,7 +597,7 @@ E registrar as rotas no `api_routes()`:
 
 ### Passo 10: Registrar no AppState
 
-**Arquivo:** `crates/api/src/api_handlers/state.rs`
+**Arquivo:** `crates/api/src/handlers/state.rs`
 
 1. Adicionar ao `use chickie_core::ports`:
 ```rust
@@ -677,12 +677,12 @@ curl -X PUT http://localhost:3000/api/pagamentos/{pedido_uuid}/{pagamento_uuid}/
 [ ] 9. services/mod.rs — mod + pub use
 [ ] 10. usecases/{entidade}.rs — struct com service, orquestra
 [ ] 11. usecases/mod.rs — mod + pub use
-[ ] 12. api_handlers/dto/mod.rs — Request DTOs
-[ ] 13. api_handlers/{entidade}/mod.rs — módulo de handlers
-[ ] 14. api_handlers/{entidade}/criar.rs — handler
-[ ] 15. api_handlers/{entidade}/listar.rs — handler
-[ ] 16. api_handlers/routers/mod.rs — registrar rotas
-[ ] 17. api_handlers/state.rs — port, repo, service, field, init
+[ ] 12. handlers/dto/mod.rs — Request DTOs
+[ ] 13. handlers/{entidade}/mod.rs — módulo de handlers
+[ ] 14. handlers/{entidade}/criar.rs — handler
+[ ] 15. handlers/{entidade}/listar.rs — handler
+[ ] 16. handlers/routers/mod.rs — registrar rotas
+[ ] 17. handlers/state.rs — port, repo, service, field, init
 [ ] 18. cargo check — compilar
 ```
 
@@ -718,7 +718,7 @@ crates/api/src/
 ├── main.rs                 # Bootstrap
 ├── infrastructure/
 │   └── database.rs         # Pool + migrations
-└── api_handlers/
+└── handlers/
     ├── dto/mod.rs          # Request DTOs + AppError
     ├── state.rs            # AppState (injeção de dependência)
     ├── routers.rs          # Todas as rotas
