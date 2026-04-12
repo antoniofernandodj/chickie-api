@@ -1108,9 +1108,164 @@ Authorization: Bearer <token>
 
 ---
 
-## 7. Marketing: Cupons, Avaliações e Promoções
+## 7. Cupons (🔒)
 
-### 7.1 Criar Cupom
+### 7.1 Criar Cupom (Genérico)
+
+```
+POST /api/cupons/
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO10",
+  "descricao": "10% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 10.0,
+  "valor_minimo": 50.0,
+  "data_validade": "2026-12-31T23:59:59Z",
+  "limite_uso": 100
+}
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440030",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO10",
+  "descricao": "10% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 10.0,
+  "valor_minimo": 50.0,
+  "data_validade": "2026-12-31T23:59:59Z",
+  "limite_uso": 100,
+  "uso_atual": 0,
+  "status": "Ativo",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+---
+
+### 7.2 Listar Todos os Cupons
+
+```
+GET /api/cupons/
+Authorization: Bearer <token>
+```
+
+> Retorna todos os cupons de todas as lojas.
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440030",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "codigo": "PROMO10",
+    "descricao": "10% off",
+    "tipo_desconto": "percentual",
+    "valor_desconto": 10.0,
+    "valor_minimo": 50.0,
+    "data_validade": "2026-12-31T23:59:59Z",
+    "limite_uso": 100,
+    "uso_atual": 0,
+    "status": "Ativo",
+    "criado_em": "2026-04-04T00:00:00Z"
+  }
+]
+```
+
+---
+
+### 7.3 Buscar Cupom por UUID
+
+```
+GET /api/cupons/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440030",
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO10",
+  "descricao": "10% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 10.0,
+  "valor_minimo": 50.0,
+  "data_validade": "2026-12-31T23:59:59Z",
+  "limite_uso": 100,
+  "uso_atual": 0,
+  "status": "Ativo",
+  "criado_em": "2026-04-04T00:00:00Z"
+}
+```
+
+**Response `404`:**
+```json
+{
+  "error": "Cupom não encontrado"
+}
+```
+
+---
+
+### 7.4 Atualizar Cupom
+
+```
+PUT /api/cupons/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "codigo": "PROMO20",
+  "descricao": "20% off",
+  "tipo_desconto": "percentual",
+  "valor_desconto": 20.0,
+  "valor_minimo": 100.0,
+  "data_validade": "2027-12-31T23:59:59Z",
+  "limite_uso": 200
+}
+```
+
+**Response `204`:** No Content
+
+---
+
+### 7.5 Deletar Cupom
+
+```
+DELETE /api/cupons/{uuid}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+**Response `404`:**
+```json
+{
+  "error": "Cupom não encontrado"
+}
+```
+
+---
+
+## 8. Marketing: Cupons (Legado), Avaliações e Promoções
+
+### 8.1 Criar Cupom (Legado)
+
+> ⚠️ Endpoint legado. Use `POST /api/cupons/` para novo código.
 
 ```
 POST /api/marketing/{loja_uuid}/cupons
@@ -1151,7 +1306,9 @@ Content-Type: application/json
 
 ---
 
-### 7.2 Listar Cupons
+### 8.2 Listar Cupons da Loja (Legado)
+
+> ⚠️ Endpoint legado. Use `GET /api/cupons/` para listar todos.
 
 ```
 GET /api/marketing/cupons
@@ -1180,7 +1337,9 @@ Authorization: Bearer <token>
 
 ---
 
-### 7.3 Validar Cupom
+### 8.3 Validar Cupom
+
+> ⚠️ **Atenção**: Este endpoint é público (sem autenticação).
 
 ```
 GET /api/marketing/cupons/{codigo}
@@ -2407,50 +2566,55 @@ DELETE /api/wipe
 | 22 | `PUT` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
 | 23 | `DELETE` | `/api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` | 🔒 | — |
 | 24 | `GET` | `/api/pedidos/{pedido_uuid}/com-entregador` | 🔒 | — |
-| 25 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
-| 26 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
-| 27 | `GET` | `/api/marketing/cupons` | 🔒 | — |
-| 28 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
-| 29 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
-| 30 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 31 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
-| 32 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 33 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
-| 34 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 35 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
-| 36 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
-| 37 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
-| 38 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | — |
-| 39 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
-| 40 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 41 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
-| 42 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 43 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
-| 44 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
-| 45 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
-| 46 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
-| 47 | `GET` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
-| 48 | `POST` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
-| 49 | `PUT` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
-| 50 | `DELETE` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
-| 51 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
-| 52 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
-| 53 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 54 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 55 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
-| 56 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 57 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
-| 58 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
-| 59 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
-| 60 | `POST` | `/api/produtos/` | 🔒 | — |
-| 61 | `GET` | `/api/produtos/` | 🔒 | — |
-| 62 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
-| 63 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
-| 64 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
-| 65 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
-| 66 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
-| 67 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 68 | `GET` | `/api/ok` | — | — |
-| 69 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 25 | `POST` | `/api/cupons/` | 🔒 | — |
+| 26 | `GET` | `/api/cupons/` | 🔒 | — |
+| 27 | `GET` | `/api/cupons/{uuid}` | 🔒 | — |
+| 28 | `PUT` | `/api/cupons/{uuid}` | 🔒 | — |
+| 29 | `DELETE` | `/api/cupons/{uuid}` | 🔒 | — |
+| 30 | `POST` | `/api/marketing/{loja_uuid}/cupons` | 🔒 | — |
+| 31 | `GET` | `/api/marketing/cupons/{codigo}` | — | — |
+| 32 | `GET` | `/api/marketing/cupons` | 🔒 | — |
+| 33 | `POST` | `/api/marketing/{loja_uuid}/avaliar-loja` | 🔒 | — |
+| 34 | `POST` | `/api/marketing/{loja_uuid}/avaliar-produto` | 🔒 | — |
+| 35 | `POST` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 36 | `GET` | `/api/marketing/{loja_uuid}/promocoes` | 🔒 | — |
+| 37 | `PUT` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 38 | `DELETE` | `/api/marketing/{loja_uuid}/promocoes/{uuid}` | 🔒 | — |
+| 39 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 40 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | — |
+| 41 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | 🔒 | — |
+| 42 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
+| 43 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | — |
+| 44 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | — |
+| 45 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 46 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
+| 47 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 48 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
+| 49 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
+| 50 | `GET` | `/api/enderecos-entrega/{pedido_uuid}` | 🔒 | — |
+| 51 | `GET` | `/api/enderecos-entrega/{loja_uuid}/loja` | 🔒 | — |
+| 52 | `GET` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
+| 53 | `POST` | `/api/enderecos-loja/{loja_uuid}` | 🔒 | — |
+| 54 | `PUT` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
+| 55 | `DELETE` | `/api/enderecos-loja/{loja_uuid}/{endereco_uuid}` | 🔒 | — |
+| 56 | `POST` | `/api/enderecos-usuario/` | 🔒 | — |
+| 57 | `GET` | `/api/enderecos-usuario/` | 🔒 | — |
+| 58 | `GET` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 59 | `PUT` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 60 | `DELETE` | `/api/enderecos-usuario/{uuid}` | 🔒 | — |
+| 61 | `POST` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 62 | `DELETE` | `/api/favoritos/{loja_uuid}` | 🔒 | — |
+| 63 | `GET` | `/api/favoritos/minhas` | 🔒 | — |
+| 64 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
+| 65 | `POST` | `/api/produtos/` | 🔒 | — |
+| 66 | `GET` | `/api/produtos/` | 🔒 | — |
+| 67 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | 🔒 | — |
+| 68 | `GET` | `/api/produtos/{uuid}` | 🔒 | — |
+| 69 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
+| 70 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
+| 71 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
+| 72 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
+| 73 | `GET` | `/api/ok` | — | — |
+| 74 | `DELETE` | `/api/wipe` ⚠️ | — | — |
 
-**Total: 70 endpoints**
+**Total: 75 endpoints**

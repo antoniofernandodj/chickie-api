@@ -9,6 +9,7 @@ use chickie_core::{models::Usuario, usecases::AdminUsecase};
 
 #[derive(Deserialize)]
 pub struct AtualizarCupomRequest {
+    pub loja_uuid: Uuid,
     pub codigo: String,
     pub descricao: String,
     pub tipo_desconto: String,
@@ -20,7 +21,7 @@ pub struct AtualizarCupomRequest {
 
 pub async fn atualizar_cupom(
     State(state): State<Arc<AppState>>,
-    Path((loja_uuid, uuid)): Path<(Uuid, Uuid)>,
+    Path(uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Json(p): Json<AtualizarCupomRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -33,7 +34,7 @@ pub async fn atualizar_cupom(
         state.marketing_service.clone(),
         state.endereco_loja_service.clone(),
         usuario,
-        loja_uuid,
+        p.loja_uuid,
     );
 
     uc.atualizar_cupom(

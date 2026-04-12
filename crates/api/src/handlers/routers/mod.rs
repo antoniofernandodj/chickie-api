@@ -12,6 +12,7 @@ mod ingrediente;
 mod horario;
 mod endereco_loja;
 mod config_pedido;
+mod cupom;
 mod cupom_admin;
 mod funcionario;
 mod entregador;
@@ -38,6 +39,7 @@ pub use ingrediente::ingrediente_routes;
 pub use horario::horario_routes;
 pub use endereco_loja::endereco_loja_routes;
 pub use config_pedido::config_pedido_routes;
+pub use cupom::cupom_routes;
 pub use cupom_admin::cupom_admin_routes;
 pub use funcionario::funcionario_routes;
 pub use entregador::entregador_routes;
@@ -60,6 +62,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/horarios", horario_routes())
         .nest("/enderecos-loja", endereco_loja_routes())
         .nest("/config-pedido", config_pedido_routes())
+        .nest("/cupons", cupom_routes(s))
         .nest("/cupons/admin", cupom_admin_routes())
         .nest("/funcionarios", funcionario_routes())
         .nest("/entregadores", entregador_routes())

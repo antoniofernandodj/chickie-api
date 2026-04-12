@@ -25,6 +25,7 @@ _(nenhum bug conhecido)_
 
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
+| 25 | **CRUD completo de cupons** | Novos endpoints padronizados em `/api/cupons/`: POST (criar), GET (listar todos), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Rotas legadas mantidas em `/api/marketing/` para compatibilidade. MarketingService atualizado com `buscar_cupom` e `listar_todos_cupons`. | 2026-04-12 |
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
 | 15 | **Campos TIME com tipo correto** | `horario_abertura`/`horario_fechamento` (`loja`) e `abertura`/`fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. | 2026-04-05 |
 | 16 | **Endpoint minhas lojas** | `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. | 2026-04-05 |
@@ -63,8 +64,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 11 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 |
+| ✅ Concluídas | 12 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 11 concluídas recentemente**
+**Total: 11 pendências ativas, 12 concluídas recentemente**

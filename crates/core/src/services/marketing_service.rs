@@ -144,6 +144,16 @@ impl MarketingService {
         self.cupom_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
+    pub async fn buscar_cupom(&self, uuid: Uuid) -> Result<Cupom, String> {
+        self.cupom_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Cupom não encontrado".to_string())
+    }
+
+    pub async fn listar_todos_cupons(&self) -> Result<Vec<Cupom>, String> {
+        self.cupom_repo.listar_todos().await.map_err(|e| e.to_string())
+    }
+
     pub async fn atualizar_cupom(
         &self,
         uuid: Uuid,
