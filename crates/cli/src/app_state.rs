@@ -27,6 +27,7 @@ pub struct AppState {
     pub entregador_service: Arc<EntregadorService>,
     #[allow(dead_code)]
     pub pedido_repo: Arc<PedidoRepository>,
+    pub cupom_repo: Arc<CupomRepository>,
 }
 
 impl AppState {
@@ -77,7 +78,7 @@ impl AppState {
                 endereco_entrega_repo.clone(),
             )),
             marketing_service: Arc::new(MarketingService::new(
-                cupom_repo,
+                cupom_repo.clone(),
                 promocao_repo,
                 avaliacoes_de_loja_repo,
                 avaliacoes_de_produto_repo,
@@ -92,6 +93,7 @@ impl AppState {
             funcionario_service: Arc::new(FuncionarioService::new(funcionario_repo, usuario_repo.clone())),
             entregador_service: Arc::new(EntregadorService::new(entregador_repo, usuario_repo)),
             pedido_repo,
+            cupom_repo,
         }
     }
 }

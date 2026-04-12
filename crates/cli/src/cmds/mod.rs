@@ -157,8 +157,10 @@ pub enum Commands {
     // ── Marketing: Cupons ──
     /// Criar cupom
     CreateCupom(CreateCupomArgs),
-    /// Listar cupons de uma loja
-    ListCupons,
+    /// Listar todos os cupons
+    ListCupons(ListCuponsArgs),
+    /// Buscar cupom por UUID
+    GetCupom(GetCupomArgs),
     /// Validar cupom por código
     ValidarCupom(ValidarCupomArgs),
     /// Atualizar cupom
@@ -307,9 +309,10 @@ pub async fn dispatch(command: Commands, state: &AppState) {
 
         // ── Marketing: Cupons ──
         Commands::CreateCupom(args) => marketing::run_create_cupom(state, args).await,
-        Commands::ListCupons => marketing::run_list_cupons().await,
-        Commands::ValidarCupom(_) => marketing::run_validar_cupom().await,
-        Commands::UpdateCupom(_) => marketing::run_update_cupom().await,
+        Commands::ListCupons(args) => marketing::run_list_cupons(state, args).await,
+        Commands::GetCupom(args) => marketing::run_get_cupom(state, args).await,
+        Commands::ValidarCupom(args) => marketing::run_validar_cupom(state, args).await,
+        Commands::UpdateCupom(args) => marketing::run_update_cupom(state, args).await,
         Commands::DeleteCupom(args) => marketing::run_delete_cupom(state, args).await,
 
         // ── Marketing: Promoções ──

@@ -592,6 +592,19 @@ pub struct CreateCupomArgs {
 #[derive(clap::Args)]
 pub struct ValidarCupomArgs {
     pub codigo: String,
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct GetCupomArgs {
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ListCuponsArgs {
+    #[arg(long)]
+    pub loja_uuid: Option<Uuid>,
 }
 
 #[derive(clap::Args)]

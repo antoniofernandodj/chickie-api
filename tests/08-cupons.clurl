@@ -1,14 +1,83 @@
 # ============================================================
-# Marketing Tests - Cupons (Coupons)
+# Cupons Tests - CRUD Completo
 # Uses stores from previous tests
 # ============================================================
 
-# NOTE: All cupon tests are skipped due to CLI bug:
-# data_validade passed as text instead of timestamptz to PostgreSQL
+# --- Create a cupom ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-cupom \
+    --loja-uuid {{main_store_uuid}} \
+    --codigo "PROMO10" \
+    --descricao "10% de desconto" \
+    --tipo-desconto "percentual" \
+    --valor-desconto 10.0 \
+    --valor-minimo 50.0 \
+    --data-validade "2026-12-31T23:59:59Z" \
+    --limite-uso 100
 
-# --- List cupons (empty) ---
+[Captures]
+cupom_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "PROMO10"
+
+# --- Get cupom by UUID ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-cupom {{cupom_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "PROMO10"
+stdout contains "10% de desconto"
+
+# --- List all cupons ---
 RUN cargo run --quiet -p chickie-cli -- \
     list-cupons
 
 [Asserts]
 exit-code == 0
+stdout contains "PROMO10"
+
+# --- Update cupom ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-cupom \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{cupom_uuid}} \
+    --codigo "PROMO20" \
+    --descricao "20% de desconto" \
+    --tipo-desconto "percentual" \
+    --valor-desconto 20.0 \
+    --valor-minimo 100.0 \
+    --data-validade "2027-12-31T23:59:59Z" \
+    --limite-uso 200
+
+[Asserts]
+exit-code == 0
+stdout contains "Cupom atualizado"
+
+# --- Validar cupom ---
+RUN cargo run --quiet -p chickie-cli -- \
+    validar-cupom \
+    --loja-uuid {{main_store_uuid}} \
+    --codigo "PROMO20"
+
+[Asserts]
+exit-code == 0
+stdout contains "PROMO20"
+
+# --- Delete cupom ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-cupom {{cupom_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Cupom deletado"
+
+# --- Verify deletion ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-cupom {{cupom_uuid}}
+
+[Asserts]
+exit-code == 0
+stderr contains "não encontrado"

@@ -27,17 +27,77 @@ pub async fn run_create_cupom(state: &AppState, args: CreateCupomArgs) {
     }
 }
 
-pub async fn run_list_cupons() {
-    print_err("List cupons precisa de loja_uuid");
+pub async fn run_list_cupons(state: &AppState, _args: ListCuponsArgs) {
+    match state
+        .marketing_service
+        .listar_todos_cupons()
+        .await
+    {
+        Ok(cupons) => json_print(&cupons),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
-pub async fn run_validar_cupom() {
-    // validar_cupom method doesn't exist on the service
-    print_err("ValidarCupom not yet implemented on service");
+pub async fn run_get_cupom(state: &AppState, args: GetCupomArgs) {
+    match state
+        .marketing_service
+        .buscar_cupom(args.uuid)
+        .await
+    {
+        Ok(c) => json_print(&c),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
-pub async fn run_update_cupom() {
-    print_err("Update cupom em construção");
+pub async fn run_validar_cupom(state: &AppState, args: ValidarCupomArgs) {
+    match state
+        .cupom_repo
+        .buscar_por_codigo(&args.codigo, args.loja_uuid)
+        .await
+    {
+        Ok(Some(c)) => json_print(&c),
+        Ok(None) => print_err("Cupom não encontrado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_update_cupom(state: &AppState, args: UpdateCupomArgs) {
+    // Buscar cupom existente
+    let cupom_existente = match state.marketing_service.buscar_cupom(args.uuid).await {
+        Ok(c) => c,
+        Err(e) => {
+            print_err(&format!("{:?}", e));
+            return;
+        }
+    };
+
+    // Usar valores existentes se não fornecidos
+    let codigo = args.codigo.unwrap_or(cupom_existente.codigo);
+    let descricao = args.descricao.unwrap_or(cupom_existente.descricao);
+    let tipo_desconto = args.tipo_desconto.unwrap_or(cupom_existente.tipo_desconto);
+    let valor_desconto = args.valor_desconto.map(|v| parse_decimal(v));
+    let valor_minimo = args.valor_minimo.map(|v| parse_decimal(v));
+    let data_validade = args.data_validade.unwrap_or(cupom_existente.data_validade);
+    let limite_uso = args.limite_uso.or(cupom_existente.limite_uso);
+
+    match state
+        .marketing_service
+        .atualizar_cupom(
+            args.uuid,
+            args.loja_uuid,
+            codigo,
+            descricao,
+            tipo_desconto,
+            valor_desconto,
+            valor_minimo,
+            data_validade,
+            limite_uso,
+        )
+        .await
+    {
+        Ok(()) => print_ok("Cupom atualizado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
 pub async fn run_delete_cupom(state: &AppState, args: DeleteCupomArgs) {
