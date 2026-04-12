@@ -13,9 +13,7 @@ pub struct SoftDeleteCleanupJob;
 
 #[async_trait]
 impl CronJob for SoftDeleteCleanupJob {
-    fn name(&self) -> &'static str {
-        "soft_delete_cleanup_job"
-    }
+    fn name(&self) -> &'static str { "soft_delete_cleanup_job" }
 
     async fn execute(&self) -> Result<()> {
         info!("🧹 Iniciando limpeza de soft deletes pendentes...");
