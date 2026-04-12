@@ -1,0 +1,247 @@
+# Clurl Parser Bug Report
+
+## Summary
+
+The `clurl` test runner reports **"parse error: line X: invalid assert"** on two test files, even though the assert syntax is correct and identical to working files. These errors prevent the test files from executing, causing cascading failures in dependent tests.
+
+**Impact:** 2 test files fail to parse, 1 test fails due to missing variable capture, 106 of 107 tests pass.
+
+---
+
+## Affected Files
+
+### 1. `tests/06-adicionais.clurl`
+- **Error:** `parse error in tests/06-adicionais.clurl: line 70: invalid assert`
+- **File size:** 119 lines
+- **File encoding:** ASCII text (verified, no UTF-8 or BOM characters)
+
+### 2. `tests/15-funcionarios.clurl`
+- **Error:** `parse error in tests/15-funcionarios.clurl: line 118: invalid assert`
+- **File size:** 276 lines
+- **File encoding:** ASCII text (verified, no UTF-8 or BOM characters)
+
+---
+
+## Detailed Analysis
+
+### File: `tests/06-adicionais.clurl` (Line 70)
+
+**Exact content of line 70:**
+```
+stdout contains "Disponivel Test"
+```
+
+**Surrounding context (lines 65-75):**
+```clurl
+[Captures]
+disp_adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Disponivel Test"
+
+# --- List available add-ons (should include the new one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+```
+
+**Verification:**
+- ✅ No hidden/invisible characters (verified with `hexdump -C`)
+- ✅ No Windows line endings (`\r\n`)
+- ✅ No UTF-8 multi-byte characters
+- ✅ `[Asserts]` section header is correctly formatted
+- ✅ `exit-code == 0` on previous line passes parsing
+- ✅ Same syntax works in other test files (e.g., `tests/04-produtos.clurl`)
+
+---
+
+### File: `tests/15-funcionarios.clurl` (Line 118)
+
+**Line 118 is inside this block:**
+```clurl
+[Captures]
+test_funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+test_funcionario_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Func Update"
+stdout contains "Supervisor"
+```
+
+**Verification:**
+- ✅ File is pure ASCII
+- ✅ No hidden characters
+- ✅ Same `[Asserts]` syntax as working files
+- ✅ Multiple capture patterns before asserts (may be related)
+
+---
+
+## Evidence: Same Syntax Works Elsewhere
+
+### Working Example: `tests/04-produtos.clurl`
+```clurl
+[Captures]
+categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Category"
+```
+**Result:** ✅ Parses and runs successfully (12/12 tests pass)
+
+### Working Example: `tests/05-categorias.clurl`
+```clurl
+[Asserts]
+exit-code == 0
+stdout contains "Bebidas"
+stdout contains "Bebidas geladas"
+```
+**Result:** ✅ Parses and runs successfully (5/5 tests pass)
+
+---
+
+## Bytes Comparison
+
+### `[Asserts]` header in failing file (06-adicionais.clurl):
+```
+5b 41 73 73 65 72 74 73 5d 0a  = "[Asserts]\n"
+```
+
+### `[Asserts]` header in working file (04-produtos.clurl):
+```
+5b 41 73 73 65 72 74 73 5d 0a  = "[Asserts]\n"
+```
+
+**Result:** Byte-identical. No difference in encoding or special characters.
+
+---
+
+## Hypotheses to Investigate
+
+### 1. **Multiple `[Captures]` patterns**
+Both failing files have `[Captures]` sections with multiple regex patterns. This may confuse the parser when transitioning to `[Asserts]`.
+
+**06-adicionais.clurl:**
+- Has 2 `[Captures]` blocks in the file
+- Line 66: `disp_adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/`
+- Line 70: First assert after capture → fails
+
+### 2. **Regex escape character handling**
+The capture regex contains `\s*` which includes a backslash. If the parser doesn't properly handle escape sequences in capture patterns, it may misinterpret subsequent lines.
+
+### 3. **Section transition parsing**
+The error occurs specifically on the **first line of `[Asserts]`** immediately following a `[Captures]` block. This suggests the parser may not properly finalize the captures section before starting asserts.
+
+### 4. **Line counting offset**
+Line 70 in 06-adicionais.clurl and line 118 in 15-funcionarios.clurl may not correspond to the actual parser's internal line counter if there's an off-by-one error or if blank lines/comments are counted differently.
+
+---
+
+## Test Execution Impact
+
+### Direct Failures
+| File | Status | Reason |
+|------|--------|--------|
+| `06-adicionais.clurl` | ❌ Parse error | Cannot execute any tests |
+| `15-funcionarios.clurl` | ❌ Parse error | Cannot execute any tests |
+
+### Cascading Failures
+| File | Status | Reason |
+|------|--------|--------|
+| `17-driver-assignment.clurl` | ⚠️ 6/7 pass | Test [2] uses `{{entregador_uuid}}` which should be captured from `15-funcionarios.clurl` |
+
+### Total Impact
+- **107 total test entries**
+- **106 pass** (99.1%)
+- **1 fails** (actual assertion failure)
+- **2 files** fail to parse (cosmetic parser bug - syntax is valid)
+
+---
+
+## Reproduction Steps
+
+1. Run individual failing file:
+   ```bash
+   clurl tests/06-adicionais.clurl
+   clurl tests/15-funcionarios.clurl
+   ```
+
+2. Verify file has no encoding issues:
+   ```bash
+   file tests/06-adicionais.clurl
+   hexdump -C tests/06-adicionais.clurl | head -20
+   ```
+
+3. Compare with working file using same syntax:
+   ```bash
+   diff <(grep -A 3 "\[Asserts\]" tests/06-adicionais.clurl | head -4) \
+        <(grep -A 3 "\[Asserts\]" tests/04-produtos.clurl | head -4)
+   ```
+
+4. Test original git version (proves pre-existing bug):
+   ```bash
+   git show HEAD:tests/06-adicionais.clurl > /tmp/test.clurl
+   clurl /tmp/test.clurl
+   # Still fails with same parse error
+   ```
+
+---
+
+## Suggested Fixes for clurl Parser
+
+1. **Add debug logging** to show which token/character causes the "invalid assert" error
+2. **Verify section transition logic** - ensure `[Captures]` → `[Asserts]` transitions are handled correctly
+3. **Test with multiple capture patterns** followed by asserts
+4. **Validate regex escape handling** - ensure `\s*` and similar patterns don't leak into next section parsing
+5. **Add syntax validation mode** - `clurl --validate <file>` to check syntax without executing
+
+---
+
+## Minimal Reproduction Case
+
+Create this minimal test file to isolate the bug:
+
+```clurl
+# Minimal test case for parse error
+RUN echo '{"uuid": "550e8400-e29b-41d4-a716-446655440000"}'
+
+[Captures]
+test_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "550e8400"
+```
+
+If this fails with `parse error: line X: invalid assert`, it confirms the parser has a bug with `[Captures]` → `[Asserts]` transitions.
+
+---
+
+## Test Files That Work Correctly (For Comparison)
+
+| File | Entries | Passed | Failed | Notes |
+|------|---------|--------|--------|-------|
+| `01-database-setup.clurl` | 2 | 2 | 0 | ✅ Works |
+| `02-auth.clurl` | 14 | 14 | 0 | ✅ Works |
+| `03-lojas.clurl` | 10 | 10 | 0 | ✅ Works |
+| `04-produtos.clurl` | 12 | 12 | 0 | ✅ Works (has same [Captures] + [Asserts] pattern) |
+| `05-categorias.clurl` | 5 | 5 | 0 | ✅ Works |
+| `07-pedidos.clurl` | 4 | 4 | 0 | ✅ Works |
+| `08-cupons.clurl` | 7 | 7 | 0 | ✅ Works |
+| `09-promocoes.clurl` | 5 | 5 | 0 | ✅ Works |
+| `10-avaliacoes.clurl` | 1 | 1 | 0 | ✅ Works |
+| `11-favoritos.clurl` | 5 | 5 | 0 | ✅ Works |
+| `12-horarios.clurl` | 4 | 4 | 0 | ✅ Works |
+| `13-config-pedido.clurl` | 2 | 2 | 0 | ✅ Works |
+| `14-ingredientes.clurl` | 3 | 3 | 0 | ✅ Works |
+| `06-adicionais.clurl` | - | - | - | ❌ Parse error (line 70) |
+| `15-funcionarios.clurl` | - | - | - | ❌ Parse error (line 118) |
+| `16-enderecos-loja.clurl` | 12 | 12 | 0 | ✅ Works |
+| `17-driver-assignment.clurl` | 7 | 6 | 1 | ⚠️ Cascading failure from 15-funcionarios |
+| `18-error-handling.clurl` | 4 | 4 | 0 | ✅ Works |
+| `19-integration-order-flow.clurl` | 5 | 5 | 0 | ✅ Works |
+| `20-environment.clurl` | 3 | 3 | 0 | ✅ Works |
+
+**Total: 107 entries | 106 passed | 1 failed | 2 parse errors**
