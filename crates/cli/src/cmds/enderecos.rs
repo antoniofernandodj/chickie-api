@@ -88,18 +88,81 @@ pub async fn run_create_endereco_loja(state: &AppState, args: CreateEnderecoLoja
     }
 }
 
-pub async fn run_update_endereco_loja() {
-    print_err("Update endereço de loja em construção");
+pub async fn run_update_endereco_loja(state: &AppState, args: UpdateEnderecoLojaArgs) {
+    // Fetch existing address first to get current values, then merge with provided args
+    match state
+        .endereco_loja_service
+        .listar_por_loja(args.loja_uuid)
+        .await
+    {
+        Ok(enderecos) => {
+            let existing = enderecos.into_iter().find(|e| e.uuid == args.uuid);
+            match existing {
+                Some(existing) => {
+                    let logradouro = args.logradouro.unwrap_or(existing.logradouro);
+                    let numero = args.numero.unwrap_or(existing.numero);
+                    let bairro = args.bairro.unwrap_or(existing.bairro);
+                    let cidade = args.cidade.unwrap_or(existing.cidade);
+                    let estado = args.estado.unwrap_or(existing.estado);
+                    let cep = args.cep.or(existing.cep);
+                    let complemento = args.complemento.or(existing.complemento);
+
+                    let updated = EnderecoLoja {
+                        uuid: args.uuid,
+                        loja_uuid: args.loja_uuid,
+                        cep,
+                        logradouro,
+                        numero,
+                        complemento,
+                        bairro,
+                        cidade,
+                        estado,
+                        latitude: existing.latitude,
+                        longitude: existing.longitude,
+                    };
+
+                    match state.endereco_loja_service.atualizar(updated).await {
+                        Ok(()) => print_ok("Endereço de loja atualizado"),
+                        Err(e) => print_err(&format!("{:?}", e)),
+                    }
+                }
+                None => print_err("Endereço não encontrado nesta loja"),
+            }
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
-pub async fn run_delete_endereco_loja() {
-    print_err("Delete endereço de loja em construção");
+pub async fn run_delete_endereco_loja(state: &AppState, args: DeleteEnderecoLojaArgs) {
+    match state.endereco_loja_service.deletar(args.uuid).await {
+        Ok(()) => print_ok("Endereço de loja deletado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
 // ── Endereco de Usuario ──
 
-pub async fn run_create_endereco_usuario() {
-    print_err("Create endereço de usuário em construção");
+pub async fn run_create_endereco_usuario(state: &AppState, args: CreateEnderecoUsuarioArgs) {
+    match state
+        .endereco_usuario_service
+        .criar_endereco(
+            args.usuario_uuid,
+            args.cep,
+            args.logradouro,
+            args.numero,
+            args.complemento,
+            args.bairro,
+            args.cidade,
+            args.estado,
+        )
+        .await
+    {
+        Ok(e) => {
+            print_ok("Endereço de usuário criado");
+            json_print(&e);
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
 pub async fn run_list_enderecos_usuario(state: &AppState, args: ListEnderecosUsuarioArgs) {
@@ -113,16 +176,70 @@ pub async fn run_list_enderecos_usuario(state: &AppState, args: ListEnderecosUsu
     }
 }
 
-pub async fn run_get_endereco_usuario() {
-    // Need usuario_uuid - not available in this command args. Mark as TODO.
-    print_err("GetEnderecoUsuario needs usuario_uuid — add it to args");
+pub async fn run_get_endereco_usuario(state: &AppState, args: GetEnderecoUsuarioArgs) {
+    match state
+        .endereco_usuario_service
+        .buscar_endereco(args.uuid, args.usuario_uuid)
+        .await
+    {
+        Ok(Some(e)) => json_print(&e),
+        Ok(None) => print_err("Endereço não encontrado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
-pub async fn run_update_endereco_usuario() {
-    print_err("Update endereço de usuário em construção");
+pub async fn run_update_endereco_usuario(state: &AppState, args: UpdateEnderecoUsuarioArgs) {
+    // Fetch existing address first to get current values, then merge with provided args
+    match state
+        .endereco_usuario_service
+        .buscar_endereco(args.uuid, args.usuario_uuid)
+        .await
+    {
+        Ok(Some(existing)) => {
+            let logradouro = args.logradouro.unwrap_or(existing.logradouro);
+            let numero = args.numero.unwrap_or(existing.numero);
+            let bairro = args.bairro.unwrap_or(existing.bairro);
+            let cidade = args.cidade.unwrap_or(existing.cidade);
+            let estado = args.estado.unwrap_or(existing.estado);
+            let cep = args.cep.or(existing.cep);
+            let complemento = args.complemento.or(existing.complemento);
+
+            match state
+                .endereco_usuario_service
+                .atualizar_endereco(
+                    args.uuid,
+                    args.usuario_uuid,
+                    cep,
+                    logradouro,
+                    numero,
+                    complemento,
+                    bairro,
+                    cidade,
+                    estado,
+                    existing.latitude,
+                    existing.longitude,
+                )
+                .await
+            {
+                Ok(e) => {
+                    print_ok("Endereço de usuário atualizado");
+                    json_print(&e);
+                }
+                Err(e) => print_err(&format!("{:?}", e)),
+            }
+        }
+        Ok(None) => print_err("Endereço não encontrado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
-pub async fn run_delete_endereco_usuario() {
-    // Need usuario_uuid - not available in this command args
-    print_err("DeleteEnderecoUsuario needs usuario_uuid — add it to args");
+pub async fn run_delete_endereco_usuario(state: &AppState, args: DeleteEnderecoUsuarioArgs) {
+    match state
+        .endereco_usuario_service
+        .deletar_endereco(args.uuid, args.usuario_uuid)
+        .await
+    {
+        Ok(()) => print_ok("Endereço de usuário deletado"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }

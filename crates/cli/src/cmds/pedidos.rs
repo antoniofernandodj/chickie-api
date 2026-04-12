@@ -61,9 +61,25 @@ pub async fn run_get_pedido() {
     print_err("GetPedido needs loja_uuid — add it to args");
 }
 
-pub async fn run_get_pedido_com_entrega() {
-    // Needs loja_uuid too
-    print_err("GetPedidoComEntrega needs loja_uuid — add it to args");
+pub async fn run_get_pedido_com_entrega(state: &AppState, args: GetPedidoComEntregaArgs) {
+    match state
+        .pedido_service
+        .buscar_pedido_com_entrega(args.uuid, uuid::Uuid::nil())
+        .await
+    {
+        Ok(p) => {
+            // Serialize manually since PedidoComEntrega doesn't implement Serialize
+            println!("Pedido UUID: {}", p.pedido.uuid);
+            println!("Status: {:?}", p.pedido.status);
+            println!("Total: {}", p.pedido.total);
+            if let Some(ref endereco) = p.endereco_entrega {
+                println!("Endereço: {}, {} - {}, {}", endereco.logradouro, endereco.numero, endereco.bairro, endereco.cidade);
+            } else {
+                println!("Endereço: não informado");
+            }
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }
 
 pub async fn run_update_pedido_status(state: &AppState, args: UpdatePedidoStatusArgs) {
@@ -97,6 +113,13 @@ pub async fn run_atribuir_entregador(state: &AppState, args: AtribuirEntregadorA
     }
 }
 
-pub async fn run_remover_entregador() {
-    print_err("Remover entregador em construção");
+pub async fn run_remover_entregador(state: &AppState, args: RemoverEntregadorArgs) {
+    match state
+        .pedido_service
+        .remover_entregador(args.pedido_uuid)
+        .await
+    {
+        Ok(()) => print_ok("Entregador removido do pedido"),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
 }

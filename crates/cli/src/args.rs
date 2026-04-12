@@ -516,6 +516,8 @@ pub struct DeleteEnderecoLojaArgs {
 #[derive(clap::Args)]
 pub struct CreateEnderecoUsuarioArgs {
     #[arg(long)]
+    pub usuario_uuid: Uuid,
+    #[arg(long)]
     pub logradouro: String,
     #[arg(long)]
     pub numero: String,
@@ -539,11 +541,15 @@ pub struct ListEnderecosUsuarioArgs {
 #[derive(clap::Args)]
 pub struct GetEnderecoUsuarioArgs {
     pub uuid: Uuid,
+    #[arg(long)]
+    pub usuario_uuid: Uuid,
 }
 
 #[derive(clap::Args)]
 pub struct UpdateEnderecoUsuarioArgs {
     pub uuid: Uuid,
+    #[arg(long)]
+    pub usuario_uuid: Uuid,
     #[arg(long)]
     pub logradouro: Option<String>,
     #[arg(long)]
@@ -563,6 +569,8 @@ pub struct UpdateEnderecoUsuarioArgs {
 #[derive(clap::Args)]
 pub struct DeleteEnderecoUsuarioArgs {
     pub uuid: Uuid,
+    #[arg(long)]
+    pub usuario_uuid: Uuid,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -867,4 +875,116 @@ pub struct UpdateIngredienteArgs {
 #[derive(clap::Args)]
 pub struct DeleteIngredienteArgs {
     pub uuid: Uuid,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Catalog: Disponibilidade
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[derive(clap::Args)]
+pub struct ListAdicionaisDisponiveisArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ListProdutosPorCategoriaArgs {
+    pub categoria_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ToggleDisponibilidadeAdicionalArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+    #[arg(long)]
+    pub uuid: Uuid,
+    #[arg(long)]
+    pub disponivel: bool,
+}
+
+#[derive(clap::Args)]
+pub struct ToggleDisponibilidadeProdutoArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+    #[arg(long)]
+    pub uuid: Uuid,
+    #[arg(long)]
+    pub disponivel: bool,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Funcionarios: Delete & Trocar Credenciais
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[derive(clap::Args)]
+pub struct DeleteFuncionarioArgs {
+    #[arg(long)]
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct TrocarEmailSenhaFuncionarioArgs {
+    #[arg(long)]
+    pub usuario_uuid: Uuid,
+    #[arg(long)]
+    pub novo_email: Option<String>,
+    #[arg(long)]
+    pub nova_senha: Option<String>,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Entregadores: Delete, Disponiveis & Trocar Credenciais
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[derive(clap::Args)]
+pub struct DeleteEntregadorArgs {
+    #[arg(long)]
+    pub uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct ListEntregadoresDisponiveisArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
+}
+
+#[derive(clap::Args)]
+pub struct TrocarEmailSenhaEntregadorArgs {
+    #[arg(long)]
+    pub usuario_uuid: Uuid,
+    #[arg(long)]
+    pub novo_email: Option<String>,
+    #[arg(long)]
+    pub nova_senha: Option<String>,
+}
+
+#[derive(clap::Args)]
+pub struct ToggleDisponibilidadeEntregadorArgs {
+    #[arg(long)]
+    pub uuid: Uuid,
+    #[arg(long)]
+    pub disponivel: bool,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Usuarios: Verificacoes
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[derive(clap::Args)]
+pub struct VerificarEmailDisponivelArgs {
+    pub email: String,
+}
+
+#[derive(clap::Args)]
+pub struct VerificarUsernameDisponivelArgs {
+    pub username: String,
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lojas: Verificar Slug
+// ─────────────────────────────────────────────────────────────────────────────
+
+#[derive(clap::Args)]
+pub struct VerificarSlugDisponivelArgs {
+    pub slug: String,
 }

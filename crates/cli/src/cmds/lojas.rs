@@ -137,3 +137,17 @@ pub async fn run_list_minhas_lojas(state: &AppState, args: ListMinhasLojasArgs) 
         Err(e) => print_err(&format!("{:?}", e)),
     }
 }
+
+pub async fn run_verificar_slug_disponivel(state: &AppState, args: VerificarSlugDisponivelArgs) {
+    match state.loja_service.verificar_slug_disponivel(&args.slug).await {
+        Ok(disponivel) => {
+            if disponivel {
+                print_ok(&format!("Slug '{}' está disponível", args.slug));
+            } else {
+                print_err(&format!("Slug '{}' já está em uso", args.slug));
+            }
+            println!("{{\"slug\": \"{}\", \"disponivel\": {}}}", args.slug, disponivel);
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}

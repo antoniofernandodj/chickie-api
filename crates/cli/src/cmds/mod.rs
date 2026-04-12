@@ -35,6 +35,10 @@ pub enum Commands {
     // ── Usuários ──
     /// Listar todos os usuários
     ListUsers,
+    /// Verificar se email está disponível
+    VerificarEmailDisponivel(VerificarEmailDisponivelArgs),
+    /// Verificar se username está disponível
+    VerificarUsernameDisponivel(VerificarUsernameDisponivelArgs),
 
     // ── Lojas ──
     /// Criar nova loja
@@ -47,6 +51,8 @@ pub enum Commands {
     GetLojaBySlug(GetLojaBySlugArgs),
     /// Buscar loja por UUID
     GetLojaByUuid(GetLojaByUuidArgs),
+    /// Verificar se slug está disponível
+    VerificarSlugDisponivel(VerificarSlugDisponivelArgs),
 
     // ── Admin Lojas ──
     /// Adicionar funcionário a uma loja
@@ -63,12 +69,24 @@ pub enum Commands {
     ListFuncionarios(ListFuncionariosArgs),
     /// Atualizar funcionário
     UpdateFuncionario(UpdateFuncionarioArgs),
+    /// Deletar funcionário
+    DeleteFuncionario(DeleteFuncionarioArgs),
+    /// Trocar email/senha de funcionário
+    TrocarEmailSenhaFuncionario(TrocarEmailSenhaFuncionarioArgs),
 
     // ── Entregadores ──
     /// Listar entregadores de uma loja
     ListEntregadores(ListEntregadoresArgs),
     /// Atualizar entregador
     UpdateEntregador(UpdateEntregadorArgs),
+    /// Deletar entregador
+    DeleteEntregador(DeleteEntregadorArgs),
+    /// Listar entregadores disponíveis de uma loja
+    ListEntregadoresDisponiveis(ListEntregadoresDisponiveisArgs),
+    /// Trocar email/senha de entregador
+    TrocarEmailSenhaEntregador(TrocarEmailSenhaEntregadorArgs),
+    /// Ativar/desativar entregador
+    ToggleDisponibilidadeEntregador(ToggleDisponibilidadeEntregadorArgs),
 
     // ── Catálogo: Produtos ──
     /// Criar produto
@@ -99,10 +117,20 @@ pub enum Commands {
     CreateAdicional(CreateAdicionalArgs),
     /// Listar adicionais de uma loja
     ListAdicionais(ListAdicionaisArgs),
+    /// Listar adicionais disponíveis de uma loja
+    ListAdicionaisDisponiveis(ListAdicionaisDisponiveisArgs),
     /// Atualizar adicional
     UpdateAdicional(UpdateAdicionalArgs),
     /// Deletar adicional
     DeleteAdicional(DeleteAdicionalArgs),
+    /// Ativar/desativar adicional
+    ToggleDisponibilidadeAdicional(ToggleDisponibilidadeAdicionalArgs),
+
+    // ── Catálogo: Produtos extras ──
+    /// Listar produtos por categoria
+    ListProdutosPorCategoria(ListProdutosPorCategoriaArgs),
+    /// Ativar/desativar produto
+    ToggleDisponibilidadeProduto(ToggleDisponibilidadeProdutoArgs),
 
     // ── Pedidos ──
     /// Criar pedido
@@ -236,6 +264,8 @@ pub async fn dispatch(command: Commands, state: &AppState) {
 
         // ── Usuários ──
         Commands::ListUsers => users::run_list_users(state).await,
+        Commands::VerificarEmailDisponivel(args) => users::run_verificar_email_disponivel(state, args).await,
+        Commands::VerificarUsernameDisponivel(args) => users::run_verificar_username_disponivel(state, args).await,
 
         // ── Lojas ──
         Commands::CreateLoja(args) => lojas::run_create_loja(state, args).await,
@@ -243,6 +273,7 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         Commands::SearchLojas(args) => lojas::run_search_lojas(state, args).await,
         Commands::GetLojaBySlug(args) => lojas::run_get_loja_by_slug(state, args).await,
         Commands::GetLojaByUuid(args) => lojas::run_get_loja_by_uuid(state, args).await,
+        Commands::VerificarSlugDisponivel(args) => lojas::run_verificar_slug_disponivel(state, args).await,
 
         // ── Admin Lojas ──
         Commands::AddFuncionario(args) => lojas::run_add_funcionario(state, args).await,
@@ -252,11 +283,17 @@ pub async fn dispatch(command: Commands, state: &AppState) {
 
         // ── Funcionários ──
         Commands::ListFuncionarios(args) => funcionarios::run_list_funcionarios(state, args).await,
-        Commands::UpdateFuncionario(_) => funcionarios::run_update_funcionario().await,
+        Commands::UpdateFuncionario(args) => funcionarios::run_update_funcionario(state, args).await,
+        Commands::DeleteFuncionario(args) => funcionarios::run_delete_funcionario(state, args).await,
+        Commands::TrocarEmailSenhaFuncionario(args) => funcionarios::run_trocar_email_senha_funcionario(state, args).await,
 
         // ── Entregadores ──
         Commands::ListEntregadores(args) => entregadores::run_list_entregadores(state, args).await,
-        Commands::UpdateEntregador(_) => entregadores::run_update_entregador().await,
+        Commands::UpdateEntregador(args) => entregadores::run_update_entregador(state, args).await,
+        Commands::DeleteEntregador(args) => entregadores::run_delete_entregador(state, args).await,
+        Commands::ListEntregadoresDisponiveis(args) => entregadores::run_list_entregadores_disponiveis(state, args).await,
+        Commands::TrocarEmailSenhaEntregador(args) => entregadores::run_trocar_email_senha_entregador(state, args).await,
+        Commands::ToggleDisponibilidadeEntregador(args) => entregadores::run_toggle_disponibilidade_entregador(state, args).await,
 
         // ── Catálogo: Produtos ──
         Commands::CreateProduto(args) => catalog::run_create_produto(state, args).await,
@@ -275,8 +312,12 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         // ── Catálogo: Adicionais ──
         Commands::CreateAdicional(args) => catalog::run_create_adicional(state, args).await,
         Commands::ListAdicionais(args) => catalog::run_list_adicionais(state, args).await,
+        Commands::ListAdicionaisDisponiveis(args) => catalog::run_list_adicionais_disponiveis(state, args).await,
         Commands::UpdateAdicional(args) => catalog::run_update_adicional(state, args).await,
         Commands::DeleteAdicional(args) => catalog::run_delete_adicional(state, args).await,
+        Commands::ToggleDisponibilidadeAdicional(args) => catalog::run_toggle_disponibilidade_adicional(state, args).await,
+        Commands::ListProdutosPorCategoria(args) => catalog::run_list_produtos_por_categoria(state, args).await,
+        Commands::ToggleDisponibilidadeProduto(args) => catalog::run_toggle_disponibilidade_produto(state, args).await,
 
         // ── Pedidos ──
         Commands::CreatePedido(args) => pedidos::run_create_pedido(state, args).await,
@@ -284,10 +325,10 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         Commands::ListMeusPedidos(args) => pedidos::run_list_meus_pedidos(state, args).await,
         Commands::ListPedidosPorLoja(args) => pedidos::run_list_pedidos_por_loja(state, args).await,
         Commands::GetPedido(_) => pedidos::run_get_pedido().await,
-        Commands::GetPedidoComEntrega(_) => pedidos::run_get_pedido_com_entrega().await,
+        Commands::GetPedidoComEntrega(args) => pedidos::run_get_pedido_com_entrega(state, args).await,
         Commands::UpdatePedidoStatus(args) => pedidos::run_update_pedido_status(state, args).await,
         Commands::AtribuirEntregador(args) => pedidos::run_atribuir_entregador(state, args).await,
-        Commands::RemoverEntregador(_) => pedidos::run_remover_entregador().await,
+        Commands::RemoverEntregador(args) => pedidos::run_remover_entregador(state, args).await,
 
         // ── Endereço de Entrega ──
         Commands::CreateEnderecoEntrega(args) => enderecos::run_create_endereco_entrega(state, args).await,
@@ -297,15 +338,15 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         // ── Endereço de Loja ──
         Commands::ListEnderecosLoja(args) => enderecos::run_list_enderecos_loja(state, args).await,
         Commands::CreateEnderecoLoja(args) => enderecos::run_create_endereco_loja(state, args).await,
-        Commands::UpdateEnderecoLoja(_) => enderecos::run_update_endereco_loja().await,
-        Commands::DeleteEnderecoLoja(_) => enderecos::run_delete_endereco_loja().await,
+        Commands::UpdateEnderecoLoja(args) => enderecos::run_update_endereco_loja(state, args).await,
+        Commands::DeleteEnderecoLoja(args) => enderecos::run_delete_endereco_loja(state, args).await,
 
         // ── Endereço de Usuário ──
-        Commands::CreateEnderecoUsuario(_) => enderecos::run_create_endereco_usuario().await,
+        Commands::CreateEnderecoUsuario(args) => enderecos::run_create_endereco_usuario(state, args).await,
         Commands::ListEnderecosUsuario(args) => enderecos::run_list_enderecos_usuario(state, args).await,
-        Commands::GetEnderecoUsuario(_) => enderecos::run_get_endereco_usuario().await,
-        Commands::UpdateEnderecoUsuario(_) => enderecos::run_update_endereco_usuario().await,
-        Commands::DeleteEnderecoUsuario(_) => enderecos::run_delete_endereco_usuario().await,
+        Commands::GetEnderecoUsuario(args) => enderecos::run_get_endereco_usuario(state, args).await,
+        Commands::UpdateEnderecoUsuario(args) => enderecos::run_update_endereco_usuario(state, args).await,
+        Commands::DeleteEnderecoUsuario(args) => enderecos::run_delete_endereco_usuario(state, args).await,
 
         // ── Marketing: Cupons ──
         Commands::CreateCupom(args) => marketing::run_create_cupom(state, args).await,
@@ -318,7 +359,7 @@ pub async fn dispatch(command: Commands, state: &AppState) {
         // ── Marketing: Promoções ──
         Commands::CreatePromocao(args) => marketing::run_create_promocao(state, args).await,
         Commands::ListPromocoes(args) => marketing::run_list_promocoes(state, args).await,
-        Commands::UpdatePromocao(_) => marketing::run_update_promocao().await,
+        Commands::UpdatePromocao(args) => marketing::run_update_promocao(state, args).await,
         Commands::DeletePromocao(args) => marketing::run_delete_promocao(state, args).await,
 
         // ── Marketing: Avaliações ──

@@ -189,3 +189,61 @@ pub async fn run_delete_adicional(state: &AppState, args: DeleteAdicionalArgs) {
         Err(e) => print_err(&format!("{:?}", e)),
     }
 }
+
+// ── Disponibilidade ──
+
+pub async fn run_list_adicionais_disponiveis(state: &AppState, args: ListAdicionaisDisponiveisArgs) {
+    match state
+        .catalogo_service
+        .listar_adicionais_disponiveis(args.loja_uuid)
+        .await
+    {
+        Ok(adics) => json_print(&adics),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_list_produtos_por_categoria(state: &AppState, args: ListProdutosPorCategoriaArgs) {
+    match state
+        .catalogo_service
+        .listar_produtos_por_categoria(args.categoria_uuid)
+        .await
+    {
+        Ok(prods) => json_print(&prods),
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_toggle_disponibilidade_adicional(
+    state: &AppState,
+    args: ToggleDisponibilidadeAdicionalArgs,
+) {
+    match state
+        .catalogo_service
+        .atualizar_disponibilidade(args.uuid, args.loja_uuid, args.disponivel)
+        .await
+    {
+        Ok(()) => {
+            let status = if args.disponivel { "disponível" } else { "indisponível" };
+            print_ok(&format!("Adicional marcado como {}", status));
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}
+
+pub async fn run_toggle_disponibilidade_produto(
+    state: &AppState,
+    args: ToggleDisponibilidadeProdutoArgs,
+) {
+    match state
+        .catalogo_service
+        .atualizar_disponibilidade_produto(args.uuid, args.loja_uuid, args.disponivel)
+        .await
+    {
+        Ok(()) => {
+            let status = if args.disponivel { "disponível" } else { "indisponível" };
+            print_ok(&format!("Produto marcado como {}", status));
+        }
+        Err(e) => print_err(&format!("{:?}", e)),
+    }
+}

@@ -33,7 +33,7 @@ pub async fn run_list_ingredientes(state: &AppState, args: ListIngredientesArgs)
 }
 
 pub async fn run_update_ingrediente() {
-    print_err("Update ingrediente em construção");
+    print_err("Update ingrediente requires buscar_por_uuid on IngredienteRepositoryPort — not yet implemented");
 }
 
 pub async fn run_delete_ingrediente(state: &AppState, args: DeleteIngredienteArgs) {
