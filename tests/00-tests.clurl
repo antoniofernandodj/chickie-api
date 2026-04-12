@@ -37,8 +37,8 @@
 # Phase 4: Error Handling & Integration (Final)
 18-error-handling.clurl
 19-integration-order-flow.clurl
-20-avaliacoes-crud.clurl
 20-environment.clurl
+21-avaliacoes-crud.clurl
 
 # Cleanup
 01-database-setup.clurl

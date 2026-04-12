@@ -3,7 +3,7 @@ use std::sync::Arc;
 use sqlx::postgres::PgPool;
 use sqlx::Row;
 use uuid::Uuid;
-use crate::{models::{AvaliacaoDeLoja, Model}, repositories::Repository};
+use crate::{models::{AvaliacaoDeLoja, AvaliacaoDeLojaComUsuario, Model}, repositories::Repository};
 use crate::ports::AvaliacaoDeLojaRepositoryPort;
 use crate::domain::errors::{DomainError, DomainResult};
 
@@ -112,6 +112,22 @@ impl AvaliacaoDeLojaRepositoryPort for AvaliacaoDeLojaRepository {
 
     async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeLoja>> {
         sqlx::query_as::<_, AvaliacaoDeLoja>("SELECT * FROM avaliacoes_loja WHERE loja_uuid = $1 ORDER BY criado_em DESC")
+            .bind(loja_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn listar_por_loja_com_usuario(&self, loja_uuid: Uuid) -> DomainResult<Vec<AvaliacaoDeLojaComUsuario>> {
+        sqlx::query_as::<_, AvaliacaoDeLojaComUsuario>(
+            "SELECT a.uuid, a.loja_uuid, a.usuario_uuid,
+                    u.nome AS usuario_nome, u.email AS usuario_email,
+                    a.nota, a.comentario, a.criado_em
+             FROM avaliacoes_loja a
+             JOIN usuarios u ON a.usuario_uuid = u.uuid
+             WHERE a.loja_uuid = $1
+             ORDER BY a.criado_em DESC"
+        )
             .bind(loja_uuid)
             .fetch_all(&*self.pool)
             .await

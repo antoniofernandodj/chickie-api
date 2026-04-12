@@ -1464,7 +1464,7 @@ GET /api/marketing/{loja_uuid}/avaliacoes-loja
 Authorization: Bearer <token>
 ```
 
-> Retorna todas as avaliações de uma loja, ordenadas da mais recente para a mais antiga.
+> Retorna todas as avaliações de uma loja, ordenadas da mais recente para a mais antiga. Inclui `usuario_nome` e `usuario_email` obtidos via JOIN com a tabela de usuários (evita queries N+1).
 
 **Response `200`:**
 ```json
@@ -1473,12 +1473,27 @@ Authorization: Bearer <token>
     "uuid": "550e8400-e29b-41d4-a716-446655440040",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
-    "nota": 4.5,
+    "usuario_nome": "João Silva",
+    "usuario_email": "joao@email.com",
+    "nota": "4.50",
     "comentario": "Ótima pizza!",
     "criado_em": "2026-04-04T00:00:00Z"
   }
 ]
 ```
+
+**Campos do response (`AvaliacaoDeLojaComUsuario`):**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `uuid` | UUID | UUID da avaliação |
+| `loja_uuid` | UUID | UUID da loja avaliada |
+| `usuario_uuid` | UUID | UUID do usuário que avaliou |
+| `usuario_nome` | String | Nome do usuário (via JOIN) |
+| `usuario_email` | String | Email do usuário (via JOIN) |
+| `nota` | String (Decimal) | Nota de 0 a 5 |
+| `comentario` | String \| null | Comentário opcional |
+| `criado_em` | DateTime | Data de criação |
 
 ---
 

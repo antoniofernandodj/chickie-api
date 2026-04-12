@@ -588,6 +588,7 @@ Sistema de pedidos e entregas de comida, com evolução futura para supply chain
 | `UsoCupom`            | Registro de uso de um cupom em um pedido.              |
 | `Promocao`            | Promoção aplicável à loja, produto ou categoria (escopo via `tipo_escopo`). |
 | `AvaliacaoDeLoja`     | Avaliação de loja feita por usuário (nota 0-5 + comentário). |
+| `AvaliacaoDeLojaComUsuario` | Avaliação de loja enriquecida com `usuario_nome` e `usuario_email` via JOIN. Usada no endpoint de listagem. |
 | `AvaliacaoDeProduto`  | Avaliação de produto feita por usuário (só via pedido autenticado). |
 
 #### Operacional

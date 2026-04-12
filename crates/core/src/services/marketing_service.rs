@@ -3,7 +3,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Cupom, Promocao, AvaliacaoDeLoja, AvaliacaoDeProduto};
+use crate::models::{Cupom, Promocao, AvaliacaoDeLoja, AvaliacaoDeLojaComUsuario, AvaliacaoDeProduto};
 use crate::ports::{
     CupomRepositoryPort,
     PromocaoRepositoryPort,
@@ -252,8 +252,8 @@ impl MarketingService {
             .ok_or_else(|| "Avaliação de loja não encontrada".to_string())
     }
 
-    pub async fn listar_avaliacoes_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLoja>, String> {
-        self.avaliacao_loja_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+    pub async fn listar_avaliacoes_loja(&self, loja_uuid: Uuid) -> Result<Vec<AvaliacaoDeLojaComUsuario>, String> {
+        self.avaliacao_loja_repo.listar_por_loja_com_usuario(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn buscar_avaliacao_loja_por_usuario_e_loja(

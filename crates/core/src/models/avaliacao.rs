@@ -18,6 +18,20 @@ pub struct AvaliacaoDeLoja {
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
+/// Avaliação de loja com dados do usuário (nome e email) obtidos via JOIN.
+/// Usada no endpoint de listagem para evitar queries N+1.
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct AvaliacaoDeLojaComUsuario {
+    pub uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub usuario_uuid: Uuid,
+    pub usuario_nome: String,
+    pub usuario_email: String,
+    pub nota: Decimal,
+    pub comentario: Option<String>,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+}
+
 impl AvaliacaoDeLoja {
     pub fn new(
         loja_uuid: Uuid,

@@ -5,9 +5,11 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::{
-    models::{AvaliacaoDeLoja, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
+    models::{AvaliacaoDeLoja, AvaliacaoDeLojaComUsuario, AvaliacaoDeProduto, Cupom, Promocao, Usuario},
     services::MarketingService,
-};pub struct MarketingUsecase {
+};
+
+pub struct MarketingUsecase {
     pub marketing_service: Arc<MarketingService>,
     pub loja_uuid: Uuid,
     pub usuario: Usuario,
@@ -147,7 +149,7 @@ impl MarketingUsecase {
         self.marketing_service.buscar_avaliacao_loja_por_uuid(uuid).await
     }
 
-    pub async fn listar_avaliacoes_loja(&self) -> Result<Vec<AvaliacaoDeLoja>, String> {
+    pub async fn listar_avaliacoes_loja(&self) -> Result<Vec<AvaliacaoDeLojaComUsuario>, String> {
         self.marketing_service.listar_avaliacoes_loja(self.loja_uuid).await
     }
 

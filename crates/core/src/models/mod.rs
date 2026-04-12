@@ -22,6 +22,7 @@ pub use model::Model;
 pub use adicional::Adicional;
 pub use avaliacao::{
     AvaliacaoDeLoja,
+    AvaliacaoDeLojaComUsuario,
     AvaliacaoDeProduto,
 };
 
