@@ -1,4 +1,4 @@
-use axum::{Router, routing::get};
+use axum::{Router, routing::{get, patch, put}};
 
 use crate::handlers::{
     listar_lojas,
@@ -6,6 +6,9 @@ use crate::handlers::{
     buscar_loja,
     buscar_loja_por_slug,
     verificar_slug_disponivel,
+    marcar_loja_remocao,
+    desmarcar_loja_remocao,
+    alternar_loja_ativo,
 };
 
 pub fn loja_routes() -> axum::Router<std::sync::Arc<crate::handlers::AppState>> {
@@ -15,4 +18,7 @@ pub fn loja_routes() -> axum::Router<std::sync::Arc<crate::handlers::AppState>> 
         .route("/{uuid}", get(buscar_loja))
         .route("/slug/{slug}", get(buscar_loja_por_slug))
         .route("/verificar-slug/{slug}", get(verificar_slug_disponivel))
+        .route("/{loja_uuid}/marcar-remocao", patch(marcar_loja_remocao))
+        .route("/{loja_uuid}/desmarcar-remocao", patch(desmarcar_loja_remocao))
+        .route("/{loja_uuid}/ativo", put(alternar_loja_ativo))
 }

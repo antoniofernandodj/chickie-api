@@ -13,7 +13,9 @@ impl UsuarioRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE email = $1")
+        sqlx::query_as::<_, Usuario>(
+            "SELECT * FROM usuarios WHERE email = $1 AND deletado = false"
+        )
         .bind(email)
         .fetch_optional(self.pool())
         .await
@@ -21,7 +23,9 @@ impl UsuarioRepository {
     }
 
     pub async fn buscar_por_username(&self, username: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE username = $1")
+        sqlx::query_as::<_, Usuario>(
+            "SELECT * FROM usuarios WHERE username = $1 AND deletado = false"
+        )
         .bind(username)
         .fetch_optional(self.pool())
         .await
@@ -29,7 +33,9 @@ impl UsuarioRepository {
     }
 
     pub async fn buscar_por_celular(&self, celular: &str) -> Result<Option<Usuario>, String> {
-        sqlx::query_as::<_, Usuario>("SELECT * FROM usuarios WHERE celular = $1")
+        sqlx::query_as::<_, Usuario>(
+            "SELECT * FROM usuarios WHERE celular = $1 AND deletado = false"
+        )
         .bind(celular)
         .fetch_optional(self.pool())
         .await
@@ -37,12 +43,69 @@ impl UsuarioRepository {
     }
 
     pub async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> Result<(), String> {
-        sqlx::query("UPDATE usuarios SET passou_pelo_primeiro_acesso = true WHERE uuid = $1")
+        sqlx::query(
+            "UPDATE usuarios SET passou_pelo_primeiro_acesso = true WHERE uuid = $1 AND deletado = false"
+        )
             .bind(uuid)
             .execute(self.pool())
             .await
             .map_err(|e| e.to_string())?;
         Ok(())
+    }
+
+    // Soft delete methods
+    pub async fn marcar_para_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE usuarios SET marcado_para_remocao = NOW(), atualizado_em = NOW() WHERE uuid = $1 AND deletado = false"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn desmarcar_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE usuarios SET marcado_para_remocao = NULL, atualizado_em = NOW() WHERE uuid = $1"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn marcar_como_deletado(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE usuarios SET deletado = true, atualizado_em = NOW() WHERE uuid = $1"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE usuarios SET ativo = $2, atualizado_em = NOW() WHERE uuid = $1 AND deletado = false"
+        )
+            .bind(uuid)
+            .bind(ativo)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn listar_pendentes_remocao(&self) -> Result<Vec<Usuario>, String> {
+        sqlx::query_as::<_, Usuario>(
+            "SELECT * FROM usuarios WHERE marcado_para_remocao IS NOT NULL AND deletado = false ORDER BY marcado_para_remocao ASC"
+        )
+        .fetch_all(self.pool())
+        .await
+        .map_err(|e| e.to_string())
     }
 }
 
@@ -78,7 +141,7 @@ impl Repository<Usuario> for UsuarioRepository {
         let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE usuarios SET username = $1, email = $2, senha_hash = $3, celular = $4, classe = $5, atualizado_em = $6
-            WHERE uuid = $7
+            WHERE uuid = $7 AND deletado = false
         ")
         .bind(&item.username)
         .bind(&item.email)
@@ -96,6 +159,25 @@ impl Repository<Usuario> for UsuarioRepository {
         } else {
             Ok(())
         }
+    }
+
+    /// Override para excluir soft-deleted users
+    async fn listar_todos(&self) -> Result<Vec<Usuario>, String> {
+        let query = format!("SELECT * FROM {} WHERE deletado = false ORDER BY criado_em DESC", self.table_name());
+        sqlx::query_as::<_, Usuario>(&query)
+            .fetch_all(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    /// Override para excluir soft-deleted users
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Usuario>, String> {
+        let query = format!("SELECT * FROM {} WHERE uuid = $1 AND deletado = false", self.table_name());
+        sqlx::query_as::<_, Usuario>(&query)
+            .bind(uuid)
+            .fetch_optional(self.pool())
+            .await
+            .map_err(|e| e.to_string())
     }
 
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Usuario>, String> {
@@ -128,5 +210,22 @@ impl UsuarioRepositoryPort for UsuarioRepository {
     }
     async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> DomainResult<()> {
         self.marcar_primeiro_acesso(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    // Soft delete port methods
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.marcar_para_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.desmarcar_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()> {
+        self.marcar_como_deletado(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()> {
+        self.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
+        self.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
     }
 }

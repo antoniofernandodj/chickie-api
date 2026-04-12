@@ -69,6 +69,9 @@ pub use usuario::{
     me,
     verificar_email,
     verificar_username,
+    marcar_usuario_remocao,
+    desmarcar_usuario_remocao,
+    alternar_usuario_ativo,
 };
 
 pub use loja::{
@@ -82,7 +85,10 @@ pub use loja::{
     listar_minhas_lojas,
     pesquisar_lojas,
     buscar_loja_por_slug,
-    verificar_slug_disponivel
+    verificar_slug_disponivel,
+    marcar_loja_remocao,
+    desmarcar_loja_remocao,
+    alternar_loja_ativo,
 };
 
 pub use produto::{

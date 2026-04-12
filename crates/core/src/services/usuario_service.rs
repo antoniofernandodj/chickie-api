@@ -67,17 +67,30 @@ impl UsuarioService {
     ) -> Result<Usuario, String> {
 
         // 1. Busca o usuário por email, username ou celular
-        let mut usuario = if let Some(u) = self.repo.buscar_por_email(&identifier).await? {
+        let mut usuario = if let Some(u) = self.repo.buscar_por_email(&identifier).await.map_err(|e| e.to_string())? {
             u
-        } else if let Some(u) = self.repo.buscar_por_username(&identifier).await? {
+        } else if let Some(u) = self.repo.buscar_por_username(&identifier).await.map_err(|e| e.to_string())? {
             u
-        } else if let Some(u) = self.repo.buscar_por_celular(&identifier).await? {
+        } else if let Some(u) = self.repo.buscar_por_celular(&identifier).await.map_err(|e| e.to_string())? {
             u
         } else {
             return Err("Usuário não encontrado".to_string());
         };
 
-        // 2. Verifica se a senha enviada condiz com o hash do banco
+        // 2. Verifica soft delete e status ativo
+        if usuario.esta_deletado() {
+            return Err("Usuário deletado. Não é possível fazer login.".to_string());
+        }
+
+        if usuario.esta_marcado_para_remocao() {
+            return Err("Usuário marcado para remoção. Login bloqueado.".to_string());
+        }
+
+        if !usuario.ativo {
+            return Err("Usuário desativado. Contate o suporte.".to_string());
+        }
+
+        // 3. Verifica se a senha enviada condiz com o hash do banco
         let argon2 = Argon2::default();
         let parsed_hash = argon2::password_hash::PasswordHash::new(&usuario.senha_hash)
             .map_err(|e| format!("Erro ao processar senha: {}", e))?;
@@ -89,13 +102,13 @@ impl UsuarioService {
             return Err("Senha incorreta".to_string());
         }
 
-        // 3. Se é o primeiro acesso, marcar como true
+        // 4. Se é o primeiro acesso, marcar como true
         if !usuario.passou_pelo_primeiro_acesso {
-            self.repo.marcar_primeiro_acesso(usuario.uuid).await?;
+            self.repo.marcar_primeiro_acesso(usuario.uuid).await.map_err(|e| e.to_string())?;
             usuario.passou_pelo_primeiro_acesso = true;
         }
 
-        // 4. Retorna o usuário se tudo estiver correto
+        // 5. Retorna o usuário se tudo estiver correto
         Ok(usuario)
     }
 
@@ -111,5 +124,45 @@ impl UsuarioService {
     pub async fn verificar_username_disponivel(&self, username: &str) -> Result<bool, String> {
         let existente = self.repo.buscar_por_username(username).await?;
         Ok(existente.is_none())
+    }
+
+    // ===========================================================================
+    // Soft Delete
+    // ===========================================================================
+
+    /// Marca o usuário para remoção. Após 30 dias, o scheduler marcará como deletado=true.
+    pub async fn marcar_para_remocao(&self, uuid: uuid::Uuid) -> Result<(), String> {
+        // Verifica se o usuário existe e não está deletado
+        let usuario = self.repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Usuário não encontrado")?;
+
+        if usuario.esta_deletado() {
+            return Err("Usuário já está permanentemente deletado".to_string());
+        }
+
+        if usuario.esta_marcado_para_remocao() {
+            return Err("Usuário já está marcado para remoção".to_string());
+        }
+
+        self.repo.marcar_para_remocao(uuid).await.map_err(|e| e.to_string())
+    }
+
+    /// Desmarca a remoção pendente
+    pub async fn desmarcar_remocao(&self, uuid: uuid::Uuid) -> Result<(), String> {
+        self.repo.desmarcar_remocao(uuid).await.map_err(|e| e.to_string())
+    }
+
+    /// Alterna o status ativo do usuário (bloqueio/desbloqueio)
+    pub async fn alternar_ativo(&self, uuid: uuid::Uuid, ativo: bool) -> Result<(), String> {
+        let usuario = self.repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Usuário não encontrado")?;
+
+        if usuario.esta_deletado() {
+            return Err("Não é possível alterar status de usuário deletado".to_string());
+        }
+
+        self.repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
     }
 }

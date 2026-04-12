@@ -54,4 +54,24 @@ impl UsuarioRepositoryPort for UsuarioRepositoryAdapter {
     async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> DomainResult<()> {
         self.inner.marcar_primeiro_acesso(uuid).await.map_err(|e| DomainError::Internal(e))
     }
+
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.marcar_para_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.desmarcar_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.marcar_como_deletado(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()> {
+        self.inner.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
+        self.inner.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
+    }
 }

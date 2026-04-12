@@ -298,4 +298,43 @@ impl LojaService {
         let existente = self.loja_repo.buscar_por_slug(slug).await?;
         Ok(existente.is_none())
     }
+
+    // ===========================================================================
+    // Soft Delete
+    // ===========================================================================
+
+    /// Marca a loja para remoção. Após 30 dias, o scheduler marcará como deletado=true.
+    pub async fn marcar_para_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        let loja = self.loja_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Loja não encontrada")?;
+
+        if loja.esta_deletada() {
+            return Err("Loja já está permanentemente deletada".to_string());
+        }
+
+        if loja.esta_marcada_para_remocao() {
+            return Err("Loja já está marcada para remoção".to_string());
+        }
+
+        self.loja_repo.marcar_para_remocao(uuid).await.map_err(|e| e.to_string())
+    }
+
+    /// Desmarca a remoção pendente
+    pub async fn desmarcar_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        self.loja_repo.desmarcar_remocao(uuid).await.map_err(|e| e.to_string())
+    }
+
+    /// Alterna o status ativo da loja (bloqueio/desbloqueio administrativo)
+    pub async fn alternar_ativo(&self, uuid: Uuid, ativo: bool) -> Result<(), String> {
+        let loja = self.loja_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Loja não encontrada")?;
+
+        if loja.esta_deletada() {
+            return Err("Não é possível alterar status de loja deletada".to_string());
+        }
+
+        self.loja_repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
+    }
 }

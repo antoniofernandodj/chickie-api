@@ -11,4 +11,13 @@ pub trait LojaRepositoryPort: Send + Sync {
     async fn listar_todos(&self) -> DomainResult<Vec<Loja>>;
     async fn buscar_por_criador(&self, criador_uuid: Uuid) -> DomainResult<Vec<Loja>>;
     async fn pesquisar(&self, termo: &str) -> DomainResult<Vec<Loja>>;
+
+    // Soft delete methods
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()>;
+
+    // Listar lojas pendentes de remoção (para o scheduler)
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>>;
 }

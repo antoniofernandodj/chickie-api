@@ -13,7 +13,9 @@ impl LojaRepository {
     pub fn new(pool: Arc<PgPool>) -> Self { Self { pool } }
 
     pub async fn buscar_por_email(&self, email: &str) -> Result<Option<Loja>, String> {
-        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE email = $1")
+        sqlx::query_as::<_, Loja>(
+            "SELECT * FROM lojas WHERE email = $1 AND deletado = false"
+        )
         .bind(email)
         .fetch_optional(self.pool())
         .await
@@ -21,7 +23,9 @@ impl LojaRepository {
     }
 
     pub async fn buscar_por_slug(&self, slug: &str) -> Result<Option<Loja>, String> {
-        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE slug = $1")
+        sqlx::query_as::<_, Loja>(
+            "SELECT * FROM lojas WHERE slug = $1 AND deletado = false"
+        )
         .bind(slug)
         .fetch_optional(self.pool())
         .await
@@ -29,14 +33,18 @@ impl LojaRepository {
     }
 
     pub async fn listar_ativas(&self) -> Result<Vec<Loja>, String> {
-        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE ativa = true")
+        sqlx::query_as::<_, Loja>(
+            "SELECT * FROM lojas WHERE ativa = true AND deletado = false AND marcado_para_remocao IS NULL AND ativo = true"
+        )
         .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
     }
 
     pub async fn buscar_por_criador(&self, admin_uuid: Uuid) -> Result<Vec<Loja>, String> {
-        sqlx::query_as::<_, Loja>("SELECT * FROM lojas WHERE criado_por = $1 ORDER BY criado_em DESC")
+        sqlx::query_as::<_, Loja>(
+            "SELECT * FROM lojas WHERE criado_por = $1 AND deletado = false ORDER BY criado_em DESC"
+        )
         .bind(admin_uuid)
         .fetch_all(self.pool())
         .await
@@ -46,14 +54,72 @@ impl LojaRepository {
     pub async fn pesquisar(&self, termo: &str) -> Result<Vec<Loja>, String> {
         let pattern = format!("%{}%", termo);
         sqlx::query_as::<_, Loja>("
-            SELECT * FROM lojas 
-            WHERE nome ILIKE $1 
-               OR slug ILIKE $1 
-               OR descricao ILIKE $1 
-               OR email ILIKE $1
+            SELECT * FROM lojas
+            WHERE (nome ILIKE $1
+               OR slug ILIKE $1
+               OR descricao ILIKE $1
+               OR email ILIKE $1)
+               AND deletado = false
+               AND marcado_para_remocao IS NULL
+               AND ativo = true
             ORDER BY nome ASC
         ")
         .bind(pattern)
+        .fetch_all(self.pool())
+        .await
+        .map_err(|e| e.to_string())
+    }
+
+    // Soft delete methods
+    pub async fn marcar_para_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE lojas SET marcado_para_remocao = NOW(), atualizado_em = NOW() WHERE uuid = $1 AND deletado = false"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn desmarcar_remocao(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE lojas SET marcado_para_remocao = NULL, atualizado_em = NOW() WHERE uuid = $1"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn marcar_como_deletado(&self, uuid: Uuid) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE lojas SET deletado = true, atualizado_em = NOW() WHERE uuid = $1"
+        )
+            .bind(uuid)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE lojas SET ativo = $2, atualizado_em = NOW() WHERE uuid = $1 AND deletado = false"
+        )
+            .bind(uuid)
+            .bind(ativo)
+            .execute(self.pool())
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn listar_pendentes_remocao(&self) -> Result<Vec<Loja>, String> {
+        sqlx::query_as::<_, Loja>(
+            "SELECT * FROM lojas WHERE marcado_para_remocao IS NOT NULL AND deletado = false ORDER BY marcado_para_remocao ASC"
+        )
         .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
@@ -102,7 +168,7 @@ impl Repository<Loja> for LojaRepository {
         let uuid = item.get_uuid();
         let result = sqlx::query("
             UPDATE lojas SET nome = $1, slug = $2, descricao = $3, email = $4, celular = $5, ativa = $6, logo_url = $7, banner_url = $8, horario_abertura = $9, horario_fechamento = $10, dias_funcionamento = $11, tempo_preparo_min = $12, taxa_entrega = $13, valor_minimo_pedido = $14, raio_entrega_km = $15
-            WHERE uuid = $16
+            WHERE uuid = $16 AND deletado = false
         ")
         .bind(&item.nome)
         .bind(&item.slug)
@@ -131,6 +197,25 @@ impl Repository<Loja> for LojaRepository {
         }
     }
 
+    /// Override para excluir soft-deleted lojas
+    async fn listar_todos(&self) -> Result<Vec<Loja>, String> {
+        let query = format!("SELECT * FROM {} WHERE deletado = false ORDER BY criado_em DESC", self.table_name());
+        sqlx::query_as::<_, Loja>(&query)
+            .fetch_all(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
+    /// Override para excluir soft-deleted lojas
+    async fn buscar_por_uuid(&self, uuid: Uuid) -> Result<Option<Loja>, String> {
+        let query = format!("SELECT * FROM {} WHERE uuid = $1 AND deletado = false", self.table_name());
+        sqlx::query_as::<_, Loja>(&query)
+            .bind(uuid)
+            .fetch_optional(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     async fn listar_todos_por_loja(&self, _: Uuid) -> Result<Vec<Loja>, String> {
         Err("não se aplica".into())
     }
@@ -155,5 +240,22 @@ impl LojaRepositoryPort for LojaRepository {
     }
     async fn pesquisar(&self, termo: &str) -> DomainResult<Vec<Loja>> {
         self.pesquisar(termo).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    // Soft delete port methods
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.marcar_para_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.desmarcar_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()> {
+        self.marcar_como_deletado(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()> {
+        self.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>> {
+        self.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
     }
 }

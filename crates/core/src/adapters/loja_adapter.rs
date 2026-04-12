@@ -46,4 +46,24 @@ impl LojaRepositoryPort for LojaRepositoryAdapter {
     async fn pesquisar(&self, termo: &str) -> DomainResult<Vec<Loja>> {
         self.inner.pesquisar(termo).await.map_err(|e| DomainError::Internal(e))
     }
+
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.marcar_para_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.desmarcar_remocao(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()> {
+        self.inner.marcar_como_deletado(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()> {
+        self.inner.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>> {
+        self.inner.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
+    }
 }

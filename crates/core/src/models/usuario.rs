@@ -67,7 +67,13 @@ pub struct Usuario {
     pub senha_hash: String,
     pub uuid: Uuid,
     pub ativo: bool,
-    pub passou_pelo_primeiro_acesso: bool
+    pub passou_pelo_primeiro_acesso: bool,
+
+    // Soft delete fields
+    #[serde(default)]
+    pub marcado_para_remocao: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(default)]
+    pub deletado: bool,
 }
 
 impl Usuario {
@@ -95,12 +101,29 @@ impl Usuario {
             uuid: Uuid::new_v4(),
             ativo: true,
             passou_pelo_primeiro_acesso: false,
+            marcado_para_remocao: None,
+            deletado: false,
         }
     }
 
     /// Verifica se este usuário é um administrador
     pub fn is_administrador(&self) -> bool {
         self.classe == ClasseUsuario::Administrador.as_str()
+    }
+
+    /// Verifica se o usuário está marcado para remoção
+    pub fn esta_marcado_para_remocao(&self) -> bool {
+        self.marcado_para_remocao.is_some() && !self.deletado
+    }
+
+    /// Verifica se o usuário está permanentemente deletado
+    pub fn esta_deletado(&self) -> bool {
+        self.deletado
+    }
+
+    /// Verifica se o usuário está ativo (não deletado e não marcado para remoção)
+    pub fn esta_ativo_para_login(&self) -> bool {
+        !self.deletado && self.marcado_para_remocao.is_none() && self.ativo
     }
 }
 

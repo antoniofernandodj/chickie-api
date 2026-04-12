@@ -13,4 +13,13 @@ pub trait UsuarioRepositoryPort: Send + Sync {
     async fn listar_todos(&self) -> DomainResult<Vec<Usuario>>;
     async fn atualizar(&self, entity: Usuario) -> DomainResult<()>;
     async fn marcar_primeiro_acesso(&self, uuid: Uuid) -> DomainResult<()>;
+
+    // Soft delete methods
+    async fn marcar_para_remocao(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()>;
+    async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()>;
+
+    // Listar usuários pendentes de remoção (para o scheduler)
+    async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>>;
 }

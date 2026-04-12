@@ -15,7 +15,7 @@ pub struct Loja {
     pub descricao: Option<String>,
     pub email: String,
     pub celular: Option<String>,
-    pub ativa: bool,
+    pub ativa: bool,  // Loja operacional (owner pode desativar)
     pub logo_url: Option<String>,
     pub banner_url: Option<String>,
     pub horario_abertura: Option<NaiveTime>,
@@ -26,9 +26,23 @@ pub struct Loja {
     pub valor_minimo_pedido: Option<Decimal>,
     pub raio_entrega_km: Option<Decimal>,
     pub criado_por: Option<Uuid>,  // Admin que criou a loja
+
+    // Soft delete fields
+    #[serde(default)]
+    pub marcado_para_remocao: Option<chrono::DateTime<chrono::Utc>>,
+    #[serde(default)]
+    pub deletado: bool,
+
+    // Flag para bloqueio administrativo (ex: inadimplência)
+    // Diferente de 'ativa': este só admin do sistema pode alterar
+    #[serde(default = "default_true")]
+    pub ativo: bool,
+
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
+
+fn default_true() -> bool { true }
 
 impl Loja {
     pub fn new(
@@ -65,9 +79,27 @@ impl Loja {
             valor_minimo_pedido,
             raio_entrega_km,
             criado_por,
+            marcado_para_remocao: None,
+            deletado: false,
+            ativo: true,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
         }
+    }
+
+    /// Verifica se a loja está marcada para remoção
+    pub fn esta_marcada_para_remocao(&self) -> bool {
+        self.marcado_para_remocao.is_some() && !self.deletado
+    }
+
+    /// Verifica se a loja está permanentemente deletada
+    pub fn esta_deletada(&self) -> bool {
+        self.deletado
+    }
+
+    /// Verifica se a loja está operacional (ativa + não deletada + não marcada para remoção + ativo)
+    pub fn esta_operacional(&self) -> bool {
+        self.ativa && !self.deletado && self.marcado_para_remocao.is_none() && self.ativo
     }
 }
 
