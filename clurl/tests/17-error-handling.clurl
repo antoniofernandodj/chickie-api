@@ -4,28 +4,50 @@
 # ============================================================
 
 # --- Test duplicate username ---
-RUN cargo run --quiet -p chickie-cli -- signup --nome "Test User" --username "testuser" --senha "duplicatepass" --email "duplicate@example.com" --celular "11944444444"
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Test User" \
+    --username "testuser" \
+    --senha "duplicatepass" \
+    --email "duplicate@example.com" \
+    --celular "11944444444"
 
 [Asserts]
 exit-code == 0
 stderr contains "duplicate"
 
 # --- Test invalid login ---
-RUN cargo run --quiet -p chickie-cli -- login --identifier "nonexistent@example.com" --senha "wrongpass"
+RUN cargo run --quiet -p chickie-cli -- \
+    login \
+    --identifier "nonexistent@example.com" \
+    --senha "wrongpass"
 
 [Asserts]
 exit-code == 0
 stderr contains "não encontrado"
 
 # --- Test duplicate store slug ---
-RUN cargo run --quiet -p chickie-cli -- create-loja --nome "Duplicate Store" --slug "main-test-store" --email-contato "dup@test.com" --celular "11999999995" --max-partes 4 --criado-por {{admin_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    create-loja \
+    --nome "Duplicate Store" \
+    --slug "main-test-store" \
+    --email-contato "dup@test.com" \
+    --celular "11999999995" \
+    --max-partes 4 \
+    --criado-por {{admin_uuid}}
 
 [Asserts]
 exit-code == 0
 stderr contains "duplicate"
 
 # --- Test order status invalid transition (criado -> entregue) ---
-RUN cargo run --quiet -p chickie-cli -- create-pedido --usuario-uuid {{order_user_uuid}} --loja-uuid {{main_store_uuid}} --taxa-entrega 5.0 --subtotal 30.0 --forma-pagamento "PIX"
+RUN cargo run --quiet -p chickie-cli -- \
+    create-pedido \
+    --usuario-uuid {{order_user_uuid}} \
+    --loja-uuid {{main_store_uuid}} \
+    --taxa-entrega 5.0 \
+    --subtotal 30.0 \
+    --forma-pagamento "PIX"
 
 [Captures]
 invalid_transition_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
@@ -35,14 +57,19 @@ exit-code == 0
 
 # Try invalid transition
 # NOTE: Backend bug - "no column found for name: itens_json" masks the actual error
-# RUN cargo run --quiet -p chickie-cli -- update-pedido-status --uuid {{invalid_transition_pedido_uuid}} --novo-status "entregue"
-#
-# [Asserts]
-# exit-code == 0
-# stderr contains "inválida"
+RUN cargo run --quiet -p chickie-cli -- \
+    update-pedido-status \
+    --uuid {{invalid_transition_pedido_uuid}} \
+    --novo-status "entregue"
+
+[Asserts]
+exit-code == 0
+stderr contains "inválida"
 
 # --- Test non-existent UUID ---
-RUN cargo run --quiet -p chickie-cli -- get-produto 00000000-0000-0000-0000-999999999999
+RUN cargo run --quiet -p chickie-cli -- \
+    get-produto \
+    00000000-0000-0000-0000-999999999999
 
 [Asserts]
 exit-code == 0

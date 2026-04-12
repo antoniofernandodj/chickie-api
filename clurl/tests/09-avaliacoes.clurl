@@ -4,7 +4,12 @@
 # ============================================================
 
 # --- Rate a store ---
-RUN cargo run --quiet -p chickie-cli -- avaliar-loja --loja-uuid {{main_store_uuid}} --usuario-uuid {{review_user_uuid}} --nota 4.5 --comentario "Ótima pizza!"
+RUN cargo run --quiet -p chickie-cli -- \
+    avaliar-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --usuario-uuid {{review_user_uuid}} \
+    --nota 4.5 \
+    --comentario "Ótima pizza!"
 
 [Asserts]
 exit-code == 0

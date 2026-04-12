@@ -73,7 +73,8 @@ exit-code == 0
 stdout contains "Order Test Store"
 
 # --- List all stores ---
-RUN cargo run --quiet -p chickie-cli -- list-lojas
+RUN cargo run --quiet -p chickie-cli -- \
+    list-lojas
 
 [Asserts]
 exit-code == 0
@@ -81,21 +82,24 @@ stdout contains "Main Test Store"
 stdout contains "Product Test Store"
 
 # --- Search stores ---
-RUN cargo run --quiet -p chickie-cli -- search-lojas "main"
+RUN cargo run --quiet -p chickie-cli -- \
+    search-lojas "main"
 
 [Asserts]
 exit-code == 0
 stdout contains "Main Test Store"
 
 # --- Get store by slug ---
-RUN cargo run --quiet -p chickie-cli -- get-loja-by-slug "main-test-store"
+RUN cargo run --quiet -p chickie-cli -- \
+    get-loja-by-slug "main-test-store"
 
 [Asserts]
 exit-code == 0
 stdout contains "Main Test Store"
 
 # --- List admin's stores ---
-RUN cargo run --quiet -p chickie-cli -- list-minhas-lojas --admin-uuid {{admin_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-minhas-lojas --admin-uuid {{admin_uuid}}
 
 [Asserts]
 exit-code == 0

@@ -4,7 +4,17 @@
 # ============================================================
 
 # --- Add employee ---
-RUN cargo run --quiet -p chickie-cli -- add-funcionario --loja-uuid {{main_store_uuid}} --nome "Maria Funcionaria" --username "mariafunc" --email "maria@test.com" --senha "mariapass" --celular "11900000001" --cargo "Gerente" --salario 3000.0 --data-admissao "2026-01-01"
+RUN cargo run --quiet -p chickie-cli -- \
+    add-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Maria Funcionaria" \
+    --username "mariafunc" \
+    --email "maria@test.com" \
+    --senha "mariapass" \
+    --celular "11900000001" \
+    --cargo "Gerente" \
+    --salario 3000.0 \
+    --data-admissao "2026-01-01"
 
 [Captures]
 funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
@@ -15,14 +25,25 @@ stdout contains "Funcionário adicionado"
 stdout contains "Gerente"
 
 # --- List employees ---
-RUN cargo run --quiet -p chickie-cli -- list-funcionarios --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 stdout contains "Gerente"
 
 # --- Add delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- add-entregador --loja-uuid {{main_store_uuid}} --nome "Carlos Entregador" --username "carlosentreg" --email "carlos@test.com" --senha "carlospass" --celular "11900000002" --veiculo "Moto" --placa "ABC-1234"
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Carlos Entregador" \
+    --username "carlosentreg" \
+    --email "carlos@test.com" \
+    --senha "carlospass" \
+    --celular "11900000002" \
+    --veiculo "Moto" \
+    --placa "ABC-1234"
 
 [Captures]
 entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
@@ -34,7 +55,9 @@ stdout contains "Moto"
 stdout contains "ABC-1234"
 
 # --- List delivery drivers ---
-RUN cargo run --quiet -p chickie-cli -- list-entregadores --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
@@ -42,25 +65,43 @@ stdout contains "Moto"
 
 # --- Update employee ---
 # NOTE: CLI command not implemented yet ("em construção")
-# RUN cargo run --quiet -p chickie-cli -- update-funcionario --loja-uuid {{main_store_uuid}} --uuid {{funcionario_uuid}} --cargo "Gerente Senior" --salario 3500.0
-#
-# [Asserts]
-# exit-code == 0
-# stdout contains "Funcionário atualizado"
+RUN cargo run --quiet -p chickie-cli -- \
+    update-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{funcionario_uuid}} \
+    --cargo "Gerente Senior" \
+    --salario 3500.0
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionário atualizado"
 
 # --- Update delivery driver ---
 # NOTE: CLI command not implemented yet
-# RUN cargo run --quiet -p chickie-cli -- update-entregador --loja-uuid {{main_store_uuid}} --uuid {{entregador_uuid}} --veiculo "Van" --placa "XYZ-5678" --disponivel true
-#
-# [Asserts]
-# exit-code == 0
-# stdout contains "Van"
-# stdout contains "XYZ-5678"
+RUN cargo run --quiet -p chickie-cli -- \
+    update-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{entregador_uuid}} \
+    --veiculo "Van" \
+    --placa "XYZ-5678" \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "Van"
+stdout contains "XYZ-5678"
 
 # --- Add customer ---
 # NOTE: CLI command not implemented yet
-# RUN cargo run --quiet -p chickie-cli -- add-cliente --loja-uuid {{main_store_uuid}} --nome "Ana Cliente" --username "anacliente" --email "ana@test.com" --senha "anapass" --celular "11900000003"
-#
-# [Asserts]
-# exit-code == 0
-# stdout contains "Ana Cliente"
+RUN cargo run --quiet -p chickie-cli -- \
+    add-cliente \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Ana Cliente" \
+    --username "anacliente" \
+    --email "ana@test.com" \
+    --senha "anapass" \
+    --celular "11900000003"
+
+[Asserts]
+exit-code == 0
+stdout contains "Ana Cliente"

@@ -4,14 +4,25 @@
 # ============================================================
 
 # --- Create store address ---
-RUN cargo run --quiet -p chickie-cli -- create-endereco-loja --loja-uuid {{main_store_uuid}} --logradouro "Store Street" --numero "500" --bairro "Store Neighborhood" --cidade "Store City" --estado "RJ" --cep "20000-000" --complemento "Loja 10"
+RUN cargo run --quiet -p chickie-cli -- \
+    create-endereco-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --logradouro "Store Street" \
+    --numero "500" \
+    --bairro "Store Neighborhood" \
+    --cidade "Store City" \
+    --estado "RJ" \
+    --cep "20000-000" \
+    --complemento "Loja 10"
 
 [Asserts]
 exit-code == 0
 stdout contains "Endereço de loja criado"
 
 # --- List store addresses ---
-RUN cargo run --quiet -p chickie-cli -- list-enderecos-loja {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-enderecos-loja \
+    {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0

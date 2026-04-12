@@ -4,7 +4,12 @@
 # ============================================================
 
 # --- Create an adicional ---
-RUN cargo run --quiet -p chickie-cli -- create-adicional --loja-uuid {{main_store_uuid}} --nome "Queijo Extra" --descricao "Queijo mussarela adicional" --preco 3.50
+RUN cargo run --quiet -p chickie-cli -- \
+    create-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Queijo Extra" \
+    --descricao "Queijo mussarela adicional" \
+    --preco 3.50
 
 [Captures]
 adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
@@ -14,21 +19,34 @@ exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- List all adicionais ---
-RUN cargo run --quiet -p chickie-cli -- list-adicionais --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- Update adicional ---
-RUN cargo run --quiet -p chickie-cli -- update-adicional --loja-uuid {{main_store_uuid}} --uuid {{adicional_uuid}} --nome "Queijo Premium" --descricao "Queijo importado especial" --preco 5.00
+RUN cargo run --quiet -p chickie-cli -- \
+    update-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{adicional_uuid}} \
+    --nome "Queijo Premium" \
+    --descricao "Queijo importado especial" \
+    --preco 5.00
 
 [Asserts]
 exit-code == 0
 stdout contains "Queijo Premium"
+stdout contains "Queijo importado especial"
+stdout contains "5.00"
 
 # --- Delete adicional ---
-RUN cargo run --quiet -p chickie-cli -- delete-adicional --loja-uuid {{main_store_uuid}} --uuid {{adicional_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{adicional_uuid}}
 
 [Asserts]
 exit-code == 0

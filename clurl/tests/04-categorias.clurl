@@ -4,7 +4,12 @@
 # ============================================================
 
 # --- Create a category ---
-RUN cargo run --quiet -p chickie-cli -- create-categoria --loja-uuid {{category_store_uuid}} --nome "Bebidas" --descricao "Bebidas geladas" --ordem 1
+RUN cargo run --quiet -p chickie-cli -- \
+    create-categoria \
+    --loja-uuid {{category_store_uuid}} \
+    --nome "Bebidas" \
+    --descricao "Bebidas geladas" \
+    --ordem 1
 
 [Captures]
 categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
@@ -15,14 +20,21 @@ stdout contains "Bebidas"
 stdout contains "Bebidas geladas"
 
 # --- Create category with pizza-mode ---
-RUN cargo run --quiet -p chickie-cli -- create-categoria --loja-uuid {{category_store_uuid}} --nome "Pizzas Especiais" --ordem 2 --pizza-mode
+RUN cargo run --quiet -p chickie-cli -- \
+    create-categoria \
+    --loja-uuid {{category_store_uuid}} \
+    --nome "Pizzas Especiais" \
+    --ordem 2 \
+    --pizza-mode
 
 [Asserts]
 exit-code == 0
 stdout contains "Pizzas Especiais"
 
 # --- List categories ---
-RUN cargo run --quiet -p chickie-cli -- list-categorias --loja-uuid {{category_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-categorias \
+    --loja-uuid {{category_store_uuid}}
 
 [Asserts]
 exit-code == 0
@@ -30,14 +42,22 @@ stdout contains "Bebidas"
 stdout contains "Pizzas Especiais"
 
 # --- Update category ---
-RUN cargo run --quiet -p chickie-cli -- update-categoria --loja-uuid {{category_store_uuid}} --uuid {{categoria_uuid}} --nome "Bebidas Premium" --ordem 3
+RUN cargo run --quiet -p chickie-cli -- \
+    update-categoria \
+    --loja-uuid {{category_store_uuid}} \
+    --uuid {{categoria_uuid}} \
+    --nome "Bebidas Premium" \
+    --ordem 3
 
 [Asserts]
 exit-code == 0
 stdout contains "Bebidas Premium"
 
 # --- Delete category (the one without products) ---
-RUN cargo run --quiet -p chickie-cli -- delete-categoria --loja-uuid {{category_store_uuid}} --uuid {{categoria_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-categoria \
+    --loja-uuid {{category_store_uuid}} \
+    --uuid {{categoria_uuid}}
 
 [Asserts]
 exit-code == 0

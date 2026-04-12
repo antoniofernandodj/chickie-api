@@ -12,3 +12,6 @@ sync:
 		git push; \
 	done
 	git checkout $(b)
+
+test:
+	clurl clurl/tests.clurl

@@ -4,7 +4,13 @@
 # ============================================================
 
 # --- Create order for driver assignment ---
-RUN cargo run --quiet -p chickie-cli -- create-pedido --usuario-uuid {{order_user_uuid}} --loja-uuid {{main_store_uuid}} --taxa-entrega 5.0 --subtotal 40.0 --forma-pagamento "PIX"
+RUN cargo run --quiet -p chickie-cli -- \
+    create-pedido \
+    --usuario-uuid {{order_user_uuid}} \
+    --loja-uuid {{main_store_uuid}} \
+    --taxa-entrega 5.0 \
+    --subtotal 40.0 \
+    --forma-pagamento "PIX"
 
 [Captures]
 driver_test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
@@ -13,13 +19,20 @@ driver_test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 exit-code == 0
 
 # --- Assign driver to order ---
-RUN cargo run --quiet -p chickie-cli -- atribuir-entregador --pedido-uuid {{driver_test_pedido_uuid}} --loja-uuid {{main_store_uuid}} --entregador-uuid {{entregador_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    atribuir-entregador \
+    --pedido-uuid {{driver_test_pedido_uuid}} \
+    --loja-uuid {{main_store_uuid}} \
+    --entregador-uuid {{entregador_uuid}}
 
 [Asserts]
 exit-code == 0
 
 # --- Remove driver from order ---
-RUN cargo run --quiet -p chickie-cli -- remover-entregador --pedido-uuid {{driver_test_pedido_uuid}} --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    remover-entregador \
+    --pedido-uuid {{driver_test_pedido_uuid}} \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0

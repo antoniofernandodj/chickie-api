@@ -4,31 +4,49 @@
 # ============================================================
 
 # --- Create operating hours for Monday (dia 1) ---
-RUN cargo run --quiet -p chickie-cli -- create-horario --loja-uuid {{main_store_uuid}} --dia-semana 1 --abertura "09:00" --fechamento "18:00"
+RUN cargo run --quiet -p chickie-cli -- \
+    create-horario \
+    --loja-uuid {{main_store_uuid}} \
+    --dia-semana 1 \
+    --abertura "09:00" \
+    --fechamento "18:00"
 
 [Asserts]
 exit-code == 0
 
 # --- Create operating hours for Tuesday (dia 2) ---
-RUN cargo run --quiet -p chickie-cli -- create-horario --loja-uuid {{main_store_uuid}} --dia-semana 2 --abertura "10:00" --fechamento "20:00"
+RUN cargo run --quiet -p chickie-cli -- \
+    create-horario \
+    --loja-uuid {{main_store_uuid}} \
+    --dia-semana 2 \
+    --abertura "10:00" \
+    --fechamento "20:00"
 
 [Asserts]
 exit-code == 0
 
 # --- List all schedules ---
-RUN cargo run --quiet -p chickie-cli -- list-horarios --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-horarios \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 
 # --- Toggle schedule inactive ---
-RUN cargo run --quiet -p chickie-cli -- toggle-horario-ativo --loja-uuid {{main_store_uuid}} --dia-semana 1
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-horario-ativo \
+    --loja-uuid {{main_store_uuid}} \
+    --dia-semana 1
 
 [Asserts]
 exit-code == 0
 
 # --- Delete schedule ---
-RUN cargo run --quiet -p chickie-cli -- delete-horario --loja-uuid {{main_store_uuid}} --dia-semana 2
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-horario \
+    --loja-uuid {{main_store_uuid}} \
+    --dia-semana 2
 
 [Asserts]
 exit-code == 0

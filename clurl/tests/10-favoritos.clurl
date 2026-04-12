@@ -4,33 +4,47 @@
 # ============================================================
 
 # --- Add to favorites ---
-RUN cargo run --quiet -p chickie-cli -- add-favorito {{fav_user_uuid}} {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    add-favorito \
+    {{fav_user_uuid}} \
+    {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 stdout contains "favoritos"
 
 # --- List favorites ---
-RUN cargo run --quiet -p chickie-cli -- list-favoritas --usuario-uuid {{fav_user_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-favoritas \
+    --usuario-uuid {{fav_user_uuid}}
 
 [Asserts]
 exit-code == 0
 
 # --- Check if store is favorite ---
-RUN cargo run --quiet -p chickie-cli -- verificar-favorito {{fav_user_uuid}} {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-favorito \
+    {{fav_user_uuid}} \
+    {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 stdout contains "true"
 
 # --- Remove from favorites ---
-RUN cargo run --quiet -p chickie-cli -- remove-favorito {{fav_user_uuid}} {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    remove-favorito \
+    {{fav_user_uuid}} \
+    {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 
 # --- Verify removal ---
-RUN cargo run --quiet -p chickie-cli -- verificar-favorito {{fav_user_uuid}} {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-favorito \
+    {{fav_user_uuid}} \
+    {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0

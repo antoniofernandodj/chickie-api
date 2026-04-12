@@ -4,7 +4,12 @@
 # ============================================================
 
 # --- Create an ingredient ---
-RUN cargo run --quiet -p chickie-cli -- create-ingrediente --loja-uuid {{main_store_uuid}} --nome "Tomate" --descricao "Tomate fresco" --preco 2.50
+RUN cargo run --quiet -p chickie-cli -- \
+    create-ingrediente \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Tomate" \
+    --descricao "Tomate fresco" \
+    --preco 2.50
 
 [Captures]
 ingrediente_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
@@ -14,14 +19,18 @@ exit-code == 0
 stdout contains "Tomate"
 
 # --- List ingredients ---
-RUN cargo run --quiet -p chickie-cli -- list-ingredientes --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    list-ingredientes \
+    --loja-uuid {{main_store_uuid}}
 
 [Asserts]
 exit-code == 0
 stdout contains "Tomate"
 
 # --- Delete ingredient ---
-RUN cargo run --quiet -p chickie-cli -- delete-ingrediente {{ingrediente_uuid}}
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-ingrediente \
+    {{ingrediente_uuid}}
 
 [Asserts]
 exit-code == 0

@@ -40,7 +40,7 @@ tests/18-integration-order-flow.clurl
 tests/19-environment.clurl
 
 # Cleanup
-# tests/00-database-setup.clurl
+tests/00-database-setup.clurl
 
 [Options]
 # Stop executing test files when one fails
