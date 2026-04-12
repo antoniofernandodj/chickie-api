@@ -23,9 +23,8 @@ RUN cargo run --quiet -p chickie-cli -- \
     --categoria-uuid {{int_categoria_uuid}} \
     --nome "Integration Product" \
     --preco 45.00 \
-    --disponivel true \
-    --tempo-preparo-min 30 \
-    --destaque false
+    --disponivel \
+    --tempo-preparo-min 30
 
 [Asserts]
 exit-code == 0
