@@ -87,7 +87,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "indisponível"
+stdout contains "indisponivel"
 
 # --- List available add-ons (should NOT include the unavailable one) ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -107,7 +107,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "disponível"
+stdout contains "disponivel"
 
 # --- Clean up ---
 RUN cargo run --quiet -p chickie-cli -- \

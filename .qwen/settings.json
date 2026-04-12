@@ -35,7 +35,8 @@
       "Bash(cargo install *)",
       "Bash(git ls-files *)",
       "Bash(file *)",
-      "Bash(hexdump *)"
+      "Bash(hexdump *)",
+      "Bash(git show *)"
     ]
   },
   "$version": 3

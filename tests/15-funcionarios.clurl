@@ -21,7 +21,7 @@ funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionário adicionado"
+stdout contains "Funcionario adicionado"
 stdout contains "Gerente"
 
 # --- List employees ---
@@ -64,7 +64,7 @@ exit-code == 0
 stdout contains "Moto"
 
 # --- Update employee ---
-# SKIP: CLI command not implemented yet (run_update_funcionario just prints "em construção")
+# SKIP: CLI command not implemented yet (run_update_funcionario just prints "em construcao")
 # RUN cargo run --quiet -p chickie-cli -- \
 #     update-funcionario \
 #     --loja-uuid {{main_store_uuid}} \
@@ -74,10 +74,10 @@ stdout contains "Moto"
 # 
 # [Asserts]
 # exit-code == 0
-# stdout contains "Funcionário atualizado"
+# stdout contains "Funcionario atualizado"
 
 # --- Update delivery driver ---
-# SKIP: CLI command not implemented yet (run_update_entregador just prints "em construção")
+# SKIP: CLI command not implemented yet (run_update_entregador just prints "em construcao")
 # RUN cargo run --quiet -p chickie-cli -- \
 #     update-entregador \
 #     --loja-uuid {{main_store_uuid}} \
@@ -92,7 +92,7 @@ stdout contains "Moto"
 # stdout contains "XYZ-5678"
 
 # --- Add customer ---
-# SKIP: CLI command not implemented yet (run_add_cliente just prints "em construção")
+# SKIP: CLI command not implemented yet (run_add_cliente just prints "em construcao")
 # RUN cargo run --quiet -p chickie-cli -- \
 #     add-cliente \
 #     --loja-uuid {{main_store_uuid}} \
@@ -142,7 +142,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionário atualizado"
+stdout contains "Funcionario atualizado"
 
 # --- Verify updated employee ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -163,7 +163,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Email/senha do funcionário atualizados"
+stdout contains "Email/senha do funcionario atualizados"
 
 # --- Delete employee ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -172,7 +172,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "Funcionário deletado"
+stdout contains "Funcionario deletado"
 
 # --- Verify employee is gone ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -245,7 +245,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "indisponível"
+stdout contains "indisponivel"
 
 # --- List available drivers (should not show unavailable one) ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -264,7 +264,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
-stdout contains "disponível"
+stdout contains "disponivel"
 
 # --- Delete delivery driver ---
 RUN cargo run --quiet -p chickie-cli -- \
