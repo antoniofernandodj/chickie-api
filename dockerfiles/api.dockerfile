@@ -16,12 +16,14 @@ COPY crates/core/Cargo.toml ./crates/core/Cargo.toml
 COPY crates/api/Cargo.toml ./crates/api/Cargo.toml
 COPY crates/worker/Cargo.toml ./crates/worker/Cargo.toml
 COPY crates/scheduler/Cargo.toml ./crates/scheduler/Cargo.toml
+COPY crates/cli/Cargo.toml ./crates/cli/Cargo.toml
 
 # Build dummy para cache de dependências
-RUN mkdir -p crates/core/src crates/api/src crates/worker/src crates/scheduler/src && \
+RUN mkdir -p crates/core/src crates/api/src crates/worker/src crates/scheduler/src crates/cli/src && \
     echo "fn main() {}" > crates/api/src/main.rs && \
     echo "fn main() {}" > crates/worker/src/main.rs && \
     echo "fn main() {}" > crates/scheduler/src/main.rs && \
+    echo "fn main() {}" > crates/cli/src/main.rs && \
     echo "pub fn dummy() {}" > crates/core/src/lib.rs
 
 RUN cargo build --release -p chickie-api
