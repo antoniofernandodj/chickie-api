@@ -81,8 +81,21 @@ pub async fn run_create_endereco_loja(state: &AppState, args: CreateEnderecoLoja
     );
 
     match state.endereco_loja_service.criar(&endereco).await {
-        Ok(_uuid) => {
+        Ok(uuid) => {
             print_ok("Endereço de loja criado");
+            json_print(&EnderecoLoja {
+                uuid,
+                loja_uuid: endereco.loja_uuid,
+                cep: endereco.cep,
+                logradouro: endereco.logradouro.clone(),
+                numero: endereco.numero.clone(),
+                complemento: endereco.complemento.clone(),
+                bairro: endereco.bairro.clone(),
+                cidade: endereco.cidade.clone(),
+                estado: endereco.estado.clone(),
+                latitude: endereco.latitude,
+                longitude: endereco.longitude,
+            });
         }
         Err(e) => print_err(&format!("{:?}", e)),
     }

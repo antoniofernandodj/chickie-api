@@ -99,6 +99,50 @@ staff_admin_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 [Asserts]
 exit-code == 0
 
+# --- Create test user for availability tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Availability User" \
+    --username "availuser" \
+    --senha "availpass123" \
+    --email "avail@test.com" \
+    --celular "11944444444"
+
+[Asserts]
+exit-code == 0
+
+# --- Verify email NOT available (already taken) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-email-disponivel "avail@test.com"
+
+[Asserts]
+exit-code == 0
+stderr contains "já está em uso"
+
+# --- Verify email IS available (new email) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-email-disponivel "unique-new-email@test.com"
+
+[Asserts]
+exit-code == 0
+stdout contains "está disponível"
+
+# --- Verify username NOT available (already taken) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-username-disponivel "availuser"
+
+[Asserts]
+exit-code == 0
+stderr contains "já está em uso"
+
+# --- Verify username IS available (new username) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-username-disponivel "unique-username-xyz"
+
+[Asserts]
+exit-code == 0
+stdout contains "está disponível"
+
 # --- Test login ---
 RUN cargo run --quiet -p chickie-cli -- \
     login \

@@ -101,7 +101,176 @@ stdout contains "Moto"
 #     --email "ana@test.com" \
 #     --senha "anapass" \
 #     --celular "11900000003"
-# 
+#
 # [Asserts]
 # exit-code == 0
 # stdout contains "Ana Cliente"
+
+# ============================================================
+# Employee & Driver Update / Delete / Credential Tests
+# ============================================================
+
+# --- Add employee for update test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Test Func Update" \
+    --username "testfuncupdate" \
+    --email "testfuncupdate@test.com" \
+    --senha "testfuncpass" \
+    --celular "11933333333" \
+    --cargo "Supervisor" \
+    --salario 4000.0 \
+    --data-admissao "2026-06-01"
+
+[Captures]
+test_funcionario_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+test_funcionario_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Func Update"
+stdout contains "Supervisor"
+
+# --- Update employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-funcionario \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{test_funcionario_uuid}} \
+    --cargo "Senior Supervisor" \
+    --salario 4500.0
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionário atualizado"
+
+# --- Verify updated employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Func Update"
+stdout contains "Senior Supervisor"
+
+# --- Change employee email/password ---
+RUN cargo run --quiet -p chickie-cli -- \
+    trocar-email-senha-funcionario \
+    --usuario-uuid {{test_funcionario_usuario_uuid}} \
+    --novo-email "updatedfunc@test.com" \
+    --nova-senha "newfuncpass123"
+
+[Asserts]
+exit-code == 0
+stdout contains "Email/senha do funcionário atualizados"
+
+# --- Delete employee ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-funcionario \
+    --uuid {{test_funcionario_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Funcionário deletado"
+
+# --- Verify employee is gone ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-funcionarios \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "Test Func Update"
+
+# --- Add driver for update test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Test Driver Update" \
+    --username "testdriverupdate" \
+    --email "testdriverupdate@test.com" \
+    --senha "testdriverpass" \
+    --celular "11922222222" \
+    --veiculo "Bicicleta" \
+    --placa "N/A"
+
+[Captures]
+test_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+test_entregador_usuario_uuid: stdout regex /"usuario_uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Driver Update"
+stdout contains "Bicicleta"
+
+# --- Update delivery driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-entregador \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{test_entregador_uuid}} \
+    --veiculo "Moto" \
+    --placa "TEST-9999"
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador atualizado"
+
+# --- Verify updated driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Moto"
+stdout contains "TEST-9999"
+
+# --- Change driver email/password ---
+RUN cargo run --quiet -p chickie-cli -- \
+    trocar-email-senha-entregador \
+    --usuario-uuid {{test_entregador_usuario_uuid}} \
+    --novo-email "updateddriver@test.com" \
+    --nova-senha "newdriverpass123"
+
+[Asserts]
+exit-code == 0
+stdout contains "Email/senha do entregador atualizados"
+
+# --- Set driver as unavailable ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-entregador \
+    --uuid {{test_entregador_uuid}} \
+    --disponivel false
+
+[Asserts]
+exit-code == 0
+stdout contains "indisponível"
+
+# --- List available drivers (should not show unavailable one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-entregadores-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "TEST-9999"
+
+# --- Set driver as available again ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-entregador \
+    --uuid {{test_entregador_uuid}} \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "disponível"
+
+# --- Delete delivery driver ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-entregador \
+    --uuid {{test_entregador_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador deletado"

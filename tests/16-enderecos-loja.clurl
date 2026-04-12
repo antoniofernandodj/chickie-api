@@ -15,9 +15,13 @@ RUN cargo run --quiet -p chickie-cli -- \
     --cep "20000-000" \
     --complemento "Loja 10"
 
+[Captures]
+store_endereco_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
 [Asserts]
 exit-code == 0
 stdout contains "Endereço de loja criado"
+stdout contains "Store Street"
 
 # --- List store addresses ---
 RUN cargo run --quiet -p chickie-cli -- \
@@ -27,3 +31,124 @@ RUN cargo run --quiet -p chickie-cli -- \
 [Asserts]
 exit-code == 0
 stdout contains "Store Street"
+
+# --- Update store address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-endereco-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{store_endereco_uuid}} \
+    --logradouro "Updated Store Street" \
+    --numero "600" \
+    --bairro "Updated Neighborhood" \
+    --cidade "Updated City"
+
+[Asserts]
+exit-code == 0
+stdout contains "Endereço de loja atualizado"
+
+# --- Verify updated store address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-enderecos-loja \
+    {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Updated Store Street"
+stdout contains "Updated City"
+
+# --- Delete store address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-endereco-loja \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{store_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Endereço de loja deletado"
+
+# ============================================================
+# User Address Tests
+# ============================================================
+
+# --- Create user address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    --logradouro "Test Avenue" \
+    --numero "100" \
+    --bairro "Test District" \
+    --cidade "Testopolis" \
+    --estado "SP" \
+    --cep "12345-000" \
+    --complemento "Apto 42"
+
+[Captures]
+user_endereco_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Endereço de usuário criado"
+stdout contains "Test Avenue"
+
+# --- List user addresses ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-enderecos-usuario \
+    {{user_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Avenue"
+
+# --- Get user address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    {{user_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Avenue"
+stdout contains "Apto 42"
+
+# --- Update user address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    --logradouro "Updated Avenue" \
+    --numero "200" \
+    {{user_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Endereço de usuário atualizado"
+
+# --- Verify updated address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    {{user_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Updated Avenue"
+stdout contains "200"
+
+# --- Delete user address ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    {{user_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Endereço de usuário deletado"
+
+# --- Verify deleted address is gone ---
+RUN cargo run --quiet -p chickie-cli -- \
+    get-endereco-usuario \
+    --usuario-uuid {{user_uuid}} \
+    {{user_endereco_uuid}}
+
+[Asserts]
+exit-code == 0
+stderr contains "não encontrado"

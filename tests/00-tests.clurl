@@ -39,9 +39,6 @@
 19-integration-order-flow.clurl
 20-environment.clurl
 
-# Phase 5: New CLI Commands
-21-cli-new-commands.clurl
-
 # Cleanup
 01-database-setup.clurl
 

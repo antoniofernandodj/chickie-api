@@ -13,3 +13,61 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
+
+# ============================================================
+# Promotion Update Tests
+# ============================================================
+
+# --- Create promotion for update test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-promocao \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Update Test Promo" \
+    --descricao "Original description" \
+    --tipo-desconto "percentual" \
+    --valor-desconto 10.0 \
+    --data-inicio "2026-01-01T00:00:00Z" \
+    --data-fim "2026-12-31T23:59:59Z" \
+    --dias-semana 1 2 3 4 5 \
+    --tipo-escopo "loja" \
+    --prioridade 1
+
+[Captures]
+update_promocao_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Update Test Promo"
+stdout contains "Original description"
+
+# --- Update promotion ---
+RUN cargo run --quiet -p chickie-cli -- \
+    update-promocao \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{update_promocao_uuid}} \
+    --nome "Updated Test Promo" \
+    --descricao "Updated description" \
+    --valor-desconto 15.0
+
+[Asserts]
+exit-code == 0
+stdout contains "Promoção atualizada"
+
+# --- Verify updated promotion ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-promocoes \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Updated Test Promo"
+stdout contains "Updated description"
+
+# --- Clean up promotion ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-promocao \
+    {{update_promocao_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Promoção deletada"

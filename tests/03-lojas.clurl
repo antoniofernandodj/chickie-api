@@ -104,3 +104,19 @@ RUN cargo run --quiet -p chickie-cli -- \
 [Asserts]
 exit-code == 0
 stdout contains "Main Test Store"
+
+# --- Verify slug NOT available (already taken) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-slug-disponivel "main-test-store"
+
+[Asserts]
+exit-code == 0
+stderr contains "já está em uso"
+
+# --- Verify slug IS available (new slug) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    verificar-slug-disponivel "brand-new-slug-xyz-123"
+
+[Asserts]
+exit-code == 0
+stdout contains "está disponível"

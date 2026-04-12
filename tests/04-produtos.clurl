@@ -64,3 +64,87 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
+
+# ============================================================
+# Product Availability & Category Listing Tests
+# ============================================================
+
+# --- Create category for availability test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-categoria \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Availability Test Category" \
+    --ordem 100
+
+[Captures]
+avail_categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Availability Test Category"
+
+# --- Create product in the category ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --categoria-uuid {{avail_categoria_uuid}} \
+    --nome "Availability Product" \
+    --preco 25.0 \
+    --disponivel true \
+    --tempo-preparo-min 20 \
+    --destaque false
+
+[Captures]
+avail_produto_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Availability Product"
+
+# --- List products by category ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-produtos-por-categoria \
+    {{avail_categoria_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Availability Product"
+
+# --- Set product as unavailable ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{avail_produto_uuid}} \
+    --disponivel false
+
+[Asserts]
+exit-code == 0
+stdout contains "indisponível"
+
+# --- Set product as available again ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-produto \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{avail_produto_uuid}} \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "disponível"
+
+# --- Clean up product ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-produto \
+    {{avail_produto_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- Clean up category ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-categoria \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{avail_categoria_uuid}}
+
+[Asserts]
+exit-code == 0

@@ -36,3 +36,62 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
+stdout contains "Entregador removido do pedido"
+
+# ============================================================
+# Order Driver Assignment with Store-specific Driver
+# ============================================================
+
+# --- Add driver for order test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    add-entregador \
+    --loja-uuid {{order_store_uuid}} \
+    --nome "Order Driver" \
+    --username "orderdriver" \
+    --email "orderdriver@test.com" \
+    --senha "orderdriverpass" \
+    --celular "11988777777" \
+    --veiculo "Moto" \
+    --placa "ORD-1234"
+
+[Captures]
+order_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Create order for testing ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-pedido \
+    --usuario-uuid {{order_user_uuid}} \
+    --loja-uuid {{order_store_uuid}} \
+    --taxa-entrega 5.0 \
+    --subtotal 30.0 \
+    --forma-pagamento "PIX"
+
+[Captures]
+test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
+[Asserts]
+exit-code == 0
+
+# --- Assign driver to order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    atribuir-entregador \
+    --pedido-uuid {{test_pedido_uuid}} \
+    --loja-uuid {{order_store_uuid}} \
+    --entregador-uuid {{order_entregador_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador atribuído"
+
+# --- Remove driver from order ---
+RUN cargo run --quiet -p chickie-cli -- \
+    remover-entregador \
+    --pedido-uuid {{test_pedido_uuid}} \
+    --loja-uuid {{order_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Entregador removido do pedido"

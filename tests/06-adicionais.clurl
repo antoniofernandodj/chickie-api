@@ -49,3 +49,71 @@ RUN cargo run --quiet -p chickie-cli -- \
 
 [Asserts]
 exit-code == 0
+
+# ============================================================
+# Adicional Availability Toggle Tests
+# ============================================================
+
+# --- Create additional for availability test ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --nome "Disponível Test" \
+    --descricao "Test availability toggle" \
+    --preco 2.00
+
+[Captures]
+disp_adicional_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Disponível Test"
+
+# --- List available add-ons (should include the new one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Disponível Test"
+
+# --- Set additional as unavailable ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}} \
+    --disponivel false
+
+[Asserts]
+exit-code == 0
+stdout contains "indisponível"
+
+# --- List available add-ons (should NOT include the unavailable one) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    list-adicionais-disponiveis \
+    --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout not contains "Disponível Test"
+
+# --- Set additional as available again ---
+RUN cargo run --quiet -p chickie-cli -- \
+    toggle-disponibilidade-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}} \
+    --disponivel true
+
+[Asserts]
+exit-code == 0
+stdout contains "disponível"
+
+# --- Clean up ---
+RUN cargo run --quiet -p chickie-cli -- \
+    delete-adicional \
+    --loja-uuid {{main_store_uuid}} \
+    --uuid {{disp_adicional_uuid}}
+
+[Asserts]
+exit-code == 0
