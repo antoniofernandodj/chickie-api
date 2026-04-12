@@ -1,0 +1,102 @@
+# ============================================================
+# Store (Loja) Tests
+# MUST run after auth - creates stores needed by all subsequent tests
+# ============================================================
+
+# --- Create main test store ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-loja \
+    --nome "Main Test Store" \
+    --slug "main-test-store" \
+    --email-contato "main@test.com" \
+    --celular "11999999999" \
+    --max-partes 4 \
+    --criado-por {{admin_uuid}}
+
+[Captures]
+main_store_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Main Test Store"
+stdout contains "main-test-store"
+
+# --- Create store for product tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-loja \
+    --nome "Product Test Store" \
+    --slug "product-test-store" \
+    --email-contato "products@test.com" \
+    --celular "11999999998" \
+    --max-partes 4 \
+    --criado-por {{admin_uuid}}
+
+[Captures]
+product_store_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Product Test Store"
+
+# --- Create store for category tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-loja \
+    --nome "Category Test Store" \
+    --slug "category-test-store" \
+    --email-contato "categories@test.com" \
+    --celular "11999999997" \
+    --max-partes 4 \
+    --criado-por {{admin_uuid}}
+
+[Captures]
+category_store_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Category Test Store"
+
+# --- Create store for order tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    create-loja \
+    --nome "Order Test Store" \
+    --slug "order-test-store" \
+    --email-contato "orders@test.com" \
+    --celular "11999999996" \
+    --max-partes 4 \
+    --criado-por {{admin_uuid}}
+
+[Captures]
+order_store_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Order Test Store"
+
+# --- List all stores ---
+RUN cargo run --quiet -p chickie-cli -- list-lojas
+
+[Asserts]
+exit-code == 0
+stdout contains "Main Test Store"
+stdout contains "Product Test Store"
+
+# --- Search stores ---
+RUN cargo run --quiet -p chickie-cli -- search-lojas "main"
+
+[Asserts]
+exit-code == 0
+stdout contains "Main Test Store"
+
+# --- Get store by slug ---
+RUN cargo run --quiet -p chickie-cli -- get-loja-by-slug "main-test-store"
+
+[Asserts]
+exit-code == 0
+stdout contains "Main Test Store"
+
+# --- List admin's stores ---
+RUN cargo run --quiet -p chickie-cli -- list-minhas-lojas --admin-uuid {{admin_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Main Test Store"

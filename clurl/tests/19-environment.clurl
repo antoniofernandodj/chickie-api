@@ -1,0 +1,34 @@
+# ============================================================
+# Environment Variables & Configuration Tests
+# Tests for environment-based configuration
+# ============================================================
+
+# --- Test help command ---
+RUN cargo run --quiet -p chickie-cli -- --help
+
+[Asserts]
+exit-code == 0
+stdout contains "CLI para gerenciar o Chickie"
+stdout contains "migrate"
+stdout contains "signup"
+stdout contains "login"
+stdout contains "create-loja"
+stdout contains "create-pedido"
+
+# --- Test migrate help ---
+RUN cargo run --quiet -p chickie-cli -- migrate --help
+
+[Asserts]
+exit-code == 0
+stdout contains "Aplicar migrations"
+
+# --- Test signup help ---
+RUN cargo run --quiet -p chickie-cli -- signup --help
+
+[Asserts]
+exit-code == 0
+stdout contains "Registrar novo usuário"
+stdout contains "--nome"
+stdout contains "--username"
+stdout contains "--senha"
+stdout contains "--email"

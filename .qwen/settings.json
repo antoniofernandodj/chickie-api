@@ -30,7 +30,10 @@
       "Bash(docker compose config)",
       "Bash(docker compose restart *)",
       "Bash(do *)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(chmod *)",
+      "Bash(cargo install *)",
+      "Bash(git ls-files *)"
     ]
   },
   "$version": 3

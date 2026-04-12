@@ -1,0 +1,17 @@
+# ============================================================
+# Order Configuration (Config Pedido) Tests
+# Uses stores from previous tests
+# ============================================================
+
+# --- Get order config (should exist by default) ---
+RUN cargo run --quiet -p chickie-cli -- get-config-pedido {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- Save/update order config ---
+RUN cargo run --quiet -p chickie-cli -- save-config-pedido --loja-uuid {{main_store_uuid}} --max-partes 6 --tipo-calculo "media_ponderada"
+
+[Asserts]
+exit-code == 0
+stdout contains "Configuração salva"

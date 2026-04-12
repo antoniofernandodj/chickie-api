@@ -1,0 +1,128 @@
+# ============================================================
+# Authentication Tests
+# MUST run after database setup - creates users needed by all tests
+# ============================================================
+
+# --- Create admin user (for store creation) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Test Admin" \
+    --username "testadmin" \
+    --senha "adminpass123" \
+    --email "testadmin@example.com" \
+    --celular "11988888888" \
+    --classe administrador
+
+[Captures]
+admin_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "testadmin"
+stdout contains "administrador"
+
+# --- Create regular user (cliente) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Test User" \
+    --username "testuser" \
+    --senha "testpass123" \
+    --email "testuser@example.com" \
+    --celular "11999999999"
+
+[Captures]
+user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "testuser"
+stdout contains "cliente"
+
+# --- Create user for order tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Order User" \
+    --username "orderuser" \
+    --senha "orderpass" \
+    --email "orderuser@example.com" \
+    --celular "11977777777"
+
+[Captures]
+order_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Create user for review tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Review User" \
+    --username "reviewuser" \
+    --senha "reviewpass" \
+    --email "reviewuser@example.com" \
+    --celular "11966666666"
+
+[Captures]
+review_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Create user for favorite tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Favorite User" \
+    --username "favuser" \
+    --senha "favpass" \
+    --email "favuser@example.com" \
+    --celular "11955555555"
+
+[Captures]
+fav_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Create user for staff tests ---
+RUN cargo run --quiet -p chickie-cli -- \
+    signup \
+    --nome "Staff Admin" \
+    --username "staffadmin" \
+    --senha "staffpass" \
+    --email "staffadmin@example.com" \
+    --celular "11911111111" \
+    --classe administrador
+
+[Captures]
+staff_admin_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+
+# --- Test login ---
+RUN cargo run --quiet -p chickie-cli -- \
+    login \
+    --identifier "testuser@example.com" \
+    --senha "testpass123"
+
+[Asserts]
+exit-code == 0
+stdout contains "Login realizado"
+
+# --- Test login with wrong password (should fail) ---
+RUN cargo run --quiet -p chickie-cli -- \
+    login \
+    --identifier "testuser@example.com" \
+    --senha "wrongpassword"
+
+[Asserts]
+stderr contains "Senha incorreta"
+
+# --- List all users ---
+RUN cargo run --quiet -p chickie-cli -- list-users
+
+[Asserts]
+exit-code == 0
+stdout contains "testadmin"
+stdout contains "testuser"
+stdout contains "orderuser"

@@ -1,0 +1,50 @@
+# ============================================================
+# Chickie CLI - Complete Test Suite
+# ============================================================
+# Runs ALL test files in sequential order.
+# Tests MUST run in order: database → auth → lojas → everything else
+#
+# Run with:
+#   clurl all-tests.aggregation.clurl
+#   clurl --stop-on-fail all-tests.aggregation.clurl
+#   clurl --verbose all-tests.aggregation.clurl
+# ============================================================
+
+[group]
+# Phase 1: Setup (MUST run first)
+tests/00-database-setup.clurl
+tests/01-auth.clurl
+tests/02-lojas.clurl
+
+# Phase 2: Domain CRUD (depends on Phase 1)
+tests/03-produtos.clurl
+tests/04-categorias.clurl
+tests/05-adicionais.clurl
+tests/06-pedidos.clurl
+tests/07-cupons.clurl
+tests/08-promocoes.clurl
+tests/09-avaliacoes.clurl
+tests/10-favoritos.clurl
+tests/11-horarios.clurl
+tests/12-config-pedido.clurl
+tests/13-ingredientes.clurl
+
+# Phase 3: Advanced Operations (depends on Phase 1-2)
+tests/14-funcionarios.clurl
+tests/15-enderecos-loja.clurl
+tests/16-driver-assignment.clurl
+
+# Phase 4: Error Handling & Integration (Final)
+tests/17-error-handling.clurl
+tests/18-integration-order-flow.clurl
+tests/19-environment.clurl
+
+# Cleanup
+# tests/00-database-setup.clurl
+
+[Options]
+# Stop executing test files when one fails
+stop-on-fail = false
+
+# Enable verbose output for all test files (set to true for debugging)
+verbose = true

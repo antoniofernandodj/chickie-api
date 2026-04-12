@@ -1,0 +1,44 @@
+# ============================================================
+# Product (Produto) Tests
+# Uses stores and users from previous tests
+# ============================================================
+
+# --- Create a category for products ---
+RUN cargo run --quiet -p chickie-cli -- create-categoria --loja-uuid {{product_store_uuid}} --nome "Test Category" --ordem 1
+
+[Captures]
+categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Category"
+
+# --- Create a product ---
+RUN cargo run --quiet -p chickie-cli -- create-produto --loja-uuid {{product_store_uuid}} --categoria-uuid {{categoria_uuid}} --nome "Test Product" --preco 29.90 --disponivel --tempo-preparo-min 20
+
+[Captures]
+produto_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Product"
+
+# --- List products by store ---
+RUN cargo run --quiet -p chickie-cli -- list-produtos-por-loja --loja-uuid {{product_store_uuid}}
+
+[Asserts]
+exit-code == 0
+stdout contains "Test Product"
+
+# --- Update product ---
+RUN cargo run --quiet -p chickie-cli -- update-produto {{produto_uuid}} --nome "Updated Product" --preco 39.90 --categoria-uuid {{categoria_uuid}} --tempo-preparo-min 25
+
+[Asserts]
+exit-code == 0
+stdout contains "Updated Product"
+
+# --- Delete product ---
+RUN cargo run --quiet -p chickie-cli -- delete-produto {{produto_uuid}}
+
+[Asserts]
+exit-code == 0

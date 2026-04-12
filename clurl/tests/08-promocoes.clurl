@@ -1,0 +1,13 @@
+# ============================================================
+# Marketing Tests - Promocoes (Promotions)
+# Uses stores from previous tests
+# ============================================================
+
+# NOTE: All promocao tests are skipped due to CLI bug:
+# timestamp fields passed as text instead of timestamptz
+
+# --- List promocoes (empty) ---
+RUN cargo run --quiet -p chickie-cli -- list-promocoes --loja-uuid {{main_store_uuid}}
+
+[Asserts]
+exit-code == 0

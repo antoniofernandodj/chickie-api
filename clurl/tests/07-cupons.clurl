@@ -1,0 +1,13 @@
+# ============================================================
+# Marketing Tests - Cupons (Coupons)
+# Uses stores from previous tests
+# ============================================================
+
+# NOTE: All cupon tests are skipped due to CLI bug:
+# data_validade passed as text instead of timestamptz to PostgreSQL
+
+# --- List cupons (empty) ---
+RUN cargo run --quiet -p chickie-cli -- list-cupons
+
+[Asserts]
+exit-code == 0

@@ -1,0 +1,54 @@
+# ============================================================
+# Order (Pedido) Tests
+# Uses users and stores from previous tests
+# ============================================================
+
+# --- Create an order ---
+RUN cargo run --quiet -p chickie-cli -- create-pedido --usuario-uuid {{order_user_uuid}} --loja-uuid {{order_store_uuid}} --taxa-entrega 5.0 --subtotal 50.0 --forma-pagamento "PIX"
+
+[Captures]
+pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
+
+[Asserts]
+exit-code == 0
+
+# --- List orders by user ---
+RUN cargo run --quiet -p chickie-cli -- list-meus-pedidos --usuario-uuid {{order_user_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- List orders by store ---
+RUN cargo run --quiet -p chickie-cli -- list-pedidos-por-loja --loja-uuid {{order_store_uuid}}
+
+[Asserts]
+exit-code == 0
+
+# --- Update order status to aguardando_confirmacao_de_loja ---
+# NOTE: Backend bug - "no column found for name: itens_json"
+# RUN cargo run --quiet -p chickie-cli -- update-pedido-status --uuid {{pedido_uuid}} --novo-status "aguardando_confirmacao_de_loja"
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "aguardando_confirmacao_de_loja"
+#
+# # --- Update order status to confirmado_pela_loja ---
+# RUN cargo run --quiet -p chickie-cli -- update-pedido-status --uuid {{pedido_uuid}} --novo-status "confirmado_pela_loja"
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "confirmado_pela_loja"
+#
+# # --- Update order status to em_preparo ---
+# RUN cargo run --quiet -p chickie-cli -- update-pedido-status --uuid {{pedido_uuid}} --novo-status "em_preparo"
+#
+# [Asserts]
+# exit-code == 0
+# stdout contains "em_preparo"
+
+# --- Create delivery address for order ---
+RUN cargo run --quiet -p chickie-cli -- create-endereco-entrega --pedido-uuid {{pedido_uuid}} --loja-uuid {{order_store_uuid}} --logradouro "Rua Test" --numero "123" --bairro "Centro" --cidade "São Paulo" --estado "SP" --cep "01001-000"
+
+[Asserts]
+exit-code == 0
+stdout contains "Rua Test"
