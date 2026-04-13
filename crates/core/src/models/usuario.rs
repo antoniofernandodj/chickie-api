@@ -74,6 +74,10 @@ pub struct Usuario {
     pub marcado_para_remocao: Option<chrono::DateTime<chrono::Utc>>,
     #[serde(default)]
     pub deletado: bool,
+
+    // Block flag — explicitly blocks user from logging in
+    #[serde(default)]
+    pub bloqueado: bool,
 }
 
 impl Usuario {
@@ -103,12 +107,18 @@ impl Usuario {
             passou_pelo_primeiro_acesso: false,
             marcado_para_remocao: None,
             deletado: false,
+            bloqueado: false,
         }
     }
 
     /// Verifica se este usuário é um administrador
     pub fn is_administrador(&self) -> bool {
         self.classe == ClasseUsuario::Administrador.as_str()
+    }
+
+    /// Verifica se este usuário é o dono da plataforma (owner)
+    pub fn is_owner(&self) -> bool {
+        self.classe == ClasseUsuario::Owner.as_str()
     }
 
     /// Verifica se o usuário está marcado para remoção
@@ -123,7 +133,12 @@ impl Usuario {
 
     /// Verifica se o usuário está ativo (não deletado e não marcado para remoção)
     pub fn esta_ativo_para_login(&self) -> bool {
-        !self.deletado && self.marcado_para_remocao.is_none() && self.ativo
+        !self.deletado && self.marcado_para_remocao.is_none() && self.ativo && !self.bloqueado
+    }
+
+    /// Verifica se o usuário está bloqueado
+    pub fn esta_bloqueado(&self) -> bool {
+        self.bloqueado
     }
 }
 

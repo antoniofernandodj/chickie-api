@@ -71,6 +71,10 @@ impl UsuarioRepositoryPort for UsuarioRepositoryAdapter {
         self.inner.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
     }
 
+    async fn toggle_bloqueado(&self, uuid: Uuid) -> DomainResult<bool> {
+        self.inner.toggle_bloqueado(uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
         self.inner.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))
     }

@@ -25,6 +25,7 @@ _(nenhum bug conhecido)_
 
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
+| 27 | **Campo bloqueado para usuários e lojas** | Novo campo `bloqueado: bool` adicionado a `usuarios` e `lojas`. Endpoints POST `/api/usuarios/{uuid}/bloqueado` e POST `/api/lojas/{uuid}/bloqueado` para toggle. Usuários bloqueados não podem fazer login (verificado em `autenticar` e `auth_middleware`). Migration `0008` criada. Stack completa: models, ports, adapters, repositories, services, handlers, routes. | 2026-04-13 |
 | 25 | **CRUD completo de cupons** | Novos endpoints padronizados em `/api/cupons/`: POST (criar), GET (listar todos), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Rotas legadas mantidas em `/api/marketing/` para compatibilidade. MarketingService atualizado com `buscar_cupom` e `listar_todos_cupons`. | 2026-04-12 |
 | 26 | **CRUD completo de avaliações** | Novos endpoints para avaliações de loja e produto: GET (listar por loja/produto), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Ports, repositories, service, usecase e handlers atualizados. | 2026-04-12 |
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
@@ -65,8 +66,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 12 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 |
+| ✅ Concluídas | 13 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 12 concluídas recentemente**
+**Total: 11 pendências ativas, 13 concluídas recentemente**

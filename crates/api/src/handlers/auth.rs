@@ -60,7 +60,15 @@ pub async fn auth_middleware(
             Json(json!({ "error": "Usuário do token não encontrado no banco de dados" }))
         ))?;
 
-    // 4. Injeta o objeto Usuario completo na Request
+    // 4. Verifica se o usuário está bloqueado
+    if usuario.esta_bloqueado() {
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(json!({ "error": "Usuário bloqueado. Contate o suporte." }))
+        ));
+    }
+
+    // 5. Injeta o objeto Usuario completo na Request
     req.extensions_mut().insert(usuario);
 
     Ok(next.run(req).await)
@@ -127,5 +135,43 @@ where
         }
 
         Ok(AdminPermission(usuario))
+    }
+}
+
+// ============================================================================
+// OwnerPermission — Extractor para o dono da plataforma
+// Verifica se o email do usuário corresponde ao OWNER_EMAIL definido em .env
+// ============================================================================
+
+#[derive(Debug)]
+pub struct OwnerPermission(pub Usuario);
+
+impl<S> FromRequestParts<S> for OwnerPermission
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let Extension(usuario): Extension<Usuario> =
+            Extension::<Usuario>::from_request_parts(parts, state)
+                .await
+                .map_err(|_| AppError::Unauthorized("Usuário não autenticado".to_string()))?;
+
+        // Verifica se é owner por classe OU por email configurado
+        let owner_email = std::env::var("OWNER_EMAIL").unwrap_or_default();
+        let is_owner_by_class = usuario.is_owner();
+        let is_owner_by_email = !owner_email.is_empty() && usuario.email == owner_email;
+
+        if !is_owner_by_class && !is_owner_by_email {
+            return Err(AppError::Unauthorized(
+                format!(
+                    "Apenas o dono da plataforma (owner) pode realizar essa ação. classe de usuario: {}",
+                    usuario.classe
+                ),
+            ));
+        }
+
+        Ok(OwnerPermission(usuario))
     }
 }

@@ -99,6 +99,18 @@ impl UsuarioRepository {
         Ok(())
     }
 
+    pub async fn toggle_bloqueado(&self, uuid: Uuid) -> Result<bool, String> {
+        sqlx::query_scalar(
+            "UPDATE usuarios SET bloqueado = NOT bloqueado, atualizado_em = NOW() 
+             WHERE uuid = $1 AND deletado = false 
+             RETURNING bloqueado"
+        )
+            .bind(uuid)
+            .fetch_one(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     pub async fn listar_pendentes_remocao(&self) -> Result<Vec<Usuario>, String> {
         sqlx::query_as::<_, Usuario>(
             "SELECT * FROM usuarios WHERE marcado_para_remocao IS NOT NULL AND deletado = false ORDER BY marcado_para_remocao ASC"
@@ -236,6 +248,9 @@ impl UsuarioRepositoryPort for UsuarioRepository {
     }
     async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()> {
         self.alterar_ativo(uuid, ativo).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn toggle_bloqueado(&self, uuid: Uuid) -> DomainResult<bool> {
+        self.toggle_bloqueado(uuid).await.map_err(|e| DomainError::Internal(e))
     }
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>> {
         self.listar_pendentes_remocao().await.map_err(|e| DomainError::Internal(e))

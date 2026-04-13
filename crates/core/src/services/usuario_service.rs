@@ -90,6 +90,10 @@ impl UsuarioService {
             return Err("Usuário desativado. Contate o suporte.".to_string());
         }
 
+        if usuario.esta_bloqueado() {
+            return Err("Usuário bloqueado. Contate o suporte.".to_string());
+        }
+
         // 3. Verifica se a senha enviada condiz com o hash do banco
         let argon2 = Argon2::default();
         let parsed_hash = argon2::password_hash::PasswordHash::new(&usuario.senha_hash)
@@ -164,6 +168,20 @@ impl UsuarioService {
         }
 
         self.repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
+    }
+
+    /// Alterna o status bloqueado do usuário (toggle)
+    /// Retorna o novo status de bloqueio
+    pub async fn toggle_bloqueado(&self, uuid: uuid::Uuid) -> Result<bool, String> {
+        let usuario = self.repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Usuário não encontrado")?;
+
+        if usuario.esta_deletado() {
+            return Err("Não é possível bloquear usuário deletado".to_string());
+        }
+
+        self.repo.toggle_bloqueado(uuid).await.map_err(|e| e.to_string())
     }
 
     /// Deleta permanentemente todos os usuários marcados para remoção há mais de 30 dias.

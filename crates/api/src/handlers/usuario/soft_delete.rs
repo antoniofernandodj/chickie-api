@@ -7,7 +7,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::handlers::{auth::AdminPermission, dto::AppError, AppState};
+use crate::handlers::{auth::OwnerPermission, dto::AppError, AppState};
 
 // ============================================================================
 // Marcar usuário para remoção (soft delete)
@@ -15,7 +15,7 @@ use crate::handlers::{auth::AdminPermission, dto::AppError, AppState};
 
 pub async fn marcar_usuario_remocao(
     State(state): State<Arc<AppState>>,
-    AdminPermission(_admin): AdminPermission,
+    OwnerPermission(_owner): OwnerPermission,
     Path(usuario_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     state.usuario_service
@@ -34,7 +34,7 @@ pub async fn marcar_usuario_remocao(
 
 pub async fn desmarcar_usuario_remocao(
     State(state): State<Arc<AppState>>,
-    AdminPermission(_admin): AdminPermission,
+    OwnerPermission(_owner): OwnerPermission,
     Path(usuario_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
     state.usuario_service
@@ -58,7 +58,7 @@ pub struct AlternarAtivoRequest {
 
 pub async fn alternar_usuario_ativo(
     State(state): State<Arc<AppState>>,
-    AdminPermission(_admin): AdminPermission,
+    OwnerPermission(_owner): OwnerPermission,
     Path(usuario_uuid): Path<Uuid>,
     Json(body): Json<AlternarAtivoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -73,5 +73,28 @@ pub async fn alternar_usuario_ativo(
     Ok(Json(serde_json::json!({
         "message": format!("Usuário {} com sucesso", acao),
         "ativo": body.ativo
+    })))
+}
+
+// ============================================================================
+// Toggle bloqueado do usuário (bloquear/desbloquear login)
+// ============================================================================
+
+pub async fn toggle_usuario_bloqueado(
+    State(state): State<Arc<AppState>>,
+    OwnerPermission(_owner): OwnerPermission,
+    Path(usuario_uuid): Path<Uuid>,
+) -> Result<impl IntoResponse, AppError> {
+    let bloqueado = state.usuario_service
+        .toggle_bloqueado(usuario_uuid)
+        .await
+        .map_err(|e| AppError::BadRequest(e))?;
+
+    let acao = if bloqueado { "bloqueado" } else { "desbloqueado" };
+    tracing::info!("Usuário {} {} (bloqueado={})", usuario_uuid, acao, bloqueado);
+
+    Ok(Json(serde_json::json!({
+        "message": format!("Usuário {} com sucesso", acao),
+        "bloqueado": bloqueado
     })))
 }

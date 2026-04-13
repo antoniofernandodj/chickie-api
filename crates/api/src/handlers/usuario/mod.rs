@@ -16,4 +16,5 @@ pub use soft_delete::{
     marcar_usuario_remocao,
     desmarcar_usuario_remocao,
     alternar_usuario_ativo,
+    toggle_usuario_bloqueado,
 };

@@ -38,6 +38,10 @@ pub struct Loja {
     #[serde(default = "default_true")]
     pub ativo: bool,
 
+    // Block flag — explicitly blocks store from operating
+    #[serde(default)]
+    pub bloqueado: bool,
+
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -82,6 +86,7 @@ impl Loja {
             marcado_para_remocao: None,
             deletado: false,
             ativo: true,
+            bloqueado: false,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
         }
@@ -97,9 +102,14 @@ impl Loja {
         self.deletado
     }
 
-    /// Verifica se a loja está operacional (ativa + não deletada + não marcada para remoção + ativo)
+    /// Verifica se a loja está operacional (ativa + não deletada + não marcada para remoção + ativo + não bloqueado)
     pub fn esta_operacional(&self) -> bool {
-        self.ativa && !self.deletado && self.marcado_para_remocao.is_none() && self.ativo
+        self.ativa && !self.deletado && self.marcado_para_remocao.is_none() && self.ativo && !self.bloqueado
+    }
+
+    /// Verifica se a loja está bloqueada
+    pub fn esta_bloqueada(&self) -> bool {
+        self.bloqueado
     }
 }
 

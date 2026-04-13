@@ -75,3 +75,26 @@ pub async fn alternar_loja_ativo(
         "ativo": body.ativo
     })))
 }
+
+// ============================================================================
+// Toggle bloqueado da loja (bloquear/desbloquear operação)
+// ============================================================================
+
+pub async fn toggle_loja_bloqueado(
+    State(state): State<Arc<AppState>>,
+    AdminPermission(_admin): AdminPermission,
+    Path(loja_uuid): Path<Uuid>,
+) -> Result<impl IntoResponse, AppError> {
+    let bloqueado = state.loja_service
+        .toggle_bloqueado(loja_uuid)
+        .await
+        .map_err(|e| AppError::BadRequest(e))?;
+
+    let acao = if bloqueado { "bloqueada" } else { "desbloqueada" };
+    tracing::info!("Loja {} {} (bloqueado={})", loja_uuid, acao, bloqueado);
+
+    Ok(Json(serde_json::json!({
+        "message": format!("Loja {} com sucesso", acao),
+        "bloqueado": bloqueado
+    })))
+}

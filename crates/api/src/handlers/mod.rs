@@ -39,7 +39,9 @@ pub use openapi::swagger_router;
 
 pub use auth::{
     auth_middleware,
-    create_jwt
+    create_jwt,
+    AdminPermission,
+    OwnerPermission,
 };
 
 pub use state::{AppState};
@@ -72,6 +74,7 @@ pub use usuario::{
     marcar_usuario_remocao,
     desmarcar_usuario_remocao,
     alternar_usuario_ativo,
+    toggle_usuario_bloqueado,
 };
 
 pub use loja::{
@@ -89,6 +92,7 @@ pub use loja::{
     marcar_loja_remocao,
     desmarcar_loja_remocao,
     alternar_loja_ativo,
+    toggle_loja_bloqueado,
 };
 
 pub use produto::{

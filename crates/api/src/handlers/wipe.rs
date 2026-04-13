@@ -5,13 +5,24 @@ use serde_json::json;
 use sqlx::PgPool;
 use tracing::info;
 
-use crate::handlers::AppState;
+use crate::handlers::{AppState, OwnerPermission};
 
 /// ⚠️ **DEVELOPMENT ONLY** — Wipes ALL data from the database.
 /// Must be removed before production deployment.
+/// Protected by OwnerPermission — only the platform owner can call this.
 pub async fn wipe_database(
     State(state): State<Arc<AppState>>,
+    _owner: OwnerPermission,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+
+    // Only allow in development mode
+    let mode = std::env::var("MODE").unwrap_or_default();
+    if mode != "development" {
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(json!({ "error": "Wipe endpoint is only available in development mode" })),
+        ));
+    }
 
     let pool: &PgPool = state.db.as_ref();
 

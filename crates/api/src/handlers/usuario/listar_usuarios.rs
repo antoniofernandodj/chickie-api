@@ -3,12 +3,13 @@ use axum::{
     Json
 };
 use std::sync::Arc;
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{AppState, dto::AppError, OwnerPermission};
 use chickie_core::{models, repositories::Repository};
 
 
 pub async fn listar_usuarios(
-    State(state): State<Arc<AppState>>
+    State(state): State<Arc<AppState>>,
+    _owner: OwnerPermission,
 ) -> Result<Json<Vec<models::Usuario>>, AppError> {
 
     let usuarios = state
