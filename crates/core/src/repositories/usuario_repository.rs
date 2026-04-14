@@ -111,6 +111,19 @@ impl UsuarioRepository {
             .map_err(|e| e.to_string())
     }
 
+    /// Lista usuários filtrados por classe
+    pub async fn listar_por_classe(&self, classe: &str) -> Result<Vec<Usuario>, String> {
+        let query = format!(
+            "SELECT * FROM {} WHERE deletado = false AND classe = $1 ORDER BY criado_em DESC",
+            self.table_name()
+        );
+        sqlx::query_as::<_, Usuario>(&query)
+            .bind(classe)
+            .fetch_all(self.pool())
+            .await
+            .map_err(|e| e.to_string())
+    }
+
     pub async fn listar_pendentes_remocao(&self) -> Result<Vec<Usuario>, String> {
         sqlx::query_as::<_, Usuario>(
             "SELECT * FROM usuarios WHERE marcado_para_remocao IS NOT NULL AND deletado = false ORDER BY marcado_para_remocao ASC"
