@@ -2978,7 +2978,8 @@ DELETE /api/wipe
 | 1 | `GET` | `/` | — | — |
 | 2 | `POST` | `/api/auth/signup` | — | — |
 | 3 | `POST` | `/api/auth/login` | — | — |
-| 4 | `GET` | `/api/auth/me` | 🔒 | — |
+| 3.1 | `GET` | `/api/auth/me` | 🔒 | — |
+| 3.2 | `GET` | `/api/usuarios/verificar-celular/{celular}` | — | — |
 | 5 | `GET` | `/api/lojas/` | — | — |
 | 6 | `GET` | `/api/lojas/pesquisar` | — | — |
 | 7 | `GET` | `/api/lojas/{uuid}` | — | — |
