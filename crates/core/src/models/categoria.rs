@@ -40,3 +40,17 @@ impl Model for CategoriaProdutos {
     fn get_uuid(&self) -> Uuid { self.uuid }
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
+
+impl CategoriaProdutos {
+    pub fn to_proto(&self) -> crate::proto::Categoria {
+        crate::proto::Categoria {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            nome: self.nome.clone(),
+            descricao: self.descricao.clone().unwrap_or_default(),
+            ordem: self.ordem.unwrap_or_default(),
+            pizza_mode: self.pizza_mode,
+            criado_em: self.criado_em.to_rfc3339(),
+        }
+    }
+}

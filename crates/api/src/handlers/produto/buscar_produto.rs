@@ -1,18 +1,19 @@
-use axum::{Extension, Json, extract::{Path, State}};
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
 use chickie_core::{
-    models::{Usuario, Produto},
+    models::Usuario,
     usecases::CatalogoUsecase,
+    proto,
 };
 
 pub async fn buscar_produto_por_uuid(
     State(state): State<Arc<AppState>>,
     Path(uuid): Path<Uuid>,
     Extension(usuario_logado): Extension<Usuario>,
-) -> Result<Json<Produto>, AppError> {
+) -> Result<Protobuf<proto::Produto>, AppError> {
 
     let usecase = CatalogoUsecase::new(
         state.catalogo_service.clone(),
@@ -21,5 +22,6 @@ pub async fn buscar_produto_por_uuid(
     );
     let produto = usecase.catalogo_service.buscar_produto_por_uuid(uuid).await
         .map_err(|e| AppError::Internal(e.to_string()))?;
-    Ok(Json(produto))
+    
+    Ok(Protobuf(produto.to_proto()))
 }

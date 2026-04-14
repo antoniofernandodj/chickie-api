@@ -54,6 +54,21 @@ impl EnderecoLoja {
             longitude,
         }
     }
+
+    pub fn to_proto(&self) -> crate::proto::Endereco {
+        crate::proto::Endereco {
+            uuid: self.uuid.to_string(),
+            cep: self.cep.clone().unwrap_or_default(),
+            logradouro: self.logradouro.clone(),
+            numero: self.numero.clone(),
+            complemento: self.complemento.clone().unwrap_or_default(),
+            bairro: self.bairro.clone(),
+            cidade: self.cidade.clone(),
+            estado: self.estado.clone(),
+            latitude: self.latitude.map(|d| d.to_string()).unwrap_or_default(),
+            longitude: self.longitude.map(|d| d.to_string()).unwrap_or_default(),
+        }
+    }
 }
 
 // --- EnderecoUsuario (flat, para uso futuro com seu repository) ---
@@ -96,6 +111,21 @@ impl EnderecoUsuario {
             estado,
             latitude: None,
             longitude: None,
+        }
+    }
+
+    pub fn to_proto(&self) -> crate::proto::Endereco {
+        crate::proto::Endereco {
+            uuid: self.uuid.to_string(),
+            cep: self.cep.clone().unwrap_or_default(),
+            logradouro: self.logradouro.clone(),
+            numero: self.numero.clone(),
+            complemento: self.complemento.clone().unwrap_or_default(),
+            bairro: self.bairro.clone(),
+            cidade: self.cidade.clone(),
+            estado: self.estado.clone(),
+            latitude: self.latitude.map(|d| d.to_string()).unwrap_or_default(),
+            longitude: self.longitude.map(|d| d.to_string()).unwrap_or_default(),
         }
     }
 }
@@ -143,6 +173,21 @@ impl EnderecoEntrega {
             estado,
             latitude: None,
             longitude: None,
+        }
+    }
+
+    pub fn to_proto(&self) -> crate::proto::Endereco {
+        crate::proto::Endereco {
+            uuid: self.uuid.to_string(),
+            cep: self.cep.clone().unwrap_or_default(),
+            logradouro: self.logradouro.clone(),
+            numero: self.numero.clone(),
+            complemento: self.complemento.clone().unwrap_or_default(),
+            bairro: self.bairro.clone(),
+            cidade: self.cidade.clone(),
+            estado: self.estado.clone(),
+            latitude: self.latitude.map(|d| d.to_string()).unwrap_or_default(),
+            longitude: self.longitude.map(|d| d.to_string()).unwrap_or_default(),
         }
     }
 }

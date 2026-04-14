@@ -1,20 +1,21 @@
 use axum::{
-    Extension, Json, extract::{Path, State}, response::IntoResponse
+    Extension, extract::{Path, State},
 };
 use uuid::Uuid;
 use std::sync::Arc;
 
 use chickie_core::{
     models::Usuario,
-    usecases::MarketingUsecase
+    usecases::MarketingUsecase,
+    proto,
 };
-use crate::handlers::{dto::AppError, AppState};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn listar_promocoes(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarPromocoesResponse>, AppError> {
 
     let usecase = MarketingUsecase::new(
         state.marketing_service.clone(),
@@ -24,5 +25,11 @@ pub async fn listar_promocoes(
 
     let promocoes = usecase.listar_promocoes().await?;
 
-    Ok(Json(promocoes))
+    let proto_promocoes: Vec<_> = promocoes.into_iter()
+        .map(|p| p.to_proto())
+        .collect();
+
+    Ok(Protobuf(proto::ListarPromocoesResponse {
+        promocoes: proto_promocoes,
+    }))
 }

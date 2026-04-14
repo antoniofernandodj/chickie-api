@@ -1,24 +1,32 @@
 use std::sync::Arc;
 use axum::{
-    Json, extract::{Path, State, Extension}, response::IntoResponse
+    extract::{Path, State, Extension},
 };
 use uuid::Uuid;
 use chickie_core::{
     models::Usuario,
-    usecases::MarketingUsecase
+    usecases::MarketingUsecase,
+    proto,
 };
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
 
 pub async fn listar_avaliacoes_loja(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarAvaliacoesLojaResponse>, AppError> {
     let usecase = MarketingUsecase::new(
         state.marketing_service.clone(),
         loja_uuid,
         usuario
     );
     let avaliacoes = usecase.listar_avaliacoes_loja().await?;
-    Ok(Json(avaliacoes))
+    
+    let proto_avaliacoes: Vec<_> = avaliacoes.into_iter()
+        .map(|a| a.to_proto())
+        .collect();
+
+    Ok(Protobuf(proto::ListarAvaliacoesLojaResponse {
+        avaliacoes: proto_avaliacoes,
+    }))
 }

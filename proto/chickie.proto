@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package chickie;
 
+// --- Usuário ---
 message Usuario {
     string nome = 1;
     string username = 2;
@@ -21,6 +22,7 @@ message ListarUsuariosResponse {
     repeated Usuario usuarios = 1;
 }
 
+// --- Loja ---
 message Loja {
     string uuid = 1;
     string nome = 2;
@@ -31,12 +33,55 @@ message Loja {
     bool ativa = 7;
     string logo_url = 8;
     string banner_url = 9;
+    bool bloqueado = 10;
 }
 
 message ListarLojasResponse {
     repeated Loja lojas = 1;
 }
 
+// --- Produto & Catálogo ---
+message Produto {
+    string uuid = 1;
+    string nome = 2;
+    string preco = 3;
+    string descricao = 4;
+    bool disponivel = 5;
+    string categoria_uuid = 6;
+    string loja_uuid = 7;
+    string imagem_url = 8;
+}
+
+message ListarProdutosResponse {
+    repeated Produto produtos = 1;
+}
+
+message Categoria {
+    string uuid = 1;
+    string nome = 2;
+    string loja_uuid = 3;
+    int32 ordem = 4;
+    bool pizza_mode = 5;
+}
+
+message ListarCategoriasResponse {
+    repeated Categoria categorias = 1;
+}
+
+message Adicional {
+    string uuid = 1;
+    string nome = 2;
+    string preco = 3;
+    bool disponivel = 4;
+    string loja_uuid = 5;
+    string descricao = 6;
+}
+
+message ListarAdicionaisResponse {
+    repeated Adicional adicionais = 1;
+}
+
+// --- Pedido ---
 message Pedido {
     string uuid = 1;
     string usuario_uuid = 2;
@@ -89,6 +134,115 @@ message ListarPedidosResponse {
     repeated Pedido pedidos = 1;
 }
 
+// --- Marketing & Avaliações ---
+message Cupom {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string codigo = 3;
+    string descricao = 4;
+    string tipo_desconto = 5;
+    string valor_desconto = 6;
+    string valor_minimo = 7;
+    string data_validade = 8;
+    int32 limite_uso = 9;
+    int32 uso_atual = 10;
+    string status = 11;
+}
+
+message ListarCuponsResponse {
+    repeated Cupom cupons = 1;
+}
+
+message AvaliacaoLoja {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string usuario_uuid = 3;
+    string nota = 4;
+    string comentario = 5;
+    string criado_em = 6;
+    string usuario_nome = 7;
+    string usuario_email = 8;
+}
+
+message ListarAvaliacoesLojaResponse {
+    repeated AvaliacaoLoja avaliacoes = 1;
+}
+
+message AvaliacaoProduto {
+    string uuid = 1;
+    string usuario_uuid = 2;
+    string loja_uuid = 3;
+    string produto_uuid = 4;
+    string nota = 5;
+    string descricao = 6;
+    string comentario = 7;
+    string criado_em = 8;
+}
+
+message ListarAvaliacoesProdutoResponse {
+    repeated AvaliacaoProduto avaliacoes = 1;
+}
+
+message Promocao {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string nome = 3;
+    string descricao = 4;
+    string tipo_desconto = 5;
+    string valor_desconto = 6;
+    string status = 7;
+}
+
+message ListarPromocoesResponse {
+    repeated Promocao promocoes = 1;
+}
+
+// --- Endereços ---
+message Endereco {
+    string uuid = 1;
+    string cep = 2;
+    string logradouro = 3;
+    string numero = 4;
+    string complemento = 5;
+    string bairro = 6;
+    string cidade = 7;
+    string estado = 8;
+    string latitude = 9;
+    string longitude = 10;
+}
+
+message ListarEnderecosResponse {
+    repeated Endereco enderecos = 1;
+}
+
+// --- Operacional ---
+message Funcionario {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string usuario_uuid = 3;
+    string cargo = 4;
+    string salario = 5;
+    string data_admissao = 6;
+}
+
+message ListarFuncionariosResponse {
+    repeated Funcionario funcionarios = 1;
+}
+
+message Entregador {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string usuario_uuid = 3;
+    string veiculo = 4;
+    string placa = 5;
+    bool disponivel = 6;
+}
+
+message ListarEntregadoresResponse {
+    repeated Entregador entregadores = 1;
+}
+
+// --- Respostas ---
 message LoginResponse {
     string access_token = 1;
     string token_type = 2;
@@ -98,4 +252,12 @@ message LoginResponse {
 message GenericResponse {
     string message = 1;
     bool success = 2;
+}
+
+message UuidResponse {
+    string uuid = 1;
+}
+
+message DisponibilidadeResponse {
+    bool disponivel = 1;
 }

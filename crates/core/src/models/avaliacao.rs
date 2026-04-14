@@ -48,6 +48,34 @@ impl AvaliacaoDeLoja {
             criado_em: Utc::now()
         }
     }
+
+    pub fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
+        crate::proto::AvaliacaoLoja {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            usuario_uuid: self.usuario_uuid.to_string(),
+            nota: self.nota.to_string(),
+            comentario: self.comentario.clone().unwrap_or_default(),
+            criado_em: self.criado_em.to_rfc3339(),
+            usuario_nome: "".to_string(),
+            usuario_email: "".to_string(),
+        }
+    }
+}
+
+impl AvaliacaoDeLojaComUsuario {
+    pub fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
+        crate::proto::AvaliacaoLoja {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            usuario_uuid: self.usuario_uuid.to_string(),
+            nota: self.nota.to_string(),
+            comentario: self.comentario.clone().unwrap_or_default(),
+            criado_em: self.criado_em.to_rfc3339(),
+            usuario_nome: self.usuario_nome.clone(),
+            usuario_email: self.usuario_email.clone(),
+        }
+    }
 }
 
 
@@ -81,6 +109,19 @@ impl AvaliacaoDeProduto {
             descricao,
             uuid: Uuid::new_v4(),
             criado_em: Utc::now()
+        }
+    }
+
+    pub fn to_proto(&self) -> crate::proto::AvaliacaoProduto {
+        crate::proto::AvaliacaoProduto {
+            uuid: self.uuid.to_string(),
+            usuario_uuid: self.usuario_uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            produto_uuid: self.produto_uuid.to_string(),
+            nota: self.nota.to_string(),
+            descricao: self.descricao.clone(),
+            comentario: self.comentario.clone().unwrap_or_default(),
+            criado_em: self.criado_em.to_rfc3339(),
         }
     }
 }

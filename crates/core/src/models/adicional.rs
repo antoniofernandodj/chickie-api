@@ -43,3 +43,17 @@ impl Model for Adicional {
     fn get_uuid(&self) -> Uuid { self.uuid }
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
+
+impl Adicional {
+    pub fn to_proto(&self) -> crate::proto::Adicional {
+        crate::proto::Adicional {
+            uuid: self.uuid.to_string(),
+            nome: self.nome.clone(),
+            loja_uuid: self.loja_uuid.to_string(),
+            disponivel: self.disponivel,
+            descricao: self.descricao.clone(),
+            preco: self.preco.to_string(),
+            criado_em: self.criado_em.to_rfc3339(),
+        }
+    }
+}

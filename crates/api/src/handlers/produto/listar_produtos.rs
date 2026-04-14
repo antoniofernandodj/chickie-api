@@ -1,16 +1,16 @@
 use crate::handlers::dto::AppError;
-use crate::handlers::AppState;
-use axum::{Extension, Json, extract::{Path, State}};
+use crate::handlers::{AppState, protobuf::Protobuf};
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
-use chickie_core::{models::{self, Usuario}, usecases::CatalogoUsecase};
+use chickie_core::{models::Usuario, usecases::CatalogoUsecase, proto};
 
 
 pub async fn listar_produtos(
     State(state): State<Arc<AppState>>,
     Extension(usuario_logado): Extension<Usuario>,
     Path(loja_uuid): Path<Uuid>,
-) -> Result<Json<Vec<models::Produto>>, AppError> {
+) -> Result<Protobuf<proto::ListarProdutosResponse>, AppError> {
 
     let service = state.catalogo_service.clone();
     let usecase: CatalogoUsecase =
@@ -21,5 +21,7 @@ pub async fn listar_produtos(
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    Ok(Json(produtos))
+    Ok(Protobuf(proto::ListarProdutosResponse {
+        produtos: produtos.iter().map(|p| p.to_proto()).collect(),
+    }))
 }

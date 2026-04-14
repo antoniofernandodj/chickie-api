@@ -54,3 +54,22 @@ impl Model for Produto {
     fn get_uuid(&self) -> Uuid { self.uuid }
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
+
+impl Produto {
+    pub fn to_proto(&self) -> crate::proto::Produto {
+        crate::proto::Produto {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            categoria_uuid: self.categoria_uuid.to_string(),
+            nome: self.nome.clone(),
+            descricao: self.descricao.clone().unwrap_or_default(),
+            preco: self.preco.to_string(),
+            imagem_url: self.imagem_url.clone().unwrap_or_default(),
+            disponivel: self.disponivel,
+            tempo_preparo_min: self.tempo_preparo_min.unwrap_or_default(),
+            destaque: self.destaque,
+            criado_em: self.criado_em.to_rfc3339(),
+            atualizado_em: self.atualizado_em.to_rfc3339(),
+        }
+    }
+}
