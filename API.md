@@ -225,9 +225,20 @@ Content-Type: application/json
 ```json
 {
   "access_token": "string (JWT)",
-  "token_type": "Bearer"
+  "token_type": "Bearer",
+  "usuario": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "nome": "João Silva",
+    "username": "joao",
+    "email": "joao@email.com",
+    "classe": "owner",
+    "ativo": true,
+    "bloqueado": false
+  }
 }
 ```
+
+> **Nota:** Se o email do usuário corresponder à variável de ambiente `OWNER_EMAIL`, o campo `classe` será retornado como `"owner"` (mesmo que no banco esteja como `"cliente"` ou outra classe). Isso permite ao frontend identificar o dono da plataforma.
 
 ### 2.3 Me (Obter Usuário Autenticado)
 
@@ -244,14 +255,17 @@ Authorization: Bearer <token>
   "username": "joao",
   "email": "joao@email.com",
   "celular": "11999999999",
-  "classe": "cliente",
+  "classe": "owner",
   "ativo": true,
+  "bloqueado": false,
   "passou_pelo_primeiro_acesso": false,
   "criado_em": "2026-04-04T00:00:00Z",
   "atualizado_em": "2026-04-04T00:00:00Z",
   "modo_de_cadastro": "email"
 }
 ```
+
+> **Nota:** Se o email corresponder a `OWNER_EMAIL`, `classe` será retornado como `"owner"`.
 
 **Response `401`:**
 ```json
