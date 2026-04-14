@@ -185,6 +185,7 @@ Content-Type: application/json
 ```
 
 > `classe` é opcional. Default: `"cliente"`.
+> **Nota:** O campo `celular` é automaticamente filtrado — apenas dígitos numéricos são mantidos. Ex: `"(11) 99999-9999"` → `"11999999999"`.
 
 **Response `200`:**
 ```json
@@ -405,6 +406,21 @@ GET /api/lojas/verificar-slug/{slug}
 {
   "disponivel": false,
   "slug": "pizzaria-do-joao"
+}
+```
+
+---
+
+### 3.6 Verificar Celular Disponível
+
+```
+GET /api/usuarios/verificar-celular/{celular}
+```
+
+**Response `200`:**
+```json
+{
+  "disponivel": true
 }
 ```
 
@@ -2969,6 +2985,7 @@ DELETE /api/wipe
 | 8 | `GET` | `/api/lojas/slug/{slug}` | — | — |
 | 9 | `GET` | `/api/lojas/verificar-slug/{slug}` | — | — |
 | 9.1 | `PATCH` | `/api/lojas/{uuid}/bloqueado` | 🔒 + 👑 Owner | — |
+| 9.2 | `GET` | `/api/usuarios/verificar-celular/{celular}` | — | — |
 | 10 | `GET` | `/api/usuarios/?classe=...` | 🔒 + 👑 Owner | — |
 | 10.1 | `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | 🔒 (Self/Owner) | — |
 | 10.2 | `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | 🔒 (Self/Owner) | — |
@@ -3050,6 +3067,6 @@ DELETE /api/wipe
 | 73 | `GET` | `/api/ok` | — | — |
 | 74 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
 
-**Total: 92 endpoints**
+**Total: 93 endpoints**
 
 > **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner

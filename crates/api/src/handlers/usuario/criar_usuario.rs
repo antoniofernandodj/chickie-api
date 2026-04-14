@@ -11,13 +11,16 @@ pub async fn criar_usuario(
     State(state): State<Arc<AppState>>,
     Json(p): Json<CreateUsuarioRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+    // Filtrar celular: manter apenas dígitos numéricos
+    let celular_numerico: String = p.celular.chars().filter(|c| c.is_ascii_digit()).collect();
+
     // O operador '?' converte o Err(String) do service em AppError::BadRequest automaticamente
     let usuario = state.usuario_service.registrar(
         p.nome,
         p.username,
         p.senha,
         p.email,
-        p.celular,
+        celular_numerico,
         p.auth_method,
         p.classe
     ).await?;

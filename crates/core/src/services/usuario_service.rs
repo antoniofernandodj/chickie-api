@@ -130,6 +130,11 @@ impl UsuarioService {
         Ok(existente.is_none())
     }
 
+    pub async fn verificar_celular_disponivel(&self, celular: &str) -> Result<bool, String> {
+        let existente = self.repo.buscar_por_celular(celular).await?;
+        Ok(existente.is_none())
+    }
+
     // ===========================================================================
     // Soft Delete
     // ===========================================================================

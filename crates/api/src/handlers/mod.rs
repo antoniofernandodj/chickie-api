@@ -71,6 +71,7 @@ pub use usuario::{
     me,
     verificar_email,
     verificar_username,
+    verificar_celular,
     marcar_usuario_remocao,
     desmarcar_usuario_remocao,
     alternar_usuario_ativo,

@@ -208,6 +208,14 @@ Cada repositório implementa também:
 | `POST` | `/api/auth/signup` | Cadastro de usuário |
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 
+> **Nota:** `celular` é UNIQUE e filtrado no signup — apenas dígitos. Ex: `"(11) 99999-9999"` → `"11999999999"`.
+
+#### Validações de Disponibilidade (sem auth)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/usuarios/verificar-celular/{celular}` | Verificar celular disponível |
+
 #### Usuários (auth required, Owner para maioria)
 
 | Método | Rota | Descrição |
