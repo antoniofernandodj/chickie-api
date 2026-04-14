@@ -49,6 +49,10 @@ pub use wipe::wipe_route;
 use super::ok_handler;
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
+
+    let mode = std::env::var("MODE").unwrap_or_default();
+    let is_dev = mode.eq_ignore_ascii_case("development");
+
     // let mut router = Router::new()
     //     .nest("/pedidos", pedido_routes(s))
     //     .nest("/usuarios", usuario_routes())
@@ -95,8 +99,6 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/auth", auth_routes(s))
         .route("/ok", get(ok_handler));
 
-    let mode = std::env::var("MODE").unwrap_or_default();
-    let is_dev = mode.eq_ignore_ascii_case("development");
 
     if is_dev {
         tracing::info!("🧹 MODE=DEVELOPMENT — registrando endpoint de limpar banco de dados");
