@@ -30,5 +30,12 @@ pub async fn listar_usuarios(
             .map_err(|e| AppError::Internal(e.to_string()))?
     };
 
-    Ok(Json(usuarios))
+    // Filtrar usuários owner — nunca devem aparecer na lista
+    let owner_email = std::env::var("OWNER_EMAIL").unwrap_or_default();
+    let usuarios_filtrados: Vec<_> = usuarios.into_iter()
+        .filter(|u| u.classe != "owner")
+        .filter(|u| owner_email.is_empty() || u.email != owner_email)
+        .collect();
+
+    Ok(Json(usuarios_filtrados))
 }
