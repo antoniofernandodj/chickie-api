@@ -6,6 +6,7 @@ use uuid::Uuid;
 use std::sync::Arc;
 use crate::{handlers::{AppState, dto::AppError, protobuf::Protobuf}};
 use chickie_core::proto;
+use chickie_core::ports::to_proto::ToProto;
 
 
 pub async fn listar_pedidos(

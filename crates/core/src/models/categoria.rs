@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use sqlx::FromRow;
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
 use utoipa::ToSchema;
@@ -41,8 +41,10 @@ impl Model for CategoriaProdutos {
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
 
-impl CategoriaProdutos {
-    pub fn to_proto(&self) -> crate::proto::Categoria {
+
+impl ToProto<crate::proto::Categoria> for CategoriaProdutos {
+    fn to_proto(&self) -> crate::proto::Categoria {
+        
         crate::proto::Categoria {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -54,3 +56,5 @@ impl CategoriaProdutos {
         }
     }
 }
+
+

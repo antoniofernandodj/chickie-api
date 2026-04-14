@@ -1,15 +1,16 @@
-use axum::{Extension, Json, extract::State};
-use serde_json::json;
+use axum::{Extension, extract::State};
 use std::sync::Arc;
 
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
 use chickie_core::models::Usuario;
 use chickie_core::repositories::Repository;
+use chickie_core::proto;
 
 pub async fn me(
     State(state): State<Arc<AppState>>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<Json<serde_json::Value>, AppError> {
+) -> Result<Protobuf<proto::Usuario>, AppError> {
     // Buscar o usuário completo no banco para garantir dados atualizados
     let mut usuario_completo = state.usuario_repo
         .buscar_por_uuid(usuario.uuid)
@@ -26,18 +27,5 @@ pub async fn me(
         usuario_completo.classe = "owner".to_string();
     }
 
-    Ok(Json(json!({
-        "uuid": usuario_completo.uuid,
-        "nome": usuario_completo.nome,
-        "username": usuario_completo.username,
-        "email": usuario_completo.email,
-        "celular": usuario_completo.celular,
-        "classe": usuario_completo.classe,
-        "ativo": usuario_completo.ativo,
-        "bloqueado": usuario_completo.bloqueado,
-        "passou_pelo_primeiro_acesso": usuario_completo.passou_pelo_primeiro_acesso,
-        "criado_em": usuario_completo.criado_em,
-        "atualizado_em": usuario_completo.atualizado_em,
-        "modo_de_cadastro": usuario_completo.modo_de_cadastro
-    })))
+    Ok(Protobuf(usuario_completo.to_proto()))
 }

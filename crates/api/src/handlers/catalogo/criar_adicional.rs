@@ -1,32 +1,25 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 use rust_decimal::Decimal;
-
-use chickie_core::models::Usuario;
-use crate::handlers::{dto::AppError, AppState};
-
-#[derive(Deserialize)]
-pub struct CreateAdicionalRequest {
-    pub nome: String,
-    pub descricao: String,
-    pub preco: Decimal,
-}
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::{models::Usuario, proto};
 
 pub async fn criar_adicional(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(_): Extension<Usuario>,
-    Json(p): Json<CreateAdicionalRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::CreateAdicionalRequest>,
+) -> Result<Protobuf<proto::Adicional>, AppError> {
 
     let adicional = state.catalogo_service.criar_adicional(
         p.nome,
         loja_uuid,
         p.descricao,
-        p.preco
+        Decimal::from_str_exact(&p.preco)
+            .map_err(|e| AppError::BadRequest(format!("Preço inválido: {}", e)))?
     ).await?;
 
-    Ok(Json(adicional))
+    Ok(Protobuf(adicional.to_proto()))
 }

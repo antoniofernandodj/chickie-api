@@ -1,25 +1,17 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
 
 use crate::handlers::{dto::AppError, AppState};
-use chickie_core::{models::{HorarioFuncionamento, Usuario}, usecases::AdminUsecase};
-
-#[derive(Deserialize)]
-pub struct CriarOuAtualizarHorarioRequest {
-    pub dia_semana: i32,
-    pub abertura: String,
-    pub fechamento: String,
-    pub ativo: bool,
-}
+use chickie_core::{models::{HorarioFuncionamento, Usuario}, usecases::AdminUsecase, proto};
+use crate::handlers::protobuf::Protobuf;
 
 pub async fn criar_ou_atualizar_horario(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-    Json(p): Json<CriarOuAtualizarHorarioRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::CriarOuAtualizarHorarioRequest>,
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     let mut horario = HorarioFuncionamento::new(
         loja_uuid,
         p.dia_semana,
@@ -40,5 +32,8 @@ pub async fn criar_ou_atualizar_horario(
         loja_uuid,
     );
     uc.criar_ou_atualizar_horario(&horario).await?;
-    Ok(StatusCode::NO_CONTENT)
+    Ok(Protobuf(proto::GenericResponse {
+        message: "Horário salvo com sucesso".to_string(),
+        success: true,
+    }))
 }

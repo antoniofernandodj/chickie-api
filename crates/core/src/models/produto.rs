@@ -5,7 +5,7 @@ use chrono::Utc;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Produto {
@@ -55,8 +55,10 @@ impl Model for Produto {
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
 
-impl Produto {
-    pub fn to_proto(&self) -> crate::proto::Produto {
+
+
+impl ToProto<crate::proto::Produto> for Produto {
+    fn to_proto(&self) -> crate::proto::Produto {
         crate::proto::Produto {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -71,5 +73,7 @@ impl Produto {
             criado_em: self.criado_em.to_rfc3339(),
             atualizado_em: self.atualizado_em.to_rfc3339(),
         }
+
     }
 }
+

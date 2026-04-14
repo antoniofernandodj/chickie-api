@@ -20,6 +20,7 @@ pub mod entregador_port;
 pub mod cliente_port;
 pub mod ingrediente_port;
 pub mod loja_favorita_port;
+pub mod to_proto;
 
 // Re-export all traits and types
 pub use repository::{RepositoryPort, Entity};

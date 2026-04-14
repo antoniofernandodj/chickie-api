@@ -5,6 +5,7 @@ use axum::{
 use uuid::Uuid;
 use chickie_core::{
     models::Usuario,
+    ports::to_proto::ToProto,
     usecases::MarketingUsecase,
     proto,
 };

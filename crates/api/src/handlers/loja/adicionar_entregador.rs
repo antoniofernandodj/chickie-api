@@ -1,27 +1,17 @@
-use axum::{Json, extract::{Path, State}, response::IntoResponse};
-use serde::Deserialize;
+use axum::extract::{Path, State};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::handlers::{AppState, auth::AdminPermission, dto::AppError};
-
-#[derive(Deserialize)]
-pub struct AdicionarEntregadorRequest {
-    pub nome: String,
-    pub username: String,
-    pub email: String,
-    pub senha: String,
-    pub celular: String,
-    pub veiculo: Option<String>,
-    pub placa: Option<String>,
-}
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::proto;
+use crate::handlers::{AppState, auth::AdminPermission, dto::AppError, protobuf::Protobuf};
 
 pub async fn adicionar_entregador(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     AdminPermission(_): AdminPermission,
-    Json(p): Json<AdicionarEntregadorRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::AdicionarEntregadorRequest>,
+) -> Result<Protobuf<proto::Entregador>, AppError> {
 
     let entregador = state.loja_service.adicionar_entregador(
         loja_uuid,
@@ -30,9 +20,9 @@ pub async fn adicionar_entregador(
         p.email,
         p.senha,
         p.celular,
-        p.veiculo,
-        p.placa
+        if p.veiculo.is_empty() { None } else { Some(p.veiculo) },
+        if p.placa.is_empty() { None } else { Some(p.placa) }
     ).await?;
 
-    Ok(Json(entregador))
+    Ok(Protobuf(entregador.to_proto()))
 }

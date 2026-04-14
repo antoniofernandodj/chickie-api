@@ -1,25 +1,17 @@
-use axum::{Json, extract::{Path, State}, response::IntoResponse};
-use serde::Deserialize;
+use axum::extract::{Path, State};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::handlers::{AppState, auth::AdminPermission, dto::AppError};
-
-#[derive(Deserialize)]
-pub struct AdicionarClienteRequest {
-    pub nome: String,
-    pub username: String,
-    pub email: String,
-    pub senha: String,
-    pub celular: String,
-}
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::proto;
+use crate::handlers::{AppState, auth::AdminPermission, dto::AppError, protobuf::Protobuf};
 
 pub async fn adicionar_cliente(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     AdminPermission(_): AdminPermission,
-    Json(p): Json<AdicionarClienteRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::AdicionarClienteRequest>,
+) -> Result<Protobuf<proto::Cliente>, AppError> {
 
     let cliente = state.loja_service.adicionar_cliente(
         loja_uuid,
@@ -30,5 +22,5 @@ pub async fn adicionar_cliente(
         p.celular,
     ).await?;
 
-    Ok(Json(cliente))
+    Ok(Protobuf(cliente.to_proto()))
 }

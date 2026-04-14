@@ -1,11 +1,11 @@
 use axum::{
     extract::{Query, State},
-    Json
 };
 use serde::Deserialize;
 use std::sync::Arc;
 use crate::handlers::{AppState, dto::AppError, OwnerPermission, protobuf::Protobuf};
-use chickie_core::{models, repositories::Repository, proto};
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::{repositories::Repository, proto};
 
 #[derive(Deserialize)]
 pub struct ListarUsuariosQuery {

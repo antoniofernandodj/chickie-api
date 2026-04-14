@@ -1,19 +1,19 @@
-use axum::{extract::State, response::IntoResponse, Json};
+use axum::extract::State;
 use std::sync::Arc;
 
-use crate::handlers::dto::{DisponivelResponse, VerificarUsernameRequest};
 use crate::handlers::dto::AppError;
-use crate::handlers::AppState;
+use crate::handlers::{AppState, protobuf::Protobuf};
+use chickie_core::proto;
 
 pub async fn verificar_username(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<VerificarUsernameRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(body): Protobuf<proto::VerificarUsernameRequest>,
+) -> Result<Protobuf<proto::DisponibilidadeResponse>, AppError> {
     let disponivel = state
         .usuario_service
         .verificar_username_disponivel(&body.username)
         .await
         .map_err(|e| AppError::Internal(e))?;
 
-    Ok(Json(DisponivelResponse { disponivel }))
+    Ok(Protobuf(proto::DisponibilidadeResponse { disponivel }))
 }

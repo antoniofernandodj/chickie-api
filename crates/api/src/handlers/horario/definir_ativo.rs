@@ -1,22 +1,17 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
 
 use crate::handlers::{dto::AppError, AppState};
-use chickie_core::{models::Usuario, usecases::AdminUsecase};
-
-#[derive(Deserialize)]
-pub struct DefinirAtivoRequest {
-    pub ativo: bool,
-}
+use chickie_core::{models::Usuario, usecases::AdminUsecase, proto};
+use crate::handlers::protobuf::Protobuf;
 
 pub async fn definir_ativo(
     State(state): State<Arc<AppState>>,
     Path((loja_uuid, dia_semana)): Path<(Uuid, i32)>,
     Extension(usuario): Extension<Usuario>,
-    Json(p): Json<DefinirAtivoRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::DefinirAtivoRequest>,
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     let uc = AdminUsecase::new(
         state.ingrediente_service.clone(),
         state.horario_funcionamento_service.clone(),
@@ -29,5 +24,8 @@ pub async fn definir_ativo(
         loja_uuid,
     );
     uc.definir_horario_ativo(dia_semana, p.ativo).await?;
-    Ok(StatusCode::NO_CONTENT)
+    Ok(Protobuf(proto::GenericResponse {
+        message: "Status do horário atualizado com sucesso".to_string(),
+        success: true,
+    }))
 }

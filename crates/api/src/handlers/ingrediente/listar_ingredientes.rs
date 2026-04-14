@@ -1,15 +1,18 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
 
-use crate::handlers::{dto::AppError, AppState};
-use chickie_core::{models::Usuario, usecases::AdminUsecase};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::{models::Usuario, usecases::AdminUsecase, proto};
 
 pub async fn listar_ingredientes(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarIngredientesResponse>, AppError> {
     let uc = AdminUsecase::new(state.ingrediente_service.clone(), state.horario_funcionamento_service.clone(), state.config_pedido_service.clone(), state.funcionario_service.clone(), state.entregador_service.clone(), state.marketing_service.clone(), state.endereco_loja_service.clone(), usuario, loja_uuid);
-    Ok(Json(uc.listar_ingredientes().await?))
+    Ok(Protobuf(proto::ListarIngredientesResponse {
+        ingredientes: uc.listar_ingredientes().await?.into_iter().map(|i| i.to_proto()).collect(),
+    }))
 }

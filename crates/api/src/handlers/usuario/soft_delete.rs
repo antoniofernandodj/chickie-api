@@ -3,13 +3,11 @@ use axum::{
     Extension,
     http::StatusCode,
     response::IntoResponse,
-    Json,
 };
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::handlers::{auth::OwnerPermission, dto::AppError, AppState};
-use chickie_core::models::Usuario;
+use crate::handlers::{auth::OwnerPermission, dto::AppError, AppState, protobuf::Protobuf};
+use chickie_core::{models::Usuario, proto};
 
 // ============================================================================
 // Helper: verifica se o usuário logado é o próprio usuário OU o owner
@@ -78,17 +76,12 @@ pub async fn desmarcar_usuario_remocao(
 // Alternar status ativo do usuário (bloquear/desbloquear)
 // ============================================================================
 
-#[derive(Deserialize, Serialize)]
-pub struct AlternarAtivoRequest {
-    pub ativo: bool,
-}
-
 pub async fn alternar_usuario_ativo(
     State(state): State<Arc<AppState>>,
     OwnerPermission(_owner): OwnerPermission,
     Path(usuario_uuid): Path<Uuid>,
-    Json(body): Json<AlternarAtivoRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(body): Protobuf<proto::AlternarAtivoRequest>,
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     state.usuario_service
         .alternar_ativo(usuario_uuid, body.ativo)
         .await
@@ -97,10 +90,10 @@ pub async fn alternar_usuario_ativo(
     let acao = if body.ativo { "ativado" } else { "desativado" };
     tracing::info!("Usuário {} {} ({})", usuario_uuid, acao, body.ativo);
 
-    Ok(Json(serde_json::json!({
-        "message": format!("Usuário {} com sucesso", acao),
-        "ativo": body.ativo
-    })))
+    Ok(Protobuf(proto::GenericResponse {
+        message: format!("Usuário {} com sucesso", acao),
+        success: true,
+    }))
 }
 
 // ============================================================================
@@ -111,7 +104,7 @@ pub async fn toggle_usuario_bloqueado(
     State(state): State<Arc<AppState>>,
     OwnerPermission(_owner): OwnerPermission,
     Path(usuario_uuid): Path<Uuid>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     let bloqueado = state.usuario_service
         .toggle_bloqueado(usuario_uuid)
         .await
@@ -120,8 +113,8 @@ pub async fn toggle_usuario_bloqueado(
     let acao = if bloqueado { "bloqueado" } else { "desbloqueado" };
     tracing::info!("Usuário {} {} (bloqueado={})", usuario_uuid, acao, bloqueado);
 
-    Ok(Json(serde_json::json!({
-        "message": format!("Usuário {} com sucesso", acao),
-        "bloqueado": bloqueado
-    })))
+    Ok(Protobuf(proto::GenericResponse {
+        message: format!("Usuário {} com sucesso", acao),
+        success: true,
+    }))
 }

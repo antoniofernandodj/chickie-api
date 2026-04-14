@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use chickie_core::{
     models::Usuario,
+    ports::to_proto::ToProto,
     usecases::MarketingUsecase,
     proto,
 };

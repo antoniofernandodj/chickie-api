@@ -4,8 +4,7 @@ use sqlx::FromRow;
 use serde::{Serialize, Deserialize};
 use chrono::Utc;
 use utoipa::ToSchema;
-use crate::models::Model;
-
+use crate::{models::Model, ports::to_proto::ToProto};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Adicional {
@@ -25,7 +24,6 @@ impl Adicional {
         descricao: String,
         preco: Decimal,
     ) -> Self {
-
         Self {
             nome,
             loja_uuid,
@@ -33,9 +31,8 @@ impl Adicional {
             descricao,
             preco,
             uuid: Uuid::new_v4(),
-            criado_em: Utc::now()
+            criado_em: Utc::now(),
         }
-
     }
 }
 
@@ -44,8 +41,8 @@ impl Model for Adicional {
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
 }
 
-impl Adicional {
-    pub fn to_proto(&self) -> crate::proto::Adicional {
+impl ToProto<crate::proto::Adicional> for Adicional {
+    fn to_proto(&self) -> crate::proto::Adicional {
         crate::proto::Adicional {
             uuid: self.uuid.to_string(),
             nome: self.nome.clone(),

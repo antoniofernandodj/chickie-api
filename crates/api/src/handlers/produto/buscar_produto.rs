@@ -6,6 +6,7 @@ use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
 use chickie_core::{
     models::Usuario,
     usecases::CatalogoUsecase,
+    ports::to_proto::ToProto,
     proto,
 };
 

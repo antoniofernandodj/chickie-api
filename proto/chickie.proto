@@ -2,6 +2,316 @@ syntax = "proto3";
 
 package chickie;
 
+// --- Requests ---
+message CreateUsuarioRequest {
+    string nome = 1;
+    string username = 2;
+    string senha = 3;
+    string email = 4;
+    string celular = 5;
+    string auth_method = 6;
+    string classe = 7;
+}
+
+message LoginRequest {
+    string identifier = 1;
+    string senha = 2;
+}
+
+message VerificarEmailRequest {
+    string email = 1;
+}
+
+message VerificarUsernameRequest {
+    string username = 1;
+}
+
+message VerificarCelularRequest {
+    string celular = 1;
+}
+
+message AlternarAtivoRequest {
+    bool ativo = 1;
+}
+
+message AtualizarDisponibilidadeRequest {
+    bool disponivel = 1;
+}
+
+message TrocarEmailSenhaRequest {
+    string novo_email = 1;
+    string nova_senha = 2;
+}
+
+message CreateLojaRequest {
+    string nome = 1;
+    string slug = 2;
+    string email_contato = 3;
+    string descricao = 4;
+    string celular = 5;
+    string hora_abertura = 6;
+    string hora_fechamento = 7;
+    repeated int32 dias_funcionamento = 8;
+    int32 tempo_medio = 9;
+    double nota_media = 10;
+    double taxa_entrega_base = 11;
+    double pedido_minimo = 12;
+    int32 max_partes = 13;
+}
+
+message CreateProdutoRequest {
+    string loja_uuid = 1;
+    string categoria_uuid = 2;
+    string nome = 3;
+    string descricao = 4;
+    string preco = 5;
+    string imagem_url = 6;
+    bool disponivel = 7;
+    int32 tempo_preparo_min = 8;
+    bool destaque = 9;
+}
+
+message AtualizarProdutoRequest {
+    string nome = 1;
+    string descricao = 2;
+    string preco = 3;
+    string categoria_uuid = 4;
+    int32 tempo_preparo_min = 5;
+}
+
+message CreateCategoriaRequest {
+    string nome = 1;
+    string descricao = 2;
+    int32 ordem = 3;
+    bool pizza_mode = 4;
+}
+
+message UpdateCategoriaRequest {
+    string nome = 1;
+    string descricao = 2;
+    int32 ordem = 3;
+    bool pizza_mode = 4;
+}
+
+message CreateAdicionalRequest {
+    string nome = 1;
+    string descricao = 2;
+    string preco = 3;
+}
+
+message UpdateAdicionalRequest {
+    string nome = 1;
+    string descricao = 2;
+    string preco = 3;
+}
+
+message CriarCupomRequest {
+    string codigo = 1;
+    string descricao = 2;
+    string tipo_desconto = 3;
+    string valor_desconto = 4;
+    string valor_minimo = 5;
+    string data_validade = 6;
+    int32 limite_uso = 7;
+}
+
+message CriarCupomGenericoRequest {
+    string loja_uuid = 1;
+    string codigo = 2;
+    string descricao = 3;
+    string tipo_desconto = 4;
+    string valor_desconto = 5;
+    string valor_minimo = 6;
+    string data_validade = 7;
+    int32 limite_uso = 8;
+}
+
+message AtualizarCupomRequest {
+    string loja_uuid = 1;
+    string codigo = 2;
+    string descricao = 3;
+    string tipo_desconto = 4;
+    string valor_desconto = 5;
+    string valor_minimo = 6;
+    string data_validade = 7;
+    int32 limite_uso = 8;
+}
+
+message AtualizarStatusCupomRequest {
+    bool ativo = 1;
+}
+
+message EnderecoRequest {
+    string cep = 1;
+    string logradouro = 2;
+    string numero = 3;
+    string complemento = 4;
+    string bairro = 5;
+    string cidade = 6;
+    string estado = 7;
+    string latitude = 8;
+    string longitude = 9;
+}
+
+message AdicionarClienteRequest {
+    string nome = 1;
+    string username = 2;
+    string email = 3;
+    string senha = 4;
+    string celular = 5;
+}
+
+message AdicionarEntregadorRequest {
+    string nome = 1;
+    string username = 2;
+    string email = 3;
+    string senha = 4;
+    string celular = 5;
+    string veiculo = 6;
+    string placa = 7;
+}
+
+message AdicionarFuncionarioRequest {
+    string nome = 1;
+    string username = 2;
+    string email = 3;
+    string senha = 4;
+    string celular = 5;
+    string cargo = 6;
+    string salario = 7;
+    string data_admissao = 8;
+}
+
+message AtualizarEntregadorRequest {
+    string usuario_uuid = 1;
+    string nome = 2;
+    string celular = 3;
+    string veiculo = 4;
+    string placa = 5;
+}
+
+message AtualizarFuncionarioRequest {
+    string usuario_uuid = 1;
+    string nome = 2;
+    string email = 3;
+    string senha = 4;
+    string celular = 5;
+    string cargo = 6;
+    string salario = 7;
+    string data_admissao = 8;
+}
+
+message SalvarConfigPedidoRequest {
+    int32 max_partes = 1;
+    string tipo_calculo = 2;
+}
+
+message CriarOuAtualizarHorarioRequest {
+    int32 dia_semana = 1;
+    string abertura = 2;
+    string fechamento = 3;
+    bool ativo = 4;
+}
+
+message DefinirAtivoRequest {
+    bool ativo = 1;
+}
+
+message CriarIngredienteRequest {
+    string nome = 1;
+    string unidade_medida = 2;
+    double preco_unitario = 3;
+}
+
+message AtualizarIngredienteRequest {
+    string nome = 1;
+    string unidade_medida = 2;
+    string quantidade = 3;
+    double preco_unitario = 4;
+}
+
+message AvaliarLojaRequest {
+    string nota = 1;
+    string comentario = 2;
+}
+
+message AvaliarProdutoRequest {
+    string produto_uuid = 1;
+    string nota = 2;
+    string descricao = 3;
+    string comentario = 4;
+}
+
+message AtualizarAvaliacaoLojaRequest {
+    string nota = 1;
+    string comentario = 2;
+}
+
+message AtualizarAvaliacaoProdutoRequest {
+    string nota = 1;
+    string descricao = 2;
+    string comentario = 3;
+}
+
+message CriarPromocaoRequest {
+    string nome = 1;
+    string descricao = 2;
+    string tipo_desconto = 3;
+    string valor_desconto = 4;
+    string valor_minimo = 5;
+    string data_inicio = 6;
+    string data_fim = 7;
+    repeated uint32 dias_semana_validos = 8;
+    string tipo_escopo = 9;
+    string produto_uuid = 10;
+    string categoria_uuid = 11;
+    int32 prioridade = 12;
+}
+
+message AtualizarPromocaoRequest {
+    string nome = 1;
+    string descricao = 2;
+    string tipo_desconto = 3;
+    string valor_desconto = 4;
+    string valor_minimo = 5;
+    string data_inicio = 6;
+    string data_fim = 7;
+    repeated uint32 dias_semana_validos = 8;
+    string tipo_escopo = 9;
+    string produto_uuid = 10;
+    string categoria_uuid = 11;
+    int32 prioridade = 12;
+}
+
+message AtualizarStatusPedidoRequest {
+    string novo_status = 1;
+}
+
+message AtribuirEntregadorRequest {
+    string entregador_uuid = 1;
+}
+
+message ParteItemRequest {
+    string produto_uuid = 1;
+    int32 posicao = 2;
+}
+
+message ItemPedidoRequest {
+    int32 quantidade = 1;
+    string observacoes = 2;
+    repeated ParteItemRequest partes = 3;
+}
+
+message CriarPedidoRequest {
+    string loja_uuid = 1;
+    string taxa_entrega = 2;
+    string forma_pagamento = 3;
+    string observacoes = 4;
+    string codigo_cupom = 5;
+    repeated ItemPedidoRequest itens = 6;
+    EnderecoRequest endereco_entrega = 7;
+}
+
 // --- Usuário ---
 message Usuario {
     string nome = 1;
@@ -50,6 +360,10 @@ message Produto {
     string categoria_uuid = 6;
     string loja_uuid = 7;
     string imagem_url = 8;
+    int32 tempo_preparo_min = 9;
+    bool destaque = 10;
+    string criado_em = 11;
+    string atualizado_em = 12;
 }
 
 message ListarProdutosResponse {
@@ -62,6 +376,8 @@ message Categoria {
     string loja_uuid = 3;
     int32 ordem = 4;
     bool pizza_mode = 5;
+    string descricao = 6;
+    string criado_em = 7;
 }
 
 message ListarCategoriasResponse {
@@ -75,6 +391,7 @@ message Adicional {
     bool disponivel = 4;
     string loja_uuid = 5;
     string descricao = 6;
+    string criado_em = 7;
 }
 
 message ListarAdicionaisResponse {
@@ -242,6 +559,62 @@ message ListarEntregadoresResponse {
     repeated Entregador entregadores = 1;
 }
 
+message Cliente {
+    string uuid = 1;
+    string usuario_uuid = 2;
+    string loja_uuid = 3;
+    string criado_em = 4;
+}
+
+message LojaFavorita {
+    string uuid = 1;
+    string usuario_uuid = 2;
+    string loja_uuid = 3;
+    string criado_em = 4;
+}
+
+message ListarLojasFavoritasResponse {
+    repeated LojaFavorita favoritas = 1;
+}
+
+message HorarioFuncionamento {
+    string uuid = 1;
+    string loja_uuid = 2;
+    int32 dia_semana = 3;
+    string abertura = 4;
+    string fechamento = 5;
+    bool ativo = 6;
+    string criado_em = 7;
+}
+
+message ListarHorariosResponse {
+    repeated HorarioFuncionamento horarios = 1;
+}
+
+message Ingrediente {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string nome = 3;
+    string unidade_medida = 4;
+    string quantidade = 5;
+    string preco_unitario = 6;
+    string criado_em = 7;
+    string atualizado_em = 8;
+}
+
+message ListarIngredientesResponse {
+    repeated Ingrediente ingredientes = 1;
+}
+
+message ConfigPedido {
+    string uuid = 1;
+    string loja_uuid = 2;
+    int32 max_partes = 3;
+    string tipo_calculo = 4;
+    string criado_em = 5;
+    string atualizado_em = 6;
+}
+
 // --- Respostas ---
 message LoginResponse {
     string access_token = 1;
@@ -260,4 +633,38 @@ message UuidResponse {
 
 message DisponibilidadeResponse {
     bool disponivel = 1;
+}
+
+message SlugDisponivelResponse {
+    bool disponivel = 1;
+    string slug = 2;
+}
+
+message PedidoStatusResponse {
+    string uuid = 1;
+    string status = 2;
+    repeated string transicoes_permitidas = 3;
+}
+
+message PedidoComEntregaResponse {
+    Pedido pedido = 1;
+    Endereco endereco_entrega = 2;
+}
+
+message PedidoComEntregadorResponse {
+    Pedido pedido = 1;
+    string entregador_nome = 2;
+    string veiculo = 3;
+    string placa = 4;
+}
+
+message SubirImagemResponse {
+    string uuid = 1;
+    string imagem_url = 2;
+    string message = 3;
+}
+
+message ErrorResponse {
+    string error = 1;
+    uint32 status = 2;
 }

@@ -4,7 +4,7 @@ use sqlx::FromRow;
 use chrono::Utc;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 
 #[derive(Debug, FromRow, Serialize, Deserialize, ToSchema)]
@@ -27,7 +27,20 @@ impl Cliente {
             criado_em: Utc::now()
         }
     }
+
 }
+
+impl ToProto<crate::proto::Cliente> for Cliente {
+    fn to_proto(&self) -> crate::proto::Cliente {
+        crate::proto::Cliente {
+            uuid: self.uuid.to_string(),
+            usuario_uuid: self.usuario_uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            criado_em: self.criado_em.to_rfc3339(),
+        }
+    }
+}
+
 
 impl Model for Cliente {
     fn get_uuid(&self) -> Uuid { self.uuid }

@@ -36,7 +36,9 @@
       "Bash(git ls-files *)",
       "Bash(file *)",
       "Bash(hexdump *)",
-      "Bash(git show *)"
+      "Bash(git show *)",
+      "Bash(then *)",
+      "Bash(fi)"
     ]
   },
   "$version": 3

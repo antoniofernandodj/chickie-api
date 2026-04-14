@@ -1,25 +1,16 @@
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
-    Json,
 };
-use serde::Serialize;
 use std::sync::Arc;
 
-use chickie_core::usecases::LojaUsecase;
+use chickie_core::{usecases::LojaUsecase, proto};
 use crate::handlers::dto::AppError;
-use crate::handlers::AppState;
-
-#[derive(Serialize)]
-pub struct SlugDisponivelResponse {
-    pub disponivel: bool,
-    pub slug: String,
-}
+use crate::handlers::{AppState, protobuf::Protobuf};
 
 pub async fn verificar_slug_disponivel(
     State(state): State<Arc<AppState>>,
     Path(slug): Path<String>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::SlugDisponivelResponse>, AppError> {
     let usecase = LojaUsecase::new(state.loja_service.clone());
 
     let disponivel = usecase
@@ -27,7 +18,7 @@ pub async fn verificar_slug_disponivel(
         .await
         .map_err(|e| AppError::Internal(e))?;
 
-    Ok(Json(SlugDisponivelResponse {
+    Ok(Protobuf(proto::SlugDisponivelResponse {
         disponivel,
         slug,
     }))

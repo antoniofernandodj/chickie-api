@@ -1,16 +1,16 @@
 use axum::{
     extract::{State},
-    response::{IntoResponse},
-    Json
 };
 use std::sync::Arc;
-use crate::handlers::{AppState, CreateUsuarioRequest, dto::AppError};
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::proto;
+use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
 
 
 pub async fn criar_usuario(
     State(state): State<Arc<AppState>>,
-    Json(p): Json<CreateUsuarioRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::CreateUsuarioRequest>,
+) -> Result<Protobuf<proto::Usuario>, AppError> {
     // Filtrar celular: manter apenas dígitos numéricos
     let celular_numerico: String = p.celular.chars().filter(|c| c.is_ascii_digit()).collect();
 
@@ -22,8 +22,8 @@ pub async fn criar_usuario(
         p.email,
         celular_numerico,
         p.auth_method,
-        p.classe
+        if p.classe.is_empty() { None } else { Some(p.classe) }
     ).await?;
 
-    Ok(Json(usuario))
+    Ok(Protobuf(usuario.to_proto()))
 }

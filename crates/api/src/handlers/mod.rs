@@ -22,8 +22,7 @@ mod entregador;
 mod openapi;
 pub mod protobuf;
 
-use axum::{Json, response::IntoResponse};
-use serde_json::json;
+use axum::response::IntoResponse;
 use crate::handlers::protobuf::Protobuf;
 use chickie_core::proto;
 
@@ -46,14 +45,12 @@ pub use openapi::swagger_router;
 pub use auth::{
     auth_middleware,
     create_jwt,
-    AdminPermission,
     OwnerPermission,
 };
 
 pub use state::{AppState};
 
 pub use dto::{
-    CreateUsuarioRequest,
     CreateLojaRequest,
     Claims
 };

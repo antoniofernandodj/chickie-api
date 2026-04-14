@@ -3,6 +3,7 @@ use uuid::Uuid;
 use utoipa::{IntoResponses, ToSchema};
 
 
+#[allow(dead_code)]
 #[derive(Deserialize, ToSchema)]
 pub struct CreateUsuarioRequest {
     pub nome: String,
@@ -106,10 +107,10 @@ pub struct ParteItemRequest {
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
-use serde_json::json;
 use chickie_core::domain::errors::DomainError;
+use chickie_core::proto;
+use crate::handlers::protobuf::Protobuf;
 
 #[derive(IntoResponses)]
 pub enum AppError {
@@ -139,8 +140,14 @@ impl IntoResponse for AppError {
             AppError::InvalidState(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
         };
 
-        let body = Json(json!({ "error": message }));
-        (status, body).into_response()
+        (
+            status,
+            Protobuf(proto::ErrorResponse {
+                error: message,
+                status: status.as_u16() as u32,
+            }),
+        )
+            .into_response()
     }
 }
 
@@ -190,6 +197,7 @@ pub struct Claims {
     pub iat: usize,     // Timestamp de quando foi emitido (opcional)
 }
 
+#[allow(dead_code)]
 #[derive(serde::Deserialize, ToSchema)]
 pub struct LoginRequest {
     /// Email, username ou celular
@@ -224,18 +232,20 @@ pub struct AtualizarAvaliacaoProdutoRequest {
     pub comentario: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, ToSchema)]
 pub struct VerificarEmailRequest {
     pub email: String,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, ToSchema)]
 pub struct VerificarUsernameRequest {
     pub username: String,
 }
 
+#[allow(dead_code)]
 #[derive(Serialize, ToSchema)]
 pub struct DisponivelResponse {
     pub disponivel: bool,
 }
-

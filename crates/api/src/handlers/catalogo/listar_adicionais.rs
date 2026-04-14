@@ -1,19 +1,21 @@
 use std::sync::Arc;
 
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 
 use chickie_core::{
     models::Usuario,
+    ports::to_proto::ToProto,
+    proto,
     usecases::CatalogoUsecase
 };
-use crate::handlers::{dto::AppError, AppState};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn listar_adicionais(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarAdicionaisResponse>, AppError> {
 
     let usecase = CatalogoUsecase::new(
         state.catalogo_service.clone(),
@@ -23,5 +25,7 @@ pub async fn listar_adicionais(
 
     let adicionais = usecase.listar_adicionais().await?;
 
-    Ok(Json(adicionais))
+    Ok(Protobuf(proto::ListarAdicionaisResponse {
+        adicionais: adicionais.into_iter().map(|a| a.to_proto()).collect(),
+    }))
 }

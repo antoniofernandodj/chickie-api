@@ -3,16 +3,15 @@ use sqlx::prelude::FromRow;
 use uuid::Uuid;
 use chrono::{Utc, NaiveTime};
 use utoipa::ToSchema;
-
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct HorarioFuncionamento {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,
-    pub dia_semana: i32,      // 0=Domingo, 1=Segunda, ..., 6=Sábado
-    pub abertura: NaiveTime,  // "HH:MM"
-    pub fechamento: NaiveTime, // "HH:MM"
+    pub dia_semana: i32,
+    pub abertura: NaiveTime,
+    pub fechamento: NaiveTime,
     pub ativo: bool,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -30,7 +29,6 @@ impl HorarioFuncionamento {
 
         let abertura = NaiveTime::parse_from_str(&abertura, "%H:%M")
             .map_err(|e| format!("Horário de abertura inválido '{}': {}", abertura, e))?;
-
         let fechamento = NaiveTime::parse_from_str(&fechamento, "%H:%M")
             .map_err(|e| format!("Horário de fechamento inválido '{}': {}", fechamento, e))?;
 
@@ -59,6 +57,19 @@ impl HorarioFuncionamento {
     }
 }
 
+impl ToProto<crate::proto::HorarioFuncionamento> for HorarioFuncionamento {
+    fn to_proto(&self) -> crate::proto::HorarioFuncionamento {
+        crate::proto::HorarioFuncionamento {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            dia_semana: self.dia_semana,
+            abertura: self.abertura.format("%H:%M").to_string(),
+            fechamento: self.fechamento.format("%H:%M").to_string(),
+            ativo: self.ativo,
+            criado_em: self.criado_em.to_rfc3339(),
+        }
+    }
+}
 
 impl Model for HorarioFuncionamento {
     fn get_uuid(&self) -> Uuid { self.uuid }

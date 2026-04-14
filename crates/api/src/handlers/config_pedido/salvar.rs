@@ -1,23 +1,17 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse, http::StatusCode};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
 
 use crate::handlers::{dto::AppError, AppState};
-use chickie_core::{models::{ConfiguracaoDePedidosLoja, TipoCalculoPedido, Usuario}, usecases::AdminUsecase};
-
-#[derive(Deserialize)]
-pub struct SalvarConfigPedidoRequest {
-    pub max_partes: i32,
-    pub tipo_calculo: String,
-}
+use chickie_core::{models::{ConfiguracaoDePedidosLoja, TipoCalculoPedido, Usuario}, usecases::AdminUsecase, proto};
+use crate::handlers::protobuf::Protobuf;
 
 pub async fn salvar_config_pedido(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-    Json(p): Json<SalvarConfigPedidoRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::SalvarConfigPedidoRequest>,
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     let tipo_calculo = TipoCalculoPedido::from_str(&p.tipo_calculo)
         .map_err(|e| AppError::BadRequest(e))?;
 
@@ -39,5 +33,8 @@ pub async fn salvar_config_pedido(
         loja_uuid,
     );
     uc.salvar_config_pedido(&config).await?;
-    Ok(StatusCode::NO_CONTENT)
+    Ok(Protobuf(proto::GenericResponse {
+        message: "Configuração de pedido salva com sucesso".to_string(),
+        success: true,
+    }))
 }

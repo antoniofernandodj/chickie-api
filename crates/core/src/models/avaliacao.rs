@@ -5,7 +5,7 @@ use chrono::Utc;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
@@ -49,7 +49,12 @@ impl AvaliacaoDeLoja {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
+}
+
+
+
+impl ToProto<crate::proto::AvaliacaoLoja> for AvaliacaoDeLoja {
+    fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
         crate::proto::AvaliacaoLoja {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -57,14 +62,14 @@ impl AvaliacaoDeLoja {
             nota: self.nota.to_string(),
             comentario: self.comentario.clone().unwrap_or_default(),
             criado_em: self.criado_em.to_rfc3339(),
-            usuario_nome: "".to_string(),
-            usuario_email: "".to_string(),
+            usuario_nome: String::new(),
+            usuario_email: String::new(),
         }
     }
 }
 
-impl AvaliacaoDeLojaComUsuario {
-    pub fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
+impl ToProto<crate::proto::AvaliacaoLoja> for AvaliacaoDeLojaComUsuario {
+    fn to_proto(&self) -> crate::proto::AvaliacaoLoja {
         crate::proto::AvaliacaoLoja {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -77,6 +82,7 @@ impl AvaliacaoDeLojaComUsuario {
         }
     }
 }
+
 
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
@@ -112,7 +118,11 @@ impl AvaliacaoDeProduto {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::AvaliacaoProduto {
+}
+
+impl ToProto<crate::proto::AvaliacaoProduto> for AvaliacaoDeProduto {
+    fn to_proto(&self) -> crate::proto::AvaliacaoProduto {
+        
         crate::proto::AvaliacaoProduto {
             uuid: self.uuid.to_string(),
             usuario_uuid: self.usuario_uuid.to_string(),
@@ -125,6 +135,7 @@ impl AvaliacaoDeProduto {
         }
     }
 }
+
 
 impl Model for AvaliacaoDeProduto {
     fn get_uuid(&self) -> Uuid { self.uuid }

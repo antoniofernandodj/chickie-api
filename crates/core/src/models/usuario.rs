@@ -4,7 +4,7 @@ use uuid::Uuid;
 use chrono::Utc;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 // ===========================================================================
 // ClasseUsuario — define o papel do usuário no sistema
@@ -141,7 +141,11 @@ impl Usuario {
         self.bloqueado
     }
 
-    pub fn to_proto(&self) -> crate::proto::Usuario {
+}
+
+
+impl ToProto<crate::proto::Usuario> for Usuario {
+    fn to_proto(&self) -> crate::proto::Usuario {
         crate::proto::Usuario {
             nome: self.nome.clone(),
             username: self.username.clone(),
@@ -158,6 +162,7 @@ impl Usuario {
         }
     }
 }
+
 
 impl Model for Usuario {
     fn get_uuid(&self) -> Uuid { self.uuid }

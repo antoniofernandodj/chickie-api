@@ -5,7 +5,7 @@ use chrono::{Utc, NaiveTime};
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Loja {
@@ -112,7 +112,10 @@ impl Loja {
         self.bloqueado
     }
 
-    pub fn to_proto(&self) -> crate::proto::Loja {
+}
+
+impl ToProto<crate::proto::Loja> for Loja {
+    fn to_proto(&self) -> crate::proto::Loja {
         crate::proto::Loja {
             uuid: self.uuid.to_string(),
             nome: self.nome.clone(),
@@ -123,9 +126,11 @@ impl Loja {
             ativa: self.ativa,
             logo_url: self.logo_url.clone().unwrap_or_default(),
             banner_url: self.banner_url.clone().unwrap_or_default(),
+            bloqueado: self.bloqueado,
         }
     }
 }
+
 
 
 impl Model for Loja {

@@ -1,18 +1,20 @@
-use axum::{Extension, Json, extract::{Path, State}};
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 
 use chickie_core::{
     models::Usuario,
+    ports::to_proto::ToProto,
+    proto,
     usecases::AdminUsecase,
 };
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
 
 pub async fn listar_funcionarios(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<Json<Vec<chickie_core::models::Funcionario>>, AppError> {
+) -> Result<Protobuf<proto::ListarFuncionariosResponse>, AppError> {
 
     let uc = AdminUsecase::new(
         state.ingrediente_service.clone(),
@@ -27,5 +29,7 @@ pub async fn listar_funcionarios(
     );
 
     let funcionarios = uc.listar_funcionarios().await?;
-    Ok(Json(funcionarios))
+    Ok(Protobuf(proto::ListarFuncionariosResponse {
+        funcionarios: funcionarios.into_iter().map(|f| f.to_proto()).collect(),
+    }))
 }

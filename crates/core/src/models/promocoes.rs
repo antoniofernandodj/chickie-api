@@ -5,7 +5,7 @@ use chrono::Utc;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 // --- TipoEscopoPromocao ---
 
@@ -134,61 +134,29 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for StatusCupom {
     }
 
     fn produces(&self) -> Option<sqlx::postgres::PgTypeInfo> {
-        status: StatusPromocao::Ativo,
-        criado_em: Utc::now(),
-        }
-        }
+        Some(<Self as sqlx::Type<sqlx::Postgres>>::type_info())
+    }
+}
 
-        pub fn to_proto(&self) -> crate::proto::Promocao {
-        crate::proto::Promocao {
-        uuid: self.uuid.to_string(),
-        loja_uuid: self.loja_uuid.to_string(),
-        nome: self.nome.clone(),
-        descricao: self.descricao.clone().unwrap_or_default(),
-        tipo_desconto: self.tipo_desconto.clone(),
-        valor_desconto: self.valor_desconto.map(|d| d.to_string()).unwrap_or_default(),
-        status: self.status.as_str().to_string(),
-        }
-        }
-        }
+// --- Cupom ---
+// tipo_desconto: "percentual", "valor_fixo", "frete_gratis"
+// valor_desconto: o valor/percentual (NULL para frete_gratis)
 
-        // --- Cupom ---
-        L142- // tipo_desconto: "percentual", "valor_fixo", "frete_gratis"
-        L143- // valor_desconto: o valor/percentual (NULL para frete_gratis)
-
-        #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
-        pub struct Cupom {
-        pub uuid: Uuid,
-        pub loja_uuid: Uuid,
-        pub codigo: String,
-        pub descricao: String,
-        pub tipo_desconto: String,
-        pub valor_desconto: Option<Decimal>,
-        pub valor_minimo: Option<Decimal>,
-        pub data_validade: chrono::DateTime<chrono::Utc>,
-        pub limite_uso: Option<i32>,
-        pub uso_atual: i32,
-        pub status: StatusCupom,
-        pub criado_em: chrono::DateTime<chrono::Utc>,
-        }
-
-        impl Cupom {
-        pub fn to_proto(&self) -> crate::proto::Cupom {
-        crate::proto::Cupom {
-        uuid: self.uuid.to_string(),
-        loja_uuid: self.loja_uuid.to_string(),
-        codigo: self.codigo.clone(),
-        descricao: self.descricao.clone(),
-        tipo_desconto: self.tipo_desconto.clone(),
-        valor_desconto: self.valor_desconto.map(|d| d.to_string()).unwrap_or_default(),
-        valor_minimo: self.valor_minimo.map(|d| d.to_string()).unwrap_or_default(),
-        data_validade: self.data_validade.to_rfc3339(),
-        limite_uso: self.limite_uso.unwrap_or_default(),
-        uso_atual: self.uso_atual,
-        status: self.status.as_str().to_string(),
-        }
-        }
-        }
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct Cupom {
+    pub uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub codigo: String,
+    pub descricao: String,
+    pub tipo_desconto: String,
+    pub valor_desconto: Option<Decimal>,
+    pub valor_minimo: Option<Decimal>,
+    pub data_validade: chrono::DateTime<chrono::Utc>,
+    pub limite_uso: Option<i32>,
+    pub uso_atual: i32,
+    pub status: StatusCupom,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+}
 
 impl Cupom {
     pub fn new(
@@ -248,7 +216,10 @@ impl Cupom {
         self.status = StatusCupom::Inativo;
     }
 
-    pub fn to_proto(&self) -> crate::proto::Cupom {
+}
+
+impl ToProto<crate::proto::Cupom> for Cupom {
+    fn to_proto(&self) -> crate::proto::Cupom {
         crate::proto::Cupom {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -264,6 +235,9 @@ impl Cupom {
         }
     }
 }
+
+
+fn valor_desconto_com_limite(desconto: Decimal, maximo: Option<Decimal>) -> Decimal {
     if let Some(max) = maximo {
         desconto.min(max)
     } else {
@@ -419,7 +393,10 @@ impl Promocao {
         self.status = StatusCupom::Inativo;
     }
 
-    pub fn to_proto(&self) -> crate::proto::Promocao {
+}
+
+impl ToProto<crate::proto::Promocao> for Promocao {
+    fn to_proto(&self) -> crate::proto::Promocao {
         crate::proto::Promocao {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -431,6 +408,7 @@ impl Promocao {
         }
     }
 }
+
 
 
 impl Model for Promocao {

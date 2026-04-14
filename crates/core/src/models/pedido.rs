@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use uuid::Uuid;
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 use chrono::Utc;
 use sqlx::FromRow;
 use rust_decimal::Decimal;
@@ -36,8 +36,10 @@ impl AdicionalDeItemDePedido {
             preco,
         }
     }
+}
 
-    pub fn to_proto(&self) -> crate::proto::AdicionalDeItemDePedido {
+impl ToProto<crate::proto::AdicionalDeItemDePedido> for AdicionalDeItemDePedido {
+    fn to_proto(&self) -> crate::proto::AdicionalDeItemDePedido {
         crate::proto::AdicionalDeItemDePedido {
             uuid: self.uuid.to_string(),
             item_uuid: self.item_uuid.to_string(),
@@ -48,6 +50,7 @@ impl AdicionalDeItemDePedido {
         }
     }
 }
+
 
 // --- ParteDeItemPedido (agora dentro do JSONB) ---
 
@@ -84,7 +87,10 @@ impl ParteDeItemPedido {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::ParteDeItemPedido {
+}
+
+impl ToProto<crate::proto::ParteDeItemPedido> for ParteDeItemPedido {
+    fn to_proto(&self) -> crate::proto::ParteDeItemPedido {
         crate::proto::ParteDeItemPedido {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -97,6 +103,7 @@ impl ParteDeItemPedido {
         }
     }
 }
+
 
 // --- ItemPedido (agora dentro do JSONB) ---
 
@@ -132,7 +139,11 @@ impl ItemPedido {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::ItemPedido {
+}
+
+
+impl ToProto<crate::proto::ItemPedido> for ItemPedido {
+    fn to_proto(&self) -> crate::proto::ItemPedido {
         crate::proto::ItemPedido {
             uuid: self.uuid.to_string(),
             loja_uuid: self.loja_uuid.to_string(),
@@ -144,6 +155,7 @@ impl ItemPedido {
         }
     }
 }
+
 
 // --- EstadoDePedido ---
 
@@ -356,7 +368,10 @@ impl Pedido {
             .expect("Item não encontrado")
     }
 
-    pub fn to_proto(&self) -> crate::proto::Pedido {
+}
+
+impl ToProto<crate::proto::Pedido> for Pedido {
+    fn to_proto(&self) -> crate::proto::Pedido {
         crate::proto::Pedido {
             uuid: self.uuid.to_string(),
             usuario_uuid: self.usuario_uuid.to_string(),
@@ -376,6 +391,7 @@ impl Pedido {
         }
     }
 }
+
 
 impl Model for Pedido {
     fn get_uuid(&self) -> Uuid { self.uuid }

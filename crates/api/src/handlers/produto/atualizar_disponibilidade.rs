@@ -1,5 +1,4 @@
-use axum::{Extension, Json, extract::{Path, State}};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -12,16 +11,11 @@ use crate::{
     handlers::{AppState, dto::AppError, protobuf::Protobuf},
 };
 
-#[derive(Deserialize)]
-pub struct AtualizarDisponibilidadeProdutoRequest {
-    pub disponivel: bool,
-}
-
 pub async fn atualizar_disponibilidade_produto(
     State(state): State<Arc<AppState>>,
     Path((loja_uuid, produto_uuid)): Path<(Uuid, Uuid)>,
     Extension(_): Extension<Usuario>,
-    Json(p): Json<AtualizarDisponibilidadeProdutoRequest>,
+    Protobuf(p): Protobuf<proto::AtualizarDisponibilidadeRequest>,
 ) -> Result<Protobuf<proto::GenericResponse>, AppError> {
 
     state.catalogo_service.atualizar_disponibilidade_produto(produto_uuid, loja_uuid, p.disponivel).await?;

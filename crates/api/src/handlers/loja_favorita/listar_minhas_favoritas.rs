@@ -1,17 +1,19 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::{State, Extension}, response::IntoResponse};
+use axum::extract::{State, Extension};
 
 use chickie_core::{
     models::Usuario,
-    usecases::ListarLojasFavoritasUsecase
+    ports::to_proto::ToProto,
+    usecases::ListarLojasFavoritasUsecase,
+    proto,
 };
-use crate::handlers::{dto::AppError, AppState};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn listar_minhas_favoritas(
     State(state): State<Arc<AppState>>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarLojasFavoritasResponse>, AppError> {
 
     let usecase = ListarLojasFavoritasUsecase::new(
         state.loja_favorita_service.clone(),
@@ -20,5 +22,7 @@ pub async fn listar_minhas_favoritas(
 
     let favoritas = usecase.executar().await?;
 
-    Ok(Json(favoritas))
+    Ok(Protobuf(proto::ListarLojasFavoritasResponse {
+        favoritas: favoritas.into_iter().map(|f| f.to_proto()).collect(),
+    }))
 }

@@ -1,7 +1,7 @@
 use axum::{
     http::{header, StatusCode},
     response::{IntoResponse, Response},
-    body::{Bytes, Body},
+    body::Bytes,
     extract::{FromRequest, Request},
 };
 use prost::Message;

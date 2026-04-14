@@ -1,27 +1,21 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
 
 use chickie_core::{
     models::Usuario,
-    usecases::AdminUsecase
+    ports::to_proto::ToProto,
+    usecases::AdminUsecase,
+    proto,
 };
-use crate::handlers::{dto::AppError, AppState};
-
-#[derive(Deserialize)]
-pub struct CriarIngredienteRequest {
-    pub nome: String,
-    pub unidade_medida: Option<String>,
-    pub preco_unitario: f64,
-}
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn criar_ingrediente(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-    Json(p): Json<CriarIngredienteRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::CriarIngredienteRequest>,
+) -> Result<Protobuf<proto::Ingrediente>, AppError> {
     let uc = AdminUsecase::new(
         state.ingrediente_service.clone(),
         state.horario_funcionamento_service.clone(),
@@ -33,6 +27,10 @@ pub async fn criar_ingrediente(
         usuario,
         loja_uuid,
     );
-    let ingrediente = uc.criar_ingrediente(p.nome, p.unidade_medida, p.preco_unitario).await?;
-    Ok(Json(ingrediente))
+    let ingrediente = uc.criar_ingrediente(
+        p.nome,
+        if p.unidade_medida.is_empty() { None } else { Some(p.unidade_medida) },
+        p.preco_unitario,
+    ).await?;
+    Ok(Protobuf(ingrediente.to_proto()))
 }

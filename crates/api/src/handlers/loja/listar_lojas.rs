@@ -4,6 +4,7 @@ use axum::{
 
 use std::sync::Arc;
 use crate::handlers::{AppState, dto::AppError, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
 use chickie_core::{repositories::Repository, proto};
 
 pub async fn listar_lojas(

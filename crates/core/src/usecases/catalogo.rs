@@ -11,11 +11,11 @@ use crate::{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AtualizarProdutoRequest {
-    nome: String,
-    descricao: Option<String>,
-    preco: Decimal,
-    categoria_uuid: Uuid,
-    tempo_preparo_min: Option<i32>,
+    pub nome: String,
+    pub descricao: Option<String>,
+    pub preco: Decimal,
+    pub categoria_uuid: Uuid,
+    pub tempo_preparo_min: Option<i32>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

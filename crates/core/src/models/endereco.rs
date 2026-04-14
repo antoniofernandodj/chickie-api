@@ -4,7 +4,7 @@ use sqlx::FromRow;
 use rust_decimal::Decimal;
 use utoipa::ToSchema;
 
-use crate::models::Model;
+use crate::{models::Model, ports::to_proto::ToProto};
 
 // --- EnderecoLoja (flat, compatível com FromRow) ---
 
@@ -55,7 +55,10 @@ impl EnderecoLoja {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::Endereco {
+}
+
+impl ToProto<crate::proto::Endereco> for EnderecoLoja {
+    fn to_proto(&self) -> crate::proto::Endereco {
         crate::proto::Endereco {
             uuid: self.uuid.to_string(),
             cep: self.cep.clone().unwrap_or_default(),
@@ -70,6 +73,8 @@ impl EnderecoLoja {
         }
     }
 }
+
+
 
 // --- EnderecoUsuario (flat, para uso futuro com seu repository) ---
 
@@ -114,7 +119,10 @@ impl EnderecoUsuario {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::Endereco {
+}
+
+impl ToProto<crate::proto::Endereco> for EnderecoUsuario {
+    fn to_proto(&self) -> crate::proto::Endereco {
         crate::proto::Endereco {
             uuid: self.uuid.to_string(),
             cep: self.cep.clone().unwrap_or_default(),
@@ -129,6 +137,7 @@ impl EnderecoUsuario {
         }
     }
 }
+
 
 // --- EnderecoEntrega (flat, para uso futuro com seu repository) ---
 
@@ -176,7 +185,10 @@ impl EnderecoEntrega {
         }
     }
 
-    pub fn to_proto(&self) -> crate::proto::Endereco {
+}
+
+impl ToProto<crate::proto::Endereco> for EnderecoEntrega {
+    fn to_proto(&self) -> crate::proto::Endereco {
         crate::proto::Endereco {
             uuid: self.uuid.to_string(),
             cep: self.cep.clone().unwrap_or_default(),
@@ -191,6 +203,7 @@ impl EnderecoEntrega {
         }
     }
 }
+
     
 impl Model for EnderecoLoja {
     fn get_uuid(&self) -> Uuid { self.uuid }

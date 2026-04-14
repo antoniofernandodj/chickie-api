@@ -1,34 +1,25 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
-use serde::Deserialize;
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use chickie_core::models::Usuario;
-use crate::handlers::{dto::AppError, AppState};
-
-#[derive(Deserialize)]
-pub struct CreateCategoriaRequest {
-    pub nome: String,
-    pub descricao: Option<String>,
-    pub ordem: Option<i32>,
-    #[serde(default)]
-    pub pizza_mode: bool,
-}
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
+use chickie_core::{models::Usuario, proto};
 
 pub async fn criar_categoria(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(_): Extension<Usuario>,
-    Json(p): Json<CreateCategoriaRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(p): Protobuf<proto::CreateCategoriaRequest>,
+) -> Result<Protobuf<proto::Categoria>, AppError> {
 
     let categoria = state.catalogo_service.criar_categoria(
         p.nome,
-        p.descricao,
+        if p.descricao.is_empty() { None } else { Some(p.descricao) },
         loja_uuid,
-        p.ordem,
+        if p.ordem == 0 { None } else { Some(p.ordem) },
         p.pizza_mode
     ).await?;
 
-    Ok(Json(categoria))
+    Ok(Protobuf(categoria.to_proto()))
 }

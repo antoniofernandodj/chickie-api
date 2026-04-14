@@ -2,12 +2,11 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
-    Json,
 };
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::handlers::{auth::{AdminPermission, OwnerPermission}, dto::AppError, AppState};
+use chickie_core::proto;
+use crate::handlers::{auth::{AdminPermission, OwnerPermission}, dto::AppError, AppState, protobuf::Protobuf};
 
 // ============================================================================
 // Marcar loja para remoção (soft delete)
@@ -51,17 +50,12 @@ pub async fn desmarcar_loja_remocao(
 // Alternar status ativo da loja (bloquear/desbloquear admin)
 // ============================================================================
 
-#[derive(Deserialize, Serialize)]
-pub struct AlternarAtivoRequest {
-    pub ativo: bool,
-}
-
 pub async fn alternar_loja_ativo(
     State(state): State<Arc<AppState>>,
     AdminPermission(_admin): AdminPermission,
     Path(loja_uuid): Path<Uuid>,
-    Json(body): Json<AlternarAtivoRequest>,
-) -> Result<impl IntoResponse, AppError> {
+    Protobuf(body): Protobuf<proto::AlternarAtivoRequest>,
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     state.loja_service
         .alternar_ativo(loja_uuid, body.ativo)
         .await
@@ -70,10 +64,10 @@ pub async fn alternar_loja_ativo(
     let acao = if body.ativo { "ativada" } else { "desativada" };
     tracing::info!("Loja {} {} ({})", loja_uuid, acao, body.ativo);
 
-    Ok(Json(serde_json::json!({
-        "message": format!("Loja {} com sucesso", acao),
-        "ativo": body.ativo
-    })))
+    Ok(Protobuf(proto::GenericResponse {
+        message: format!("Loja {} com sucesso", acao),
+        success: true,
+    }))
 }
 
 // ============================================================================
@@ -84,7 +78,7 @@ pub async fn toggle_loja_bloqueado(
     State(state): State<Arc<AppState>>,
     OwnerPermission(_owner): OwnerPermission,
     Path(loja_uuid): Path<Uuid>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
     let bloqueado = state.loja_service
         .toggle_bloqueado(loja_uuid)
         .await
@@ -93,8 +87,8 @@ pub async fn toggle_loja_bloqueado(
     let acao = if bloqueado { "bloqueada" } else { "desbloqueada" };
     tracing::info!("Loja {} {} (bloqueado={})", loja_uuid, acao, bloqueado);
 
-    Ok(Json(serde_json::json!({
-        "message": format!("Loja {} com sucesso", acao),
-        "bloqueado": bloqueado
-    })))
+    Ok(Protobuf(proto::GenericResponse {
+        message: format!("Loja {} com sucesso", acao),
+        success: true,
+    }))
 }

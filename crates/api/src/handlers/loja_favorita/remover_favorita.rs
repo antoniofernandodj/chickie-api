@@ -1,19 +1,20 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::{Path, State, Extension}, response::IntoResponse};
+use axum::extract::{Path, State, Extension};
 use uuid::Uuid;
 
 use chickie_core::{
     models::Usuario,
-    usecases::RemoverLojaFavoritaUsecase
+    usecases::RemoverLojaFavoritaUsecase,
+    proto,
 };
-use crate::handlers::{dto::AppError, AppState};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn remover_favorita(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::GenericResponse>, AppError> {
 
     let usecase = RemoverLojaFavoritaUsecase::new(
         state.loja_favorita_service.clone(),
@@ -23,5 +24,8 @@ pub async fn remover_favorita(
 
     usecase.executar().await?;
 
-    Ok(Json(serde_json::json!({ "message": "Loja removida das favoritas" })))
+    Ok(Protobuf(proto::GenericResponse {
+        message: "Loja removida das favoritas".to_string(),
+        success: true,
+    }))
 }

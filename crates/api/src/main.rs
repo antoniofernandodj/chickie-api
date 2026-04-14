@@ -2,7 +2,6 @@ mod handlers;
 mod infrastructure;
 
 use axum::{
-    Json,
     Router,
     http::StatusCode,
     response::IntoResponse,
@@ -14,7 +13,8 @@ use tower_http::cors::CorsLayer;
 use tracing::{info, debug};
 use tracing_subscriber::fmt;
 use crate::handlers::AppState;
-use serde_json::json;
+use crate::handlers::protobuf::Protobuf;
+use chickie_core::proto;
 
 
 #[tokio::main]
@@ -77,9 +77,10 @@ async fn main() {
 pub async fn handler_ok() -> impl IntoResponse {
     (
         StatusCode::OK,
-        Json(json!({
-            "message": "🚀 Servidor compilado com sucesso!"
-        })),
+        Protobuf(proto::GenericResponse {
+            message: "🚀 Servidor compilado com sucesso!".to_string(),
+            success: true,
+        }),
     )
 }
 
@@ -87,10 +88,10 @@ pub async fn handler_ok() -> impl IntoResponse {
 pub async fn handler_404() -> impl IntoResponse {
     (
         StatusCode::NOT_FOUND,
-        Json(json!({
-            "error": "Rota não encontrada",
-            "message": "A URL solicitada não existe neste servidor."
-        })),
+        Protobuf(proto::ErrorResponse {
+            error: "A URL solicitada não existe neste servidor.".to_string(),
+            status: StatusCode::NOT_FOUND.as_u16() as u32,
+        }),
     )
 }
 
@@ -613,4 +614,3 @@ pub async fn handler_404() -> impl IntoResponse {
 
 //     Ok(())
 // }
-

@@ -1,11 +1,12 @@
-use axum::{extract::State, Json};
+use axum::extract::State;
 use std::sync::Arc;
-use crate::handlers::{AppState, create_jwt, dto::{AppError, LoginRequest}, protobuf::Protobuf};
+use crate::handlers::{AppState, create_jwt, dto::AppError, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
 use chickie_core::proto;
 
 pub async fn login(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<LoginRequest>,
+    Protobuf(payload): Protobuf<proto::LoginRequest>,
 ) -> Result<Protobuf<proto::LoginResponse>, AppError> {
     // 1. Validar as credenciais através do Service
     let mut usuario = state.usuario_service
