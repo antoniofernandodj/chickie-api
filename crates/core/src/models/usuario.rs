@@ -140,6 +140,23 @@ impl Usuario {
     pub fn esta_bloqueado(&self) -> bool {
         self.bloqueado
     }
+
+    pub fn to_proto(&self) -> crate::proto::Usuario {
+        crate::proto::Usuario {
+            nome: self.nome.clone(),
+            username: self.username.clone(),
+            email: self.email.clone(),
+            celular: self.celular.clone(),
+            criado_em: self.criado_em.to_rfc3339(),
+            atualizado_em: self.atualizado_em.to_rfc3339(),
+            modo_de_cadastro: self.modo_de_cadastro.clone(),
+            classe: self.classe.clone(),
+            uuid: self.uuid.to_string(),
+            ativo: self.ativo,
+            passou_pelo_primeiro_acesso: self.passou_pelo_primeiro_acesso,
+            bloqueado: self.bloqueado,
+        }
+    }
 }
 
 impl Model for Usuario {

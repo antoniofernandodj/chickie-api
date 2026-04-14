@@ -20,3 +20,5 @@ uuid.workspace = true
 rust_decimal.workspace = true
 jsonwebtoken.workspace = true
 async-trait.workspace = true
+prost = "0.14.3"
+prost-derive = "0.14.3"

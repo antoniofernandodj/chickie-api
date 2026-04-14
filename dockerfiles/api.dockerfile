@@ -7,11 +7,13 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
-    libssl-dev && \
+    libssl-dev \
+    protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
 # Cache de dependências do workspace
 COPY Cargo.toml Cargo.lock ./
+COPY proto ./proto
 COPY crates/core/Cargo.toml ./crates/core/Cargo.toml
 COPY crates/api/Cargo.toml ./crates/api/Cargo.toml
 COPY crates/worker/Cargo.toml ./crates/worker/Cargo.toml

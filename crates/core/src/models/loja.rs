@@ -111,6 +111,20 @@ impl Loja {
     pub fn esta_bloqueada(&self) -> bool {
         self.bloqueado
     }
+
+    pub fn to_proto(&self) -> crate::proto::Loja {
+        crate::proto::Loja {
+            uuid: self.uuid.to_string(),
+            nome: self.nome.clone(),
+            slug: self.slug.clone(),
+            descricao: self.descricao.clone().unwrap_or_default(),
+            email: self.email.clone(),
+            celular: self.celular.clone().unwrap_or_default(),
+            ativa: self.ativa,
+            logo_url: self.logo_url.clone().unwrap_or_default(),
+            banner_url: self.banner_url.clone().unwrap_or_default(),
+        }
+    }
 }
 
 

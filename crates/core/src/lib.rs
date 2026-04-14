@@ -18,3 +18,7 @@ pub mod database;
 
 // Utilities
 pub mod utils;
+
+pub mod proto {
+    include!(concat!(env!("OUT_DIR"), "/chickie.rs"));
+}

@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package chickie;
+
+message Usuario {
+    string nome = 1;
+    string username = 2;
+    string email = 3;
+    string celular = 4;
+    string criado_em = 5;
+    string atualizado_em = 6;
+    string modo_de_cadastro = 7;
+    string classe = 8;
+    string uuid = 9;
+    bool ativo = 10;
+    bool passou_pelo_primeiro_acesso = 11;
+    bool bloqueado = 12;
+}
+
+message ListarUsuariosResponse {
+    repeated Usuario usuarios = 1;
+}
+
+message Loja {
+    string uuid = 1;
+    string nome = 2;
+    string slug = 3;
+    string descricao = 4;
+    string email = 5;
+    string celular = 6;
+    bool ativa = 7;
+    string logo_url = 8;
+    string banner_url = 9;
+}
+
+message ListarLojasResponse {
+    repeated Loja lojas = 1;
+}
+
+message Pedido {
+    string uuid = 1;
+    string usuario_uuid = 2;
+    string loja_uuid = 3;
+    string entregador_uuid = 4;
+    string status = 5;
+    string total = 6;
+    string subtotal = 7;
+    string taxa_entrega = 8;
+    string desconto = 9;
+    string forma_pagamento = 10;
+    string observacoes = 11;
+    int32 tempo_estimado_min = 12;
+    string criado_em = 13;
+    string atualizado_em = 14;
+    repeated ItemPedido itens = 15;
+}
+
+message ItemPedido {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string pedido_uuid = 3;
+    int32 quantidade = 4;
+    string observacoes = 5;
+    repeated ParteDeItemPedido partes = 6;
+    repeated AdicionalDeItemDePedido adicionais = 7;
+}
+
+message ParteDeItemPedido {
+    string uuid = 1;
+    string loja_uuid = 2;
+    string item_uuid = 3;
+    string produto_nome = 4;
+    string produto_uuid = 5;
+    string preco_unitario = 6;
+    int32 posicao = 7;
+    repeated AdicionalDeItemDePedido adicionais = 8;
+}
+
+message AdicionalDeItemDePedido {
+    string uuid = 1;
+    string item_uuid = 2;
+    string loja_uuid = 3;
+    string nome = 4;
+    string descricao = 5;
+    string preco = 6;
+}
+
+message ListarPedidosResponse {
+    repeated Pedido pedidos = 1;
+}
+
+message LoginResponse {
+    string access_token = 1;
+    string token_type = 2;
+    Usuario usuario = 3;
+}
+
+message GenericResponse {
+    string message = 1;
+    bool success = 2;
+}

@@ -20,12 +20,18 @@ mod config_pedido;
 mod funcionario;
 mod entregador;
 mod openapi;
+pub mod protobuf;
 
 use axum::{Json, response::IntoResponse};
 use serde_json::json;
+use crate::handlers::protobuf::Protobuf;
+use chickie_core::proto;
 
 pub async fn ok_handler() -> impl IntoResponse {
-    Json(json!({"msg": "ok"}))
+    Protobuf(proto::GenericResponse {
+        message: "ok".to_string(),
+        success: true,
+    })
 }
 
 // Re-export usecases from the top-level module

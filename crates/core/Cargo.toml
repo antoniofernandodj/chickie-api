@@ -20,3 +20,8 @@ tracing.workspace = true
 utoipa.workspace = true
 rand.workspace = true
 dotenvy.workspace = true
+prost = "0.14.3"
+prost-derive = "0.14.3"
+
+[build-dependencies]
+prost-build = "0.14.3"

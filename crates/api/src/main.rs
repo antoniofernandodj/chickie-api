@@ -45,12 +45,14 @@ async fn main() {
 
     let s: Arc<AppState> = AppState::new(pool);
 
-    let api_routes = handlers::api_routes(&s);
+    // let api_routes = handlers::api_routes(&s);
+    let proto_routes = handlers::api_routes(&s);
     let swagger_routes = handlers::swagger_router(&s);
 
     let app = Router::new()
         .route("/", get(handler_ok))
-        .nest("/api", api_routes)
+        // .nest("/api", api_routes)
+        .nest("/proto", proto_routes)
         .merge(swagger_routes)
         .fallback(handler_404)
         .layer(CorsLayer::permissive())

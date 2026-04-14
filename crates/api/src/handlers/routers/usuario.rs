@@ -10,6 +10,13 @@ use crate::handlers::{
 };
 
 pub fn usuario_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
+    // let mut router = Router::new()
+    //     .route("/", get(listar_usuarios))
+    //     .route("/{usuario_uuid}/marcar-remocao", patch(marcar_usuario_remocao))
+    //     .route("/{usuario_uuid}/desmarcar-remocao", patch(desmarcar_usuario_remocao))
+    //     .route("/{usuario_uuid}/ativo", put(alternar_usuario_ativo))
+    //     .route("/{usuario_uuid}/bloqueado", patch(toggle_usuario_bloqueado))
+
     Router::new()
         .route("/", get(listar_usuarios))
         .route("/{usuario_uuid}/marcar-remocao", patch(marcar_usuario_remocao))

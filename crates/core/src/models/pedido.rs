@@ -36,6 +36,17 @@ impl AdicionalDeItemDePedido {
             preco,
         }
     }
+
+    pub fn to_proto(&self) -> crate::proto::AdicionalDeItemDePedido {
+        crate::proto::AdicionalDeItemDePedido {
+            uuid: self.uuid.to_string(),
+            item_uuid: self.item_uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            nome: self.nome.clone(),
+            descricao: self.descricao.clone(),
+            preco: self.preco.to_string(),
+        }
+    }
 }
 
 // --- ParteDeItemPedido (agora dentro do JSONB) ---
@@ -72,6 +83,19 @@ impl ParteDeItemPedido {
             adicionais: vec![],
         }
     }
+
+    pub fn to_proto(&self) -> crate::proto::ParteDeItemPedido {
+        crate::proto::ParteDeItemPedido {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            item_uuid: self.item_uuid.map(|u| u.to_string()).unwrap_or_default(),
+            produto_nome: self.produto_nome.clone(),
+            produto_uuid: self.produto_uuid.to_string(),
+            preco_unitario: self.preco_unitario.to_string(),
+            posicao: self.posicao,
+            adicionais: self.adicionais.iter().map(|a| a.to_proto()).collect(),
+        }
+    }
 }
 
 // --- ItemPedido (agora dentro do JSONB) ---
@@ -105,6 +129,18 @@ impl ItemPedido {
             observacoes,
             partes,
             adicionais: Vec::new(),
+        }
+    }
+
+    pub fn to_proto(&self) -> crate::proto::ItemPedido {
+        crate::proto::ItemPedido {
+            uuid: self.uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            pedido_uuid: self.pedido_uuid.to_string(),
+            quantidade: self.quantidade,
+            observacoes: self.observacoes.clone().unwrap_or_default(),
+            partes: self.partes.iter().map(|p| p.to_proto()).collect(),
+            adicionais: self.adicionais.iter().map(|a| a.to_proto()).collect(),
         }
     }
 }
@@ -318,6 +354,26 @@ impl Pedido {
             .iter_mut()
             .find(|i| i.uuid == item_uuid)
             .expect("Item não encontrado")
+    }
+
+    pub fn to_proto(&self) -> crate::proto::Pedido {
+        crate::proto::Pedido {
+            uuid: self.uuid.to_string(),
+            usuario_uuid: self.usuario_uuid.to_string(),
+            loja_uuid: self.loja_uuid.to_string(),
+            entregador_uuid: self.entregador_uuid.map(|u| u.to_string()).unwrap_or_default(),
+            status: self.status.as_str().to_string(),
+            total: self.total.to_string(),
+            subtotal: self.subtotal.to_string(),
+            taxa_entrega: self.taxa_entrega.to_string(),
+            desconto: self.desconto.map(|d| d.to_string()).unwrap_or_default(),
+            forma_pagamento: self.forma_pagamento.clone(),
+            observacoes: self.observacoes.clone().unwrap_or_default(),
+            tempo_estimado_min: self.tempo_estimado_min.unwrap_or_default(),
+            criado_em: self.criado_em.to_rfc3339(),
+            atualizado_em: self.atualizado_em.to_rfc3339(),
+            itens: self.itens.iter().map(|i| i.to_proto()).collect(),
+        }
     }
 }
 
