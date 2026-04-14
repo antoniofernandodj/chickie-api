@@ -2,12 +2,12 @@
 -- MIGRATION 0009: Add UNIQUE constraint on celular column
 -- ============================================================================
 
--- Remove duplicates first (keep the oldest by uuid)
+-- Remove duplicates first (keep the row with the smallest uuid per celular)
 DELETE FROM usuarios
-WHERE uuid NOT IN (
-    SELECT MIN(uuid)
-    FROM usuarios
-    GROUP BY celular
+WHERE uuid IN (
+    SELECT u2.uuid
+    FROM usuarios u1
+    JOIN usuarios u2 ON u1.celular = u2.celular AND u1.uuid < u2.uuid
 );
 
 -- Add UNIQUE constraint
