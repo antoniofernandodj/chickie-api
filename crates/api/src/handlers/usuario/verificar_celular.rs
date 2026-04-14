@@ -1,16 +1,23 @@
-use axum::{
-    extract::{Path, State},
-    Json,
-};
+use axum::{extract::State, response::IntoResponse, Json};
 use std::sync::Arc;
-use crate::handlers::{AppState, dto::AppError, dto::DisponivelResponse};
+
+use crate::handlers::dto::{DisponivelResponse, AppError};
+use crate::handlers::AppState;
+use serde::Deserialize;
+use utoipa::ToSchema;
+
+#[derive(Deserialize, ToSchema)]
+pub struct VerificarCelularRequest {
+    pub celular: String,
+}
 
 pub async fn verificar_celular(
     State(state): State<Arc<AppState>>,
-    Path(celular): Path<String>,
-) -> Result<Json<DisponivelResponse>, AppError> {
-    let disponivel = state.usuario_service
-        .verificar_celular_disponivel(&celular)
+    Json(body): Json<VerificarCelularRequest>,
+) -> Result<impl IntoResponse, AppError> {
+    let disponivel = state
+        .usuario_service
+        .verificar_celular_disponivel(&body.celular)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 

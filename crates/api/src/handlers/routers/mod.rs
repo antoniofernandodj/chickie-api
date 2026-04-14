@@ -49,16 +49,9 @@ pub use wipe::wipe_route;
 use super::ok_handler;
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
-    // Rotas públicas que ficam DENTRO de /usuarios mas sem auth
-    let usuario_public_routes = Router::new()
-        .route("/verificar-celular/{celular}", get(crate::handlers::verificar_celular));
-
     let mut router = Router::new()
         .nest("/pedidos", pedido_routes(s))
-        // /usuarios — rotas protegidas
         .nest("/usuarios", usuario_routes())
-        // /usuarios — rotas públicas (verificar-celular)
-        .merge(usuario_public_routes)
         .nest("/produtos", produto_routes())
         .nest("/marketing", marketing_routes(s))
         .nest("/catalogo", catalogo_routes())

@@ -214,7 +214,7 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/usuarios/verificar-celular/{celular}` | Verificar celular disponível |
+| `POST` | `/api/auth/verificar-celular` | Verificar celular disponível |
 
 #### Usuários (auth required, Owner para maioria)
 

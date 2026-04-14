@@ -414,7 +414,15 @@ GET /api/lojas/verificar-slug/{slug}
 ### 3.6 Verificar Celular Disponível
 
 ```
-GET /api/usuarios/verificar-celular/{celular}
+POST /api/auth/verificar-celular
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "celular": "11999999999"
+}
 ```
 
 **Response `200`:**
@@ -2979,7 +2987,7 @@ DELETE /api/wipe
 | 2 | `POST` | `/api/auth/signup` | — | — |
 | 3 | `POST` | `/api/auth/login` | — | — |
 | 3.1 | `GET` | `/api/auth/me` | 🔒 | — |
-| 3.2 | `GET` | `/api/usuarios/verificar-celular/{celular}` | — | — |
+| 3.2 | `POST` | `/api/auth/verificar-celular` | — | — |
 | 5 | `GET` | `/api/lojas/` | — | — |
 | 6 | `GET` | `/api/lojas/pesquisar` | — | — |
 | 7 | `GET` | `/api/lojas/{uuid}` | — | — |

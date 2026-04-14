@@ -102,7 +102,7 @@ Todos os endpoints vivem sob `/api`.
 | `GET`  | `/api/auth/me`    | Usuário autenticado | ✅  | — |
 
 > **Bloqueio:** Usuários com `bloqueado = true` são rejeitados no login e no middleware JWT.
-> **Celular:** Campo UNIQUE, filtrado para apenas dígitos no signup. Ex: `"(11) 99999-9999"` → `"11999999999"`. Novo endpoint: `GET /api/usuarios/verificar-celular/{celular}`.
+> **Celular:** Campo UNIQUE, filtrado para apenas dígitos no signup. Ex: `"(11) 99999-9999"` → `"11999999999"`. Novo endpoint: `POST /api/auth/verificar-celular`.
 
 ### Sistema de Permissões
 
