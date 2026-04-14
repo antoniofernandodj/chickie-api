@@ -196,7 +196,8 @@ Cada repositório implementa também:
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
 | Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/produtos`, `/marketing` (parcial), `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin` |
-| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `/wipe` (dev only) |
+| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}` |
+| Owner only                      | `/api/wipe` (dev only), `/api/usuarios/`, toggle bloqueio usuários |
 
 ### Referência Completa de Endpoints
 
@@ -207,11 +208,15 @@ Cada repositório implementa também:
 | `POST` | `/api/auth/signup` | Cadastro de usuário |
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 
-#### Usuários (auth required)
+#### Usuários (auth required, Owner para maioria)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/usuarios/` | Listar usuários |
+| `GET` | `/api/usuarios/?classe=...` | Listar usuários (Owner). Query opcional: `?classe=cliente\|administrador` |
+| `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | Marcar para remoção (Self/Owner) |
+| `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | Desmarcar remoção (Self/Owner) |
+| `PUT` | `/api/usuarios/{uuid}/ativo` | Ativar/desativar (Owner) |
+| `PATCH` | `/api/usuarios/{uuid}/bloqueado` | Toggle bloqueio (Owner) |
 
 #### Lojas Públicas (sem auth para listagem)
 

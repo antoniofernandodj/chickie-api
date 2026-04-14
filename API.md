@@ -396,7 +396,9 @@ GET /api/lojas/verificar-slug/{slug}
 
 ---
 
-## 4. Usuários (🔒)
+## 4. Usuários (🔒 + 👑 Owner)
+
+> **Nota:** A maioria dos endpoints de usuário exige `OwnerPermission`. O owner é definido pela variável de ambiente `OWNER_EMAIL` ou pela classe `owner`.
 
 ### 4.1 Listar Usuários
 
@@ -404,6 +406,17 @@ GET /api/lojas/verificar-slug/{slug}
 GET /api/usuarios/
 Authorization: Bearer <token>
 ```
+
+**Query Parameters:**
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `classe` | `string` | Não | Filtrar por classe: `cliente`, `administrador`, `funcionario`, `entregador`, `owner` |
+
+**Exemplos:**
+- `GET /api/usuarios/` — lista todos os usuários
+- `GET /api/usuarios/?classe=cliente` — lista apenas clientes
+- `GET /api/usuarios/?classe=administrador` — lista apenas administradores
 
 **Response `200`:**
 ```json
@@ -416,6 +429,7 @@ Authorization: Bearer <token>
     "celular": "11999999999",
     "classe": "cliente",
     "ativo": true,
+    "bloqueado": false,
     "passou_pelo_primeiro_acesso": true,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
@@ -427,7 +441,90 @@ Authorization: Bearer <token>
 
 ---
 
-## 5. Administração (🔒 + 👑 Admin)
+### 4.2 Marcar Usuário para Remoção
+
+```
+PATCH /api/usuarios/{usuario_uuid}/marcar-remocao
+Authorization: Bearer <token>
+```
+
+> **Permissão:** Apenas o próprio usuário OU o owner da plataforma.
+
+**Response `204`:** No Content
+
+---
+
+### 4.3 Desmarcar Remoção de Usuário
+
+```
+PATCH /api/usuarios/{usuario_uuid}/desmarcar-remocao
+Authorization: Bearer <token>
+```
+
+> **Permissão:** Apenas o próprio usuário OU o owner da plataforma.
+
+**Response `204`:** No Content
+
+---
+
+### 4.4 Alternar Status Ativo do Usuário
+
+```
+PUT /api/usuarios/{usuario_uuid}/ativo
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+> **Permissão:** Apenas o owner da plataforma.
+
+**Request Body:**
+```json
+{
+  "ativo": true
+}
+```
+
+**Response `200`:**
+```json
+{
+  "message": "Usuário ativado com sucesso",
+  "ativo": true
+}
+```
+
+---
+
+### 4.5 Toggle Bloqueio do Usuário
+
+```
+PATCH /api/usuarios/{usuario_uuid}/bloqueado
+Authorization: Bearer <token>
+```
+
+> **Permissão:** Apenas o owner da plataforma.
+> Alterna o status `bloqueado` do usuário. Usuários bloqueados não podem fazer login.
+
+**Response `200`:**
+```json
+{
+  "message": "Usuário bloqueado com sucesso",
+  "bloqueado": true
+}
+```
+
+Ou ao desbloquear:
+```json
+{
+  "message": "Usuário desbloqueado com sucesso",
+  "bloqueado": false
+}
+```
+
+---
+
+## 5. Lojas
+
+### 5.1 Listar Lojas Públicas
 
 ### 5.1 Criar Loja
 
@@ -537,7 +634,35 @@ Authorization: Bearer <token>
 
 ---
 
-### 5.4 Adicionar Funcionário
+### 5.4 Toggle Bloqueio da Loja
+
+```
+PATCH /api/lojas/{loja_uuid}/bloqueado
+Authorization: Bearer <token>
+```
+
+> **Permissão:** Apenas o owner da plataforma.
+> Alterna o status `bloqueado` da loja. Lojas bloqueadas não podem operar.
+
+**Response `200`:**
+```json
+{
+  "message": "Loja bloqueada com sucesso",
+  "bloqueado": true
+}
+```
+
+Ou ao desbloquear:
+```json
+{
+  "message": "Loja desbloqueada com sucesso",
+  "bloqueado": false
+}
+```
+
+---
+
+### 5.5 Adicionar Funcionário
 
 ```
 POST /api/admin/lojas/{loja_uuid}/funcionarios
@@ -2829,7 +2954,12 @@ DELETE /api/wipe
 | 7 | `GET` | `/api/lojas/{uuid}` | — | — |
 | 8 | `GET` | `/api/lojas/slug/{slug}` | — | — |
 | 9 | `GET` | `/api/lojas/verificar-slug/{slug}` | — | — |
-| 10 | `GET` | `/api/usuarios/` | 🔒 | — |
+| 9.1 | `PATCH` | `/api/lojas/{uuid}/bloqueado` | 🔒 + 👑 Owner | — |
+| 10 | `GET` | `/api/usuarios/?classe=...` | 🔒 + 👑 Owner | — |
+| 10.1 | `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | 🔒 (Self/Owner) | — |
+| 10.2 | `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | 🔒 (Self/Owner) | — |
+| 10.3 | `PUT` | `/api/usuarios/{uuid}/ativo` | 🔒 + 👑 Owner | — |
+| 10.4 | `PATCH` | `/api/usuarios/{uuid}/bloqueado` | 🔒 + 👑 Owner | — |
 | 11 | `POST` | `/api/admin/lojas` | 🔒 | 👑 |
 | 12 | `GET` | `/api/admin/lojas/listar` | 🔒 | — |
 | 13 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | 🔒 | 👑 |
@@ -2904,6 +3034,8 @@ DELETE /api/wipe
 | 71 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
 | 72 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
 | 73 | `GET` | `/api/ok` | — | — |
-| 74 | `DELETE` | `/api/wipe` ⚠️ | — | — |
+| 74 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
 
-**Total: 85 endpoints**
+**Total: 92 endpoints**
+
+> **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner

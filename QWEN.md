@@ -309,6 +309,18 @@ pub enum DomainError {
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 | `GET` | `/api/auth/me` | Obter usuário autenticado | 🔒 |
 
+> **Bloqueio de login:** Usuários com `bloqueado = true` são rejeitados no login E no middleware JWT.
+
+#### Sistema de Permissões
+
+| Extractor | Permissão | Uso |
+|-----------|-----------|-----|
+| `AdminPermission` | `classe = "administrador"` | Criar lojas, funcionários, entregadores |
+| `OwnerPermission` | `classe = "owner"` OU `email == OWNER_EMAIL` | God mode — acesso total |
+| `is_self_or_owner` | Próprio usuário OU owner | Marcar/desmarcar remoção |
+
+**Variável de ambiente:** `OWNER_EMAIL=seu@email.com` — define o dono da plataforma sem necessidade de seed no banco.
+
 #### Usuários (auth required)
 
 | Método | Rota | Descrição |

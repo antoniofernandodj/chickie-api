@@ -101,11 +101,26 @@ Todos os endpoints vivem sob `/api`.
 | `POST` | `/api/auth/login` | Login (gera JWT)    | ❌  | — |
 | `GET`  | `/api/auth/me`    | Usuário autenticado | ✅  | — |
 
-### Usuários (auth required)
+> **Bloqueio:** Usuários com `bloqueado = true` são rejeitados no login e no middleware JWT.
+
+### Sistema de Permissões
+
+| Extractor | Permissão | Uso |
+|-----------|-----------|-----|
+| `AdminPermission` | `classe = "administrador"` | Criar lojas, funcionários, entregadores |
+| `OwnerPermission` | `classe = "owner"` OU `email == OWNER_EMAIL` | God mode — acesso total |
+
+**Variável de ambiente:** `OWNER_EMAIL=seu@email.com`
+
+### Usuários (auth required, Owner para maioria)
 
 | Método  | Rota            | Descrição        | Auth |
 |---------|-----------------|------------------|------|
-| `GET`   | `/api/usuarios/`| Listar usuários  | ✅   |
+| `GET`   | `/api/usuarios/?classe=...` | Listar usuários (Owner). Query opcional: `?classe=cliente\|administrador` | ✅ Owner |
+| `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | Marcar para remoção | ✅ Self/Owner |
+| `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | Desmarcar remoção | ✅ Self/Owner |
+| `PUT`   | `/api/usuarios/{uuid}/ativo` | Ativar/desativar | ✅ Owner |
+| `PATCH` | `/api/usuarios/{uuid}/bloqueado` | Toggle bloqueio | ✅ Owner |
 
 ### Lojas Públicas
 
