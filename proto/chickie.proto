@@ -51,7 +51,7 @@ message CreateLojaRequest {
     string celular = 5;
     string hora_abertura = 6;
     string hora_fechamento = 7;
-    repeated int32 dias_funcionamento = 8;
+    string dias_funcionamento = 8;
     int32 tempo_medio = 9;
     double nota_media = 10;
     double taxa_entrega_base = 11;
@@ -64,7 +64,7 @@ message CreateProdutoRequest {
     string categoria_uuid = 2;
     string nome = 3;
     string descricao = 4;
-    string preco = 5;
+    double preco = 5;
     string imagem_url = 6;
     bool disponivel = 7;
     int32 tempo_preparo_min = 8;
@@ -74,7 +74,7 @@ message CreateProdutoRequest {
 message AtualizarProdutoRequest {
     string nome = 1;
     string descricao = 2;
-    string preco = 3;
+    double preco = 3;
     string categoria_uuid = 4;
     int32 tempo_preparo_min = 5;
 }
@@ -96,21 +96,21 @@ message UpdateCategoriaRequest {
 message CreateAdicionalRequest {
     string nome = 1;
     string descricao = 2;
-    string preco = 3;
+    double preco = 3;
 }
 
 message UpdateAdicionalRequest {
     string nome = 1;
     string descricao = 2;
-    string preco = 3;
+    double preco = 3;
 }
 
 message CriarCupomRequest {
     string codigo = 1;
     string descricao = 2;
     string tipo_desconto = 3;
-    string valor_desconto = 4;
-    string valor_minimo = 5;
+    double valor_desconto = 4;
+    double valor_minimo = 5;
     string data_validade = 6;
     int32 limite_uso = 7;
 }
@@ -120,8 +120,8 @@ message CriarCupomGenericoRequest {
     string codigo = 2;
     string descricao = 3;
     string tipo_desconto = 4;
-    string valor_desconto = 5;
-    string valor_minimo = 6;
+    double valor_desconto = 5;
+    double valor_minimo = 6;
     string data_validade = 7;
     int32 limite_uso = 8;
 }
@@ -131,8 +131,8 @@ message AtualizarCupomRequest {
     string codigo = 2;
     string descricao = 3;
     string tipo_desconto = 4;
-    string valor_desconto = 5;
-    string valor_minimo = 6;
+    double valor_desconto = 5;
+    double valor_minimo = 6;
     string data_validade = 7;
     int32 limite_uso = 8;
 }
@@ -149,8 +149,8 @@ message EnderecoRequest {
     string bairro = 5;
     string cidade = 6;
     string estado = 7;
-    string latitude = 8;
-    string longitude = 9;
+    double latitude = 8;
+    double longitude = 9;
 }
 
 message AdicionarClienteRequest {
@@ -178,7 +178,7 @@ message AdicionarFuncionarioRequest {
     string senha = 4;
     string celular = 5;
     string cargo = 6;
-    string salario = 7;
+    double salario = 7;
     string data_admissao = 8;
 }
 
@@ -197,7 +197,7 @@ message AtualizarFuncionarioRequest {
     string senha = 4;
     string celular = 5;
     string cargo = 6;
-    string salario = 7;
+    double salario = 7;
     string data_admissao = 8;
 }
 
@@ -231,24 +231,24 @@ message AtualizarIngredienteRequest {
 }
 
 message AvaliarLojaRequest {
-    string nota = 1;
+    double nota = 1;
     string comentario = 2;
 }
 
 message AvaliarProdutoRequest {
     string produto_uuid = 1;
-    string nota = 2;
+    double nota = 2;
     string descricao = 3;
     string comentario = 4;
 }
 
 message AtualizarAvaliacaoLojaRequest {
-    string nota = 1;
+    double nota = 1;
     string comentario = 2;
 }
 
 message AtualizarAvaliacaoProdutoRequest {
-    string nota = 1;
+    double nota = 1;
     string descricao = 2;
     string comentario = 3;
 }
@@ -257,8 +257,8 @@ message CriarPromocaoRequest {
     string nome = 1;
     string descricao = 2;
     string tipo_desconto = 3;
-    string valor_desconto = 4;
-    string valor_minimo = 5;
+    double valor_desconto = 4;
+    double valor_minimo = 5;
     string data_inicio = 6;
     string data_fim = 7;
     repeated uint32 dias_semana_validos = 8;
@@ -272,8 +272,8 @@ message AtualizarPromocaoRequest {
     string nome = 1;
     string descricao = 2;
     string tipo_desconto = 3;
-    string valor_desconto = 4;
-    string valor_minimo = 5;
+    double valor_desconto = 4;
+    double valor_minimo = 5;
     string data_inicio = 6;
     string data_fim = 7;
     repeated uint32 dias_semana_validos = 8;
@@ -304,7 +304,7 @@ message ItemPedidoRequest {
 
 message CriarPedidoRequest {
     string loja_uuid = 1;
-    string taxa_entrega = 2;
+    double taxa_entrega = 2;
     string forma_pagamento = 3;
     string observacoes = 4;
     string codigo_cupom = 5;
@@ -344,6 +344,15 @@ message Loja {
     string logo_url = 8;
     string banner_url = 9;
     bool bloqueado = 10;
+    string horario_abertura = 11;
+    string horario_fechamento = 12;
+    string dias_funcionamento = 13;
+    int32 tempo_preparo_min = 14;
+    double taxa_entrega = 15;
+    double valor_minimo_pedido = 16;
+    double raio_entrega_km = 17;
+    string criado_em = 18;
+    string atualizado_em = 19;
 }
 
 message ListarLojasResponse {
@@ -354,7 +363,7 @@ message ListarLojasResponse {
 message Produto {
     string uuid = 1;
     string nome = 2;
-    string preco = 3;
+    double preco = 3;
     string descricao = 4;
     bool disponivel = 5;
     string categoria_uuid = 6;
@@ -387,7 +396,7 @@ message ListarCategoriasResponse {
 message Adicional {
     string uuid = 1;
     string nome = 2;
-    string preco = 3;
+    double preco = 3;
     bool disponivel = 4;
     string loja_uuid = 5;
     string descricao = 6;
@@ -405,10 +414,10 @@ message Pedido {
     string loja_uuid = 3;
     string entregador_uuid = 4;
     string status = 5;
-    string total = 6;
-    string subtotal = 7;
-    string taxa_entrega = 8;
-    string desconto = 9;
+    double total = 6;
+    double subtotal = 7;
+    double taxa_entrega = 8;
+    double desconto = 9;
     string forma_pagamento = 10;
     string observacoes = 11;
     int32 tempo_estimado_min = 12;
@@ -433,7 +442,7 @@ message ParteDeItemPedido {
     string item_uuid = 3;
     string produto_nome = 4;
     string produto_uuid = 5;
-    string preco_unitario = 6;
+    double preco_unitario = 6;
     int32 posicao = 7;
     repeated AdicionalDeItemDePedido adicionais = 8;
 }
@@ -444,7 +453,7 @@ message AdicionalDeItemDePedido {
     string loja_uuid = 3;
     string nome = 4;
     string descricao = 5;
-    string preco = 6;
+    double preco = 6;
 }
 
 message ListarPedidosResponse {
@@ -458,12 +467,13 @@ message Cupom {
     string codigo = 3;
     string descricao = 4;
     string tipo_desconto = 5;
-    string valor_desconto = 6;
-    string valor_minimo = 7;
+    double valor_desconto = 6;
+    double valor_minimo = 7;
     string data_validade = 8;
     int32 limite_uso = 9;
     int32 uso_atual = 10;
     string status = 11;
+    string criado_em = 12;
 }
 
 message ListarCuponsResponse {
@@ -474,7 +484,7 @@ message AvaliacaoLoja {
     string uuid = 1;
     string loja_uuid = 2;
     string usuario_uuid = 3;
-    string nota = 4;
+    double nota = 4;
     string comentario = 5;
     string criado_em = 6;
     string usuario_nome = 7;
@@ -490,7 +500,7 @@ message AvaliacaoProduto {
     string usuario_uuid = 2;
     string loja_uuid = 3;
     string produto_uuid = 4;
-    string nota = 5;
+    double nota = 5;
     string descricao = 6;
     string comentario = 7;
     string criado_em = 8;
@@ -506,8 +516,17 @@ message Promocao {
     string nome = 3;
     string descricao = 4;
     string tipo_desconto = 5;
-    string valor_desconto = 6;
-    string status = 7;
+    double valor_desconto = 6;
+    double valor_minimo = 7;
+    string data_inicio = 8;
+    string data_fim = 9;
+    repeated uint32 dias_semana_validos = 10;
+    string tipo_escopo = 11;
+    string produto_uuid = 12;
+    string categoria_uuid = 13;
+    string status = 14;
+    int32 prioridade = 15;
+    string criado_em = 16;
 }
 
 message ListarPromocoesResponse {
@@ -524,8 +543,11 @@ message Endereco {
     string bairro = 6;
     string cidade = 7;
     string estado = 8;
-    string latitude = 9;
-    string longitude = 10;
+    double latitude = 9;
+    double longitude = 10;
+    string criado_em = 11;
+    string usuario_uuid = 12;
+    string loja_uuid = 13;
 }
 
 message ListarEnderecosResponse {
@@ -538,8 +560,9 @@ message Funcionario {
     string loja_uuid = 2;
     string usuario_uuid = 3;
     string cargo = 4;
-    string salario = 5;
+    double salario = 5;
     string data_admissao = 6;
+    string criado_em = 7;
 }
 
 message ListarFuncionariosResponse {
@@ -553,6 +576,7 @@ message Entregador {
     string veiculo = 4;
     string placa = 5;
     bool disponivel = 6;
+    string criado_em = 7;
 }
 
 message ListarEntregadoresResponse {
@@ -597,7 +621,7 @@ message Ingrediente {
     string nome = 3;
     string unidade_medida = 4;
     string quantidade = 5;
-    string preco_unitario = 6;
+    double preco_unitario = 6;
     string criado_em = 7;
     string atualizado_em = 8;
 }
@@ -633,6 +657,7 @@ message UuidResponse {
 
 message DisponibilidadeResponse {
     bool disponivel = 1;
+    bool favorita = 2;
 }
 
 message SlugDisponivelResponse {
