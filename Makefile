@@ -3,6 +3,10 @@ export-docs:
 	cp CLAUDE.md ../../TS/chickie-ui/api_docs/CLAUDE.md
 	cp README.md ../../TS/chickie-ui/api_docs/README.md
 
+export-proto:
+	cp /home/antonio/Development/rust/chickie/proto/chickie.proto /home/antonio/Development/TS/chickie-ui/src/app/proto/chickie.proto
+	cd /home/antonio/Development/TS/chickie-ui && make generate-proto
+
 sync:
 	git checkout main
 	git merge $(b)

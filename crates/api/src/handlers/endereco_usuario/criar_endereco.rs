@@ -1,3 +1,37 @@
+use axum::{Extension, extract::State};
+use std::sync::Arc;
+
+use chickie_core::{
+    models::Usuario,
+    proto
+};
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
+use chickie_core::ports::to_proto::ToProto;
+
+pub async fn criar_endereco(
+    State(state): State<Arc<AppState>>,
+    Extension(usuario): Extension<Usuario>,
+    Protobuf(p): Protobuf<proto::EnderecoRequest>,
+) -> Result<Protobuf<proto::EnderecoUsuario>, AppError> {
+
+    let cep = if p.cep.is_empty() { None } else { Some(p.cep.clone()) };
+    let complemento = if p.complemento.is_empty() { None } else { Some(p.complemento.clone()) };
+
+    let endereco = state.endereco_usuario_service.criar_endereco(
+        usuario.uuid,
+        cep,
+        p.logradouro,
+        p.numero,
+        complemento,
+        p.bairro,
+        p.cidade,
+        p.estado
+    ).await?;
+
+    Ok(Protobuf(endereco.to_proto()))
+}
+
+/*
 use axum::{Extension, Json, extract::State, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
@@ -35,3 +69,4 @@ pub async fn criar_endereco(
 
     Ok(Json(endereco))
 }
+*/
