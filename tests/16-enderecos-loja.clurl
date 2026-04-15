@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create store address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-endereco-loja \
     --loja-uuid {{main_store_uuid}} \
     --logradouro "Store Street" \
@@ -24,7 +24,7 @@ stdout contains "Endereço de loja criado"
 stdout contains "Store Street"
 
 # --- List store addresses ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-enderecos-loja \
     {{main_store_uuid}}
 
@@ -33,7 +33,7 @@ exit-code == 0
 stdout contains "Store Street"
 
 # --- Update store address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-endereco-loja \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{store_endereco_uuid}} \
@@ -47,7 +47,7 @@ exit-code == 0
 stdout contains "Endereço de loja atualizado"
 
 # --- Verify updated store address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-enderecos-loja \
     {{main_store_uuid}}
 
@@ -57,7 +57,7 @@ stdout contains "Updated Store Street"
 stdout contains "Updated City"
 
 # --- Delete store address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-endereco-loja \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{store_endereco_uuid}}
@@ -71,7 +71,7 @@ stdout contains "Endereço de loja deletado"
 # ============================================================
 
 # --- Create user address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     --logradouro "Test Avenue" \
@@ -91,7 +91,7 @@ stdout contains "Endereço de usuário criado"
 stdout contains "Test Avenue"
 
 # --- List user addresses ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-enderecos-usuario \
     {{user_uuid}}
 
@@ -100,7 +100,7 @@ exit-code == 0
 stdout contains "Test Avenue"
 
 # --- Get user address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     {{user_endereco_uuid}}
@@ -111,7 +111,7 @@ stdout contains "Test Avenue"
 stdout contains "Apto 42"
 
 # --- Update user address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     --logradouro "Updated Avenue" \
@@ -123,7 +123,7 @@ exit-code == 0
 stdout contains "Endereço de usuário atualizado"
 
 # --- Verify updated address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     {{user_endereco_uuid}}
@@ -134,7 +134,7 @@ stdout contains "Updated Avenue"
 stdout contains "200"
 
 # --- Delete user address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     {{user_endereco_uuid}}
@@ -144,7 +144,7 @@ exit-code == 0
 stdout contains "Endereço de usuário deletado"
 
 # --- Verify deleted address is gone ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-endereco-usuario \
     --usuario-uuid {{user_uuid}} \
     {{user_endereco_uuid}}

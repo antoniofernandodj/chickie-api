@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create a cupom ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-cupom \
     --loja-uuid {{main_store_uuid}} \
     --codigo "PROMO10" \
@@ -23,7 +23,7 @@ exit-code == 0
 stdout contains "PROMO10"
 
 # --- Get cupom by UUID ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-cupom {{cupom_uuid}}
 
 [Asserts]
@@ -32,7 +32,7 @@ stdout contains "PROMO10"
 stdout contains "10% de desconto"
 
 # --- List all cupons ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-cupons
 
 [Asserts]
@@ -40,7 +40,7 @@ exit-code == 0
 stdout contains "PROMO10"
 
 # --- Update cupom ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-cupom \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{cupom_uuid}} \
@@ -57,7 +57,7 @@ exit-code == 0
 stdout contains "Cupom atualizado"
 
 # --- Validar cupom ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     validar-cupom \
     "PROMO20" \
     --loja-uuid {{main_store_uuid}}
@@ -67,7 +67,7 @@ exit-code == 0
 stdout contains "PROMO20"
 
 # --- Delete cupom ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-cupom {{cupom_uuid}}
 
 [Asserts]
@@ -75,7 +75,7 @@ exit-code == 0
 stdout contains "Cupom deletado"
 
 # --- Verify deletion ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-cupom {{cupom_uuid}}
 
 [Asserts]

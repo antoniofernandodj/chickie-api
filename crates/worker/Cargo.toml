@@ -1,10 +1,10 @@
 [package]
-name = "chickie-worker"
+name = "worker"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-chickie-core.workspace = true
+chickie_core.workspace = true
 lapin.workspace = true
 tokio.workspace = true
 anyhow.workspace = true

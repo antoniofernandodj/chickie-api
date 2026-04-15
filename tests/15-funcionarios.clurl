@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Add employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --nome "Maria Funcionaria" \
@@ -25,7 +25,7 @@ stdout contains "Funcionário adicionado"
 stdout contains "Gerente"
 
 # --- List employees ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -34,7 +34,7 @@ exit-code == 0
 stdout contains "Gerente"
 
 # --- Add delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{main_store_uuid}} \
     --nome "Carlos Entregador" \
@@ -55,7 +55,7 @@ stdout contains "Moto"
 stdout contains "ABC-1234"
 
 # --- List delivery drivers ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores \
     --loja-uuid {{main_store_uuid}}
 
@@ -65,7 +65,7 @@ stdout contains "Moto"
 
 # --- Update employee ---
 # SKIP: CLI command not implemented yet (run_update_funcionario just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-funcionario \
 #     --loja-uuid {{main_store_uuid}} \
 #     --uuid {{funcionario_uuid}} \
@@ -78,7 +78,7 @@ stdout contains "Moto"
 
 # --- Update delivery driver ---
 # SKIP: CLI command not implemented yet (run_update_entregador just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-entregador \
 #     --loja-uuid {{main_store_uuid}} \
 #     --uuid {{entregador_uuid}} \
@@ -93,7 +93,7 @@ stdout contains "Moto"
 
 # --- Add customer ---
 # SKIP: CLI command not implemented yet (run_add_cliente just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     add-cliente \
 #     --loja-uuid {{main_store_uuid}} \
 #     --nome "Ana Cliente" \
@@ -111,7 +111,7 @@ stdout contains "Moto"
 # ============================================================
 
 # --- Add employee for update test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --nome "Test Func Update" \
@@ -132,7 +132,7 @@ exit-code == 0
 stdout contains "Supervisor"
 
 # --- Update employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{test_funcionario_uuid}} \
@@ -144,7 +144,7 @@ exit-code == 0
 stdout contains "Funcionário atualizado"
 
 # --- Verify updated employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -153,7 +153,7 @@ exit-code == 0
 stdout contains "Senior Supervisor"
 
 # --- Change employee email/password ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     trocar-email-senha-funcionario \
     --usuario-uuid {{test_funcionario_usuario_uuid}} \
     --novo-email "updatedfunc@test.com" \
@@ -164,7 +164,7 @@ exit-code == 0
 stdout contains "Email/senha do funcionário atualizados"
 
 # --- Delete employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-funcionario \
     --uuid {{test_funcionario_uuid}}
 
@@ -173,7 +173,7 @@ exit-code == 0
 stdout contains "Funcionário deletado"
 
 # --- Verify employee is gone ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -182,7 +182,7 @@ exit-code == 0
 stdout not contains "Test Func Update"
 
 # --- Add driver for update test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{main_store_uuid}} \
     --nome "Test Driver Update" \
@@ -202,7 +202,7 @@ exit-code == 0
 stdout contains "Bicicleta"
 
 # --- Update delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-entregador \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{test_entregador_uuid}} \
@@ -214,7 +214,7 @@ exit-code == 0
 stdout contains "Entregador atualizado"
 
 # --- Verify updated driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores \
     --loja-uuid {{main_store_uuid}}
 
@@ -224,7 +224,7 @@ stdout contains "Moto"
 stdout contains "TEST-9999"
 
 # --- Change driver email/password ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     trocar-email-senha-entregador \
     --usuario-uuid {{test_entregador_usuario_uuid}} \
     --novo-email "updateddriver@test.com" \
@@ -235,7 +235,7 @@ exit-code == 0
 stdout contains "Email/senha do entregador atualizados"
 
 # --- Set driver as unavailable ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-entregador \
     --uuid {{test_entregador_uuid}} \
     --disponivel false
@@ -245,7 +245,7 @@ exit-code == 0
 stdout contains "indisponível"
 
 # --- List available drivers (should not show unavailable one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -254,7 +254,7 @@ exit-code == 0
 stdout not contains "TEST-9999"
 
 # --- Set driver as available again ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-entregador \
     --uuid {{test_entregador_uuid}} \
     --disponivel true
@@ -264,7 +264,7 @@ exit-code == 0
 stdout contains "disponível"
 
 # --- Delete delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-entregador \
     --uuid {{test_entregador_uuid}}
 

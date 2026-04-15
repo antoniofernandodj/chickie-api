@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create main test store ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-loja \
     --nome "Main Test Store" \
     --slug "main-test-store" \
@@ -22,7 +22,7 @@ stdout contains "Main Test Store"
 stdout contains "main-test-store"
 
 # --- Create store for product tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-loja \
     --nome "Product Test Store" \
     --slug "product-test-store" \
@@ -39,7 +39,7 @@ exit-code == 0
 stdout contains "Product Test Store"
 
 # --- Create store for category tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-loja \
     --nome "Category Test Store" \
     --slug "category-test-store" \
@@ -56,7 +56,7 @@ exit-code == 0
 stdout contains "Category Test Store"
 
 # --- Create store for order tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-loja \
     --nome "Order Test Store" \
     --slug "order-test-store" \
@@ -73,7 +73,7 @@ exit-code == 0
 stdout contains "Order Test Store"
 
 # --- List all stores ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-lojas
 
 [Asserts]
@@ -82,7 +82,7 @@ stdout contains "Main Test Store"
 stdout contains "Product Test Store"
 
 # --- Search stores ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     search-lojas "main"
 
 [Asserts]
@@ -90,7 +90,7 @@ exit-code == 0
 stdout contains "Main Test Store"
 
 # --- Get store by slug ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-loja-by-slug "main-test-store"
 
 [Asserts]
@@ -98,7 +98,7 @@ exit-code == 0
 stdout contains "Main Test Store"
 
 # --- List admin's stores ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-minhas-lojas --admin-uuid {{admin_uuid}}
 
 [Asserts]
@@ -106,7 +106,7 @@ exit-code == 0
 stdout contains "Main Test Store"
 
 # --- Verify slug NOT available (already taken) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-slug-disponivel "main-test-store"
 
 [Asserts]
@@ -114,7 +114,7 @@ exit-code == 0
 stderr contains "já está em uso"
 
 # --- Verify slug IS available (new slug) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-slug-disponivel "brand-new-slug-xyz-123"
 
 [Asserts]

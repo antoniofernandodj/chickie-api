@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create a category for products ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-categoria \
     --loja-uuid {{product_store_uuid}} \
     --nome "Test Category" \
@@ -18,7 +18,7 @@ exit-code == 0
 stdout contains "Test Category"
 
 # --- Create a product ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-produto \
     --loja-uuid {{product_store_uuid}} \
     --categoria-uuid {{categoria_uuid}} \
@@ -35,7 +35,7 @@ exit-code == 0
 stdout contains "Test Product"
 
 # --- List products by store ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-produtos-por-loja \
     --loja-uuid {{product_store_uuid}}
 
@@ -44,7 +44,7 @@ exit-code == 0
 stdout contains "Test Product"
 
 # --- Update product ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-produto \
     {{produto_uuid}} \
     --nome "Updated Product" \
@@ -58,7 +58,7 @@ exit-code == 0
 stdout contains "Updated Product"
 
 # --- Delete product ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-produto \
     {{produto_uuid}}
 
@@ -70,7 +70,7 @@ exit-code == 0
 # ============================================================
 
 # --- Create category for availability test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-categoria \
     --loja-uuid {{main_store_uuid}} \
     --nome "Availability Test Category" \
@@ -84,7 +84,7 @@ exit-code == 0
 stdout contains "Availability Test Category"
 
 # --- Create product in the category ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-produto \
     --loja-uuid {{main_store_uuid}} \
     --categoria-uuid {{avail_categoria_uuid}} \
@@ -101,7 +101,7 @@ exit-code == 0
 stdout contains "Availability Product"
 
 # --- List products by category ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-produtos-por-categoria \
     {{avail_categoria_uuid}}
 
@@ -110,7 +110,7 @@ exit-code == 0
 stdout contains "Availability Product"
 
 # --- Set product as unavailable ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-produto \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{avail_produto_uuid}} \
@@ -121,7 +121,7 @@ exit-code == 0
 stdout contains "indisponível"
 
 # --- Set product as available again ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-produto \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{avail_produto_uuid}} \
@@ -132,7 +132,7 @@ exit-code == 0
 stdout contains "disponível"
 
 # --- Clean up product ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-produto \
     {{avail_produto_uuid}}
 
@@ -140,7 +140,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Clean up category ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-categoria \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{avail_categoria_uuid}}

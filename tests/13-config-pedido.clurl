@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Get order config (should exist by default) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-config-pedido \
     {{main_store_uuid}}
 
@@ -12,7 +12,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Save/update order config ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     save-config-pedido \
     --loja-uuid {{main_store_uuid}} \
     --max-partes 6 \

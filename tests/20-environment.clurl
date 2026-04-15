@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Test help command ---
-RUN cargo run --quiet -p chickie-cli -- --help
+RUN cargo run --quiet -p cli -- --help
 
 [Asserts]
 exit-code == 0
@@ -16,14 +16,14 @@ stdout contains "create-loja"
 stdout contains "create-pedido"
 
 # --- Test migrate help ---
-RUN cargo run --quiet -p chickie-cli -- migrate --help
+RUN cargo run --quiet -p cli -- migrate --help
 
 [Asserts]
 exit-code == 0
 stdout contains "Aplicar migrations"
 
 # --- Test signup help ---
-RUN cargo run --quiet -p chickie-cli -- signup --help
+RUN cargo run --quiet -p cli -- signup --help
 
 [Asserts]
 exit-code == 0

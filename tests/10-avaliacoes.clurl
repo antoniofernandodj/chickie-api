@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Rate a store ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     avaliar-loja \
     --loja-uuid {{main_store_uuid}} \
     --usuario-uuid {{review_user_uuid}} \

@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create a category ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-categoria \
     --loja-uuid {{category_store_uuid}} \
     --nome "Bebidas" \
@@ -20,7 +20,7 @@ stdout contains "Bebidas"
 stdout contains "Bebidas geladas"
 
 # --- Create category with pizza-mode ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-categoria \
     --loja-uuid {{category_store_uuid}} \
     --nome "Pizzas Especiais" \
@@ -32,7 +32,7 @@ exit-code == 0
 stdout contains "Pizzas Especiais"
 
 # --- List categories ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-categorias \
     --loja-uuid {{category_store_uuid}}
 
@@ -42,7 +42,7 @@ stdout contains "Bebidas"
 stdout contains "Pizzas Especiais"
 
 # --- Update category ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-categoria \
     --loja-uuid {{category_store_uuid}} \
     --uuid {{categoria_uuid}} \
@@ -54,7 +54,7 @@ exit-code == 0
 stdout contains "Bebidas Premium"
 
 # --- Delete category (the one without products) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-categoria \
     --loja-uuid {{category_store_uuid}} \
     --uuid {{categoria_uuid}}

@@ -5,7 +5,7 @@
 # ============================================================
 
 # --- Create category and product for order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-categoria \
     --loja-uuid {{main_store_uuid}} \
     --nome "Integration Category" \
@@ -17,7 +17,7 @@ int_categoria_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 [Asserts]
 exit-code == 0
 
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-produto \
     --loja-uuid {{main_store_uuid}} \
     --categoria-uuid {{int_categoria_uuid}} \
@@ -30,7 +30,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Create order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -46,7 +46,7 @@ integration_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 exit-code == 0
 
 # --- Create delivery address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-endereco-entrega \
     --pedido-uuid {{integration_pedido_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -62,7 +62,7 @@ exit-code == 0
 stdout contains "Integration Street"
 
 # --- Get delivery address ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     get-endereco-entrega \
     {{integration_pedido_uuid}}
 
@@ -74,7 +74,7 @@ stdout contains "Integration City"
 # --- State machine: Complete order lifecycle ---
 # SKIP: Backend bug - "no column found for name: itens_json" prevents order queries
 # Step 1: criado -> aguardando_confirmacao_de_loja
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "aguardando_confirmacao_de_loja"
@@ -84,7 +84,7 @@ stdout contains "Integration City"
 # stdout contains "aguardando_confirmacao_de_loja"
 # 
 # # Step 2: aguardando_confirmacao_de_loja -> confirmado_pela_loja
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "confirmado_pela_loja"
@@ -94,7 +94,7 @@ stdout contains "Integration City"
 # stdout contains "confirmado_pela_loja"
 # 
 # # Step 3: confirmado_pela_loja -> em_preparo
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "em_preparo"
@@ -104,7 +104,7 @@ stdout contains "Integration City"
 # stdout contains "em_preparo"
 # 
 # # Step 4: em_preparo -> pronto_para_retirada
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "pronto_para_retirada"
@@ -114,7 +114,7 @@ stdout contains "Integration City"
 # stdout contains "pronto_para_retirada"
 # 
 # # Step 5: pronto_para_retirada -> saiu_para_entrega
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "saiu_para_entrega"
@@ -124,7 +124,7 @@ stdout contains "Integration City"
 # stdout contains "saiu_para_entrega"
 # 
 # # Step 6: saiu_para_entrega -> entregue (terminal state)
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-pedido-status \
 #     --uuid {{integration_pedido_uuid}} \
 #     --novo-status "entregue"

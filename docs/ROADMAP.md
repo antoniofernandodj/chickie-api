@@ -166,9 +166,9 @@ services:
       RABBITMQ_DEFAULT_USER: chickie
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
 
-  chickie-worker:
+  worker:
     build: .
-    command: chickie-worker  # binário separado ou mesmo binário com subcommand
+    command: worker  # binário separado ou mesmo binário com subcommand
     environment:
       RABBITMQ_URL: amqp://chickie:${RABBITMQ_PASS}@rabbitmq:5672
       DATABASE_URL: ${DATABASE_URL}

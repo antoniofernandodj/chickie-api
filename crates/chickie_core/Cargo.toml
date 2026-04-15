@@ -1,5 +1,5 @@
 [package]
-name = "chickie-core"
+name = "chickie_core"
 version.workspace = true
 edition.workspace = true
 

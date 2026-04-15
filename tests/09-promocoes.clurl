@@ -7,7 +7,7 @@
 # timestamp fields passed as text instead of timestamptz
 
 # --- List promocoes (empty) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-promocoes \
     --loja-uuid {{main_store_uuid}}
 
@@ -19,7 +19,7 @@ exit-code == 0
 # ============================================================
 
 # --- Create promotion for update test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-promocao \
     --loja-uuid {{main_store_uuid}} \
     --nome "Update Test Promo" \
@@ -41,7 +41,7 @@ stdout contains "Update Test Promo"
 stdout contains "Original description"
 
 # --- Update promotion ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-promocao \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{update_promocao_uuid}} \
@@ -54,7 +54,7 @@ exit-code == 0
 stdout contains "Promoção atualizada"
 
 # --- Verify updated promotion ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-promocoes \
     --loja-uuid {{main_store_uuid}}
 
@@ -64,7 +64,7 @@ stdout contains "Updated Test Promo"
 stdout contains "Updated description"
 
 # --- Clean up promotion ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-promocao \
     {{update_promocao_uuid}}
 

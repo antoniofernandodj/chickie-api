@@ -34,10 +34,10 @@ API REST em Rust (Axum + Tokio) para o sistema de pedidos e entregas **Chickie**
 
 ## Estrutura de Módulos
 
-### Core (crates/core/src/)
+### Core (crates/chickie_core/src/)
 
 ```
-crates/core/src/
+crates/chickie_core/src/
 ├── domain/                     # Camada de domínio puro
 │   ├── errors/mod.rs           # DomainError enum + DomainResult<T>
 │   └── enums/                  # Enums puros (sem sqlx Encode/Decode)

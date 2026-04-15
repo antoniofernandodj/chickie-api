@@ -1,18 +1,20 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 
 use chickie_core::{
     models::Usuario,
-    usecases::ListarEnderecosEntregaPorLojaUsecase
+    usecases::ListarEnderecosEntregaPorLojaUsecase,
+    proto
 };
-use crate::handlers::{dto::AppError, AppState};
+use chickie_core::ports::to_proto::ToProto;
+use crate::handlers::{dto::AppError, AppState, protobuf::Protobuf};
 
 pub async fn listar_por_loja(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
-) -> Result<impl IntoResponse, AppError> {
+) -> Result<Protobuf<proto::ListarEnderecosResponse>, AppError> {
 
     let usecase = ListarEnderecosEntregaPorLojaUsecase::new(
         state.endereco_entrega_service.clone(),
@@ -22,5 +24,7 @@ pub async fn listar_por_loja(
 
     let enderecos = usecase.executar().await?;
 
-    Ok(Json(enderecos))
+    let enderecos_proto = enderecos.iter().map(|e| e.to_proto()).collect();
+
+    Ok(Protobuf(proto::ListarEnderecosResponse { enderecos: enderecos_proto }))
 }

@@ -15,7 +15,7 @@ use crate::handlers::{
     AppState,
     protobuf::Protobuf
 };
-use chickie_core::ports::to_proto::ToProto;
+use chickie_core::{ports::to_proto::ToProto, models};
 use rust_decimal::prelude::FromPrimitive;
 
 pub async fn avaliar_produto(
@@ -37,7 +37,7 @@ pub async fn avaliar_produto(
     let descricao: Option<String> = if payload.descricao.is_empty() { None } else { Some(payload.descricao.clone()) };
     let comentario: Option<String> = if payload.comentario.is_empty() { None } else { Some(payload.comentario.clone()) };
 
-    let avaliacao: chickie_core::models::AvaliacaoDeProduto = usecase.avaliar_produto(
+    let avaliacao: models::AvaliacaoDeProduto = usecase.avaliar_produto(
         produto_uuid,
         Decimal::from_f64(nota).expect("Invalid f64 to Decimal conversion"),
         descricao.unwrap_or_default(),
@@ -46,43 +46,3 @@ pub async fn avaliar_produto(
 
     Ok(Protobuf(avaliacao.to_proto()))
 }
-
-/*
-use std::sync::Arc;
-
-use axum::{
-    Json, extract::{Path, State, Extension}, response::IntoResponse
-};
-use uuid::Uuid;
-use chickie_core::{
-    models::Usuario,
-    usecases::MarketingUsecase
-};
-use crate::handlers::{
-    dto::{AppError, AvaliarProdutoRequest},
-    AppState
-};
-
-pub async fn avaliar_produto(
-    State(state): State<Arc<AppState>>,
-    Path(loja_uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
-    Json(payload): Json<AvaliarProdutoRequest>,
-) -> Result<impl IntoResponse, AppError> {
-
-    let usecase = MarketingUsecase::new(
-        state.marketing_service.clone(),
-        loja_uuid,
-        usuario
-    );
-
-    let avaliacao = usecase.avaliar_produto(
-        payload.produto_uuid,
-        payload.nota,
-        payload.descricao,
-        payload.comentario
-    ).await?;
-
-    Ok(Json(avaliacao))
-}
-*/

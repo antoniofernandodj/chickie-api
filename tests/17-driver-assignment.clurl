@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create order for driver assignment ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -19,7 +19,7 @@ driver_test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 exit-code == 0
 
 # --- Assign driver to order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     atribuir-entregador \
     --pedido-uuid {{driver_test_pedido_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -29,7 +29,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Remove driver from order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     remover-entregador \
     --pedido-uuid {{driver_test_pedido_uuid}} \
     --loja-uuid {{main_store_uuid}}
@@ -43,7 +43,7 @@ stdout contains "Entregador removido do pedido"
 # ============================================================
 
 # --- Add driver for order test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{order_store_uuid}} \
     --nome "Order Driver" \
@@ -61,7 +61,7 @@ order_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create order for testing ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{order_store_uuid}} \
@@ -76,7 +76,7 @@ test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 exit-code == 0
 
 # --- Assign driver to order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     atribuir-entregador \
     --pedido-uuid {{test_pedido_uuid}} \
     --loja-uuid {{order_store_uuid}} \
@@ -87,7 +87,7 @@ exit-code == 0
 stdout contains "Entregador atribuído"
 
 # --- Remove driver from order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     remover-entregador \
     --pedido-uuid {{test_pedido_uuid}} \
     --loja-uuid {{order_store_uuid}}

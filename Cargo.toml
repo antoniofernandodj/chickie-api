@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "crates/core",
+    "crates/chickie_core",
     "crates/api",
     "crates/worker",
     "crates/scheduler",
@@ -41,4 +41,4 @@ lapin = "2"
 cron = "0.15"
 toml = "0.8"
 rand = "0.8"
-chickie-core = { path = "crates/core" }
+chickie_core = { path = "crates/chickie_core" }

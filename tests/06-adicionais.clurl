@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create an adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-adicional \
     --loja-uuid {{main_store_uuid}} \
     --nome "Queijo Extra" \
@@ -19,7 +19,7 @@ exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- List all adicionais ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais \
     --loja-uuid {{main_store_uuid}}
 
@@ -28,7 +28,7 @@ exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- Update adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{adicional_uuid}} \
@@ -42,7 +42,7 @@ stdout contains "Queijo Premium"
 stdout contains "Queijo importado especial"
 
 # --- Delete adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{adicional_uuid}}
@@ -55,7 +55,7 @@ exit-code == 0
 # ============================================================
 
 # --- Create additional for availability test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-adicional \
     --loja-uuid {{main_store_uuid}} \
     --nome "Disponivel Test" \
@@ -70,7 +70,7 @@ exit-code == 0
 stdout contains "Disponivel Test"
 
 # --- List available add-ons (should include the new one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -79,7 +79,7 @@ exit-code == 0
 stdout contains "Disponivel Test"
 
 # --- Set additional as unavailable ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}} \
@@ -90,7 +90,7 @@ exit-code == 0
 stdout contains "indisponível"
 
 # --- List available add-ons (should NOT include the unavailable one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -99,7 +99,7 @@ exit-code == 0
 stdout not contains "Disponivel Test"
 
 # --- Set additional as available again ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}} \
@@ -110,7 +110,7 @@ exit-code == 0
 stdout contains "disponível"
 
 # --- Clean up ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}}

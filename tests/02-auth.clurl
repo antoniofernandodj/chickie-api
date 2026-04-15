@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create admin user (for store creation) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Test Admin" \
     --username "testadmin" \
@@ -22,7 +22,7 @@ stdout contains "testadmin"
 stdout contains "administrador"
 
 # --- Create regular user (cliente) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Test User" \
     --username "testuser" \
@@ -39,7 +39,7 @@ stdout contains "testuser"
 stdout contains "cliente"
 
 # --- Create user for order tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Order User" \
     --username "orderuser" \
@@ -54,7 +54,7 @@ order_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create user for review tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Review User" \
     --username "reviewuser" \
@@ -69,7 +69,7 @@ review_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create user for favorite tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Favorite User" \
     --username "favuser" \
@@ -84,7 +84,7 @@ fav_user_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create user for staff tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Staff Admin" \
     --username "staffadmin" \
@@ -100,7 +100,7 @@ staff_admin_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create test user for availability tests ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     signup \
     --nome "Availability User" \
     --username "availuser" \
@@ -112,7 +112,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Verify email NOT available (already taken) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-email-disponivel "avail@test.com"
 
 [Asserts]
@@ -120,7 +120,7 @@ exit-code == 0
 stderr contains "já está em uso"
 
 # --- Verify email IS available (new email) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-email-disponivel "unique-new-email@test.com"
 
 [Asserts]
@@ -128,7 +128,7 @@ exit-code == 0
 stdout contains "está disponível"
 
 # --- Verify username NOT available (already taken) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-username-disponivel "availuser"
 
 [Asserts]
@@ -136,7 +136,7 @@ exit-code == 0
 stderr contains "já está em uso"
 
 # --- Verify username IS available (new username) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     verificar-username-disponivel "unique-username-xyz"
 
 [Asserts]
@@ -144,7 +144,7 @@ exit-code == 0
 stdout contains "está disponível"
 
 # --- Test login ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     login \
     --identifier "testuser@example.com" \
     --senha "testpass123"
@@ -154,7 +154,7 @@ exit-code == 0
 stdout contains "Login realizado"
 
 # --- Test login with wrong password (should fail) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     login \
     --identifier "testuser@example.com" \
     --senha "wrongpassword"
@@ -163,7 +163,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 stderr contains "Senha incorreta"
 
 # --- List all users ---
-RUN cargo run --quiet -p chickie-cli -- list-users
+RUN cargo run --quiet -p cli -- list-users
 
 [Asserts]
 exit-code == 0

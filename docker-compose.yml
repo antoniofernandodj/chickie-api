@@ -24,7 +24,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    container_name: chickie-rabbitmq
+    container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: chickie
       RABBITMQ_DEFAULT_PASS: chickie_password
@@ -46,8 +46,8 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/api.dockerfile
-    # image: chickie_api:latest
-    container_name: chickie-api
+    # image: api:latest
+    container_name: api
     # Production: use environment variables only
     # Development: use secrets env file locally
     env_file:
@@ -79,7 +79,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/worker.dockerfile
-    container_name: chickie-worker
+    container_name: worker
     # Production: use environment variables only
     # Development: use secrets env file locally
     env_file:
@@ -108,7 +108,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/scheduler.dockerfile
-    container_name: chickie-scheduler
+    container_name: scheduler
     # Production: use environment variables only
     # Development: use secrets env file locally
     env_file:

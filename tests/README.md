@@ -108,7 +108,7 @@ Example:
 
 ```clurl
 # Uses {{main_store_uuid}} from 02-lojas.clurl
-RUN cargo run --quiet -p chickie-cli -- some-command --loja-uuid {{main_store_uuid}}
+RUN cargo run --quiet -p cli -- some-command --loja-uuid {{main_store_uuid}}
 
 [Captures]
 new_uuid: stdout regex /│\s+([0-9a-f-]{36})\s+│/

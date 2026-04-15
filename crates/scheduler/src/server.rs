@@ -32,7 +32,7 @@ pub async fn start_health_server() -> Result<()> {
 async fn health_check() -> Json<serde_json::Value> {
     Json(json!({
         "status": "healthy",
-        "service": "chickie-scheduler",
+        "service": "scheduler",
         "timestamp": Utc::now().to_rfc3339()
     }))
 }

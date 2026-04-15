@@ -41,7 +41,7 @@ exit-code == 0
 stdout contains "Disponivel Test"
 
 # --- List available add-ons (should include the new one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais-disponiveis \
     --loja-uuid {{main_store_uuid}}
 ```
@@ -296,7 +296,7 @@ parse error in tests/06-adicionais.clurl: line 70: invalid assert
 # ============================================================
 
 # --- Create an adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-adicional \
     --loja-uuid {{main_store_uuid}} \
     --nome "Queijo Extra" \
@@ -311,7 +311,7 @@ exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- List all adicionais ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais \
     --loja-uuid {{main_store_uuid}}
 
@@ -320,7 +320,7 @@ exit-code == 0
 stdout contains "Queijo Extra"
 
 # --- Update adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{adicional_uuid}} \
@@ -334,7 +334,7 @@ stdout contains "Queijo Premium"
 stdout contains "Queijo importado especial"
 
 # --- Delete adicional ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{adicional_uuid}}
@@ -347,7 +347,7 @@ exit-code == 0
 # ============================================================
 
 # --- Create additional for availability test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-adicional \
     --loja-uuid {{main_store_uuid}} \
     --nome "Disponivel Test" \
@@ -362,7 +362,7 @@ exit-code == 0
 stdout contains "Disponivel Test"
 
 # --- List available add-ons (should include the new one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -371,7 +371,7 @@ exit-code == 0
 stdout contains "Disponivel Test"
 
 # --- Set additional as unavailable ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}} \
@@ -382,7 +382,7 @@ exit-code == 0
 stdout contains "indisponivel"
 
 # --- List available add-ons (should NOT include the unavailable one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-adicionais-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -391,7 +391,7 @@ exit-code == 0
 stdout not contains "Disponivel Test"
 
 # --- Set additional as available again ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}} \
@@ -402,7 +402,7 @@ exit-code == 0
 stdout contains "disponivel"
 
 # --- Clean up ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-adicional \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{disp_adicional_uuid}}
@@ -433,7 +433,7 @@ parse error in tests/15-funcionarios.clurl: line 118: invalid assert
 # ============================================================
 
 # --- Add employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --nome "Maria Funcionaria" \
@@ -454,7 +454,7 @@ stdout contains "Funcionario adicionado"
 stdout contains "Gerente"
 
 # --- List employees ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -463,7 +463,7 @@ exit-code == 0
 stdout contains "Gerente"
 
 # --- Add delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{main_store_uuid}} \
     --nome "Carlos Entregador" \
@@ -484,7 +484,7 @@ stdout contains "Moto"
 stdout contains "ABC-1234"
 
 # --- List delivery drivers ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores \
     --loja-uuid {{main_store_uuid}}
 
@@ -494,7 +494,7 @@ stdout contains "Moto"
 
 # --- Update employee ---
 # SKIP: CLI command not implemented yet (run_update_funcionario just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-funcionario \
 #     --loja-uuid {{main_store_uuid}} \
 #     --uuid {{funcionario_uuid}} \
@@ -507,7 +507,7 @@ stdout contains "Moto"
 
 # --- Update delivery driver ---
 # SKIP: CLI command not implemented yet (run_update_entregador just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     update-entregador \
 #     --loja-uuid {{main_store_uuid}} \
 #     --uuid {{entregador_uuid}} \
@@ -522,7 +522,7 @@ stdout contains "Moto"
 
 # --- Add customer ---
 # SKIP: CLI command not implemented yet (run_add_cliente just prints "em construcao")
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     add-cliente \
 #     --loja-uuid {{main_store_uuid}} \
 #     --nome "Ana Cliente" \
@@ -540,7 +540,7 @@ stdout contains "Moto"
 # ============================================================
 
 # --- Add employee for update test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --nome "Test Func Update" \
@@ -562,7 +562,7 @@ stdout contains "Test Func Update"
 stdout contains "Supervisor"
 
 # --- Update employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-funcionario \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{test_funcionario_uuid}} \
@@ -574,7 +574,7 @@ exit-code == 0
 stdout contains "Funcionario atualizado"
 
 # --- Verify updated employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -584,7 +584,7 @@ stdout contains "Test Func Update"
 stdout contains "Senior Supervisor"
 
 # --- Change employee email/password ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     trocar-email-senha-funcionario \
     --usuario-uuid {{test_funcionario_usuario_uuid}} \
     --novo-email "updatedfunc@test.com" \
@@ -595,7 +595,7 @@ exit-code == 0
 stdout contains "Email/senha do funcionario atualizados"
 
 # --- Delete employee ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-funcionario \
     --uuid {{test_funcionario_uuid}}
 
@@ -604,7 +604,7 @@ exit-code == 0
 stdout contains "Funcionario deletado"
 
 # --- Verify employee is gone ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-funcionarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -613,7 +613,7 @@ exit-code == 0
 stdout not contains "Test Func Update"
 
 # --- Add driver for update test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{main_store_uuid}} \
     --nome "Test Driver Update" \
@@ -634,7 +634,7 @@ stdout contains "Test Driver Update"
 stdout contains "Bicicleta"
 
 # --- Update delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     update-entregador \
     --loja-uuid {{main_store_uuid}} \
     --uuid {{test_entregador_uuid}} \
@@ -646,7 +646,7 @@ exit-code == 0
 stdout contains "Entregador atualizado"
 
 # --- Verify updated driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores \
     --loja-uuid {{main_store_uuid}}
 
@@ -656,7 +656,7 @@ stdout contains "Moto"
 stdout contains "TEST-9999"
 
 # --- Change driver email/password ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     trocar-email-senha-entregador \
     --usuario-uuid {{test_entregador_usuario_uuid}} \
     --novo-email "updateddriver@test.com" \
@@ -667,7 +667,7 @@ exit-code == 0
 stdout contains "Email/senha do entregador atualizados"
 
 # --- Set driver as unavailable ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-entregador \
     --uuid {{test_entregador_uuid}} \
     --disponivel false
@@ -677,7 +677,7 @@ exit-code == 0
 stdout contains "indisponivel"
 
 # --- List available drivers (should not show unavailable one) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-entregadores-disponiveis \
     --loja-uuid {{main_store_uuid}}
 
@@ -686,7 +686,7 @@ exit-code == 0
 stdout not contains "TEST-9999"
 
 # --- Set driver as available again ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-disponibilidade-entregador \
     --uuid {{test_entregador_uuid}} \
     --disponivel true
@@ -696,7 +696,7 @@ exit-code == 0
 stdout contains "disponivel"
 
 # --- Delete delivery driver ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-entregador \
     --uuid {{test_entregador_uuid}}
 
@@ -717,7 +717,7 @@ stdout contains "Entregador deletado"
 
 **Error Output:**
 ```
-✗ [2] cargo run --quiet -p chickie-cli -- atribuir-entregador --pedido-uuid c9a439c0-e58f-43a5-96cb-2b1307fdd97e --loja-uuid e50958a8-6e81-4e45-9261-9927006df334 --entregador-uuid {{entregador_uuid}}
+✗ [2] cargo run --quiet -p cli -- atribuir-entregador --pedido-uuid c9a439c0-e58f-43a5-96cb-2b1307fdd97e --loja-uuid e50958a8-6e81-4e45-9261-9927006df334 --entregador-uuid {{entregador_uuid}}
   exit code: 2
   stderr:
     error: invalid value '{{entregador_uuid}}' for '--entregador-uuid <ENTREGADOR_UUID>': invalid character: found `{` at 2
@@ -734,7 +734,7 @@ stdout contains "Entregador deletado"
 # ============================================================
 
 # --- Create order for driver assignment ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -749,7 +749,7 @@ driver_test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 exit-code == 0
 
 # --- Assign driver to order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     atribuir-entregador \
     --pedido-uuid {{driver_test_pedido_uuid}} \
     --loja-uuid {{main_store_uuid}} \
@@ -759,7 +759,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Remove driver from order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     remover-entregador \
     --pedido-uuid {{driver_test_pedido_uuid}} \
     --loja-uuid {{main_store_uuid}}
@@ -773,7 +773,7 @@ stdout contains "Entregador removido do pedido"
 # ============================================================
 
 # --- Add driver for order test ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     add-entregador \
     --loja-uuid {{order_store_uuid}} \
     --nome "Order Driver" \
@@ -791,7 +791,7 @@ order_entregador_uuid: stdout regex /"uuid":\s*"([0-9a-f-]{36})"/
 exit-code == 0
 
 # --- Create order for testing ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{order_store_uuid}} \
@@ -806,7 +806,7 @@ test_pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 exit-code == 0
 
 # --- Assign driver to order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     atribuir-entregador \
     --pedido-uuid {{test_pedido_uuid}} \
     --loja-uuid {{order_store_uuid}} \
@@ -817,7 +817,7 @@ exit-code == 0
 stdout contains "Entregador atribuido"
 
 # --- Remove driver from order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     remover-entregador \
     --pedido-uuid {{test_pedido_uuid}} \
     --loja-uuid {{order_store_uuid}}

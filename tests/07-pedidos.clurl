@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create an order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-pedido \
     --usuario-uuid {{order_user_uuid}} \
     --loja-uuid {{order_store_uuid}} \
@@ -19,7 +19,7 @@ pedido_uuid: stdout regex /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 exit-code == 0
 
 # --- List orders by user ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-meus-pedidos \
     --usuario-uuid {{order_user_uuid}}
 
@@ -27,7 +27,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- List orders by store ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-pedidos-por-loja \
     --loja-uuid {{order_store_uuid}}
 
@@ -35,7 +35,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Create delivery address for order ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-endereco-entrega \
     --pedido-uuid {{pedido_uuid}} \
     --loja-uuid {{order_store_uuid}} \

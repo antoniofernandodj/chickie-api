@@ -60,7 +60,7 @@ Vamos criar um CRUD completo de pagamentos para um pedido, seguindo cada camada.
 
 ### Passo 1: Criar o Model
 
-**Arquivo:** `crates/core/src/models/pagamento.rs`
+**Arquivo:** `crates/chickie_core/src/models/pagamento.rs`
 
 ```rust
 use serde::{Deserialize, Serialize};
@@ -134,7 +134,7 @@ CREATE INDEX idx_pagamentos_pedido_uuid ON pagamentos(pedido_uuid);
 
 ### Passo 3: Criar o Repository
 
-**Arquivo:** `crates/core/src/repositories/pagamento_repository.rs`
+**Arquivo:** `crates/chickie_core/src/repositories/pagamento_repository.rs`
 
 ```rust
 use std::sync::Arc;
@@ -289,7 +289,7 @@ pub use pagamento_repository::PagamentoRepository;
 
 ### Passo 4: Criar o Port (Trait)
 
-**Arquivo:** `crates/core/src/ports/pagamento_port.rs`
+**Arquivo:** `crates/chickie_core/src/ports/pagamento_port.rs`
 
 ```rust
 use async_trait::async_trait;
@@ -319,7 +319,7 @@ pub use pagamento_port::PagamentoRepositoryPort;
 
 ### Passo 5: Criar o Service
 
-**Arquivo:** `crates/core/src/services/pagamento_service.rs`
+**Arquivo:** `crates/chickie_core/src/services/pagamento_service.rs`
 
 ```rust
 use std::sync::Arc;
@@ -386,7 +386,7 @@ pub use pagamento_service::PagamentoService;
 
 ### Passo 6: Criar o Usecase
 
-**Arquivo:** `crates/core/src/usecases/pagamento.rs`
+**Arquivo:** `crates/chickie_core/src/usecases/pagamento.rs`
 
 ```rust
 use std::sync::Arc;
@@ -702,7 +702,7 @@ curl -X PUT http://localhost:3000/api/pagamentos/{pedido_uuid}/{pagamento_uuid}/
 ## Estrutura Final do Projeto
 
 ```
-crates/core/src/
+crates/chickie_core/src/
 ├── domain/
 │   ├── errors/mod.rs       # DomainError, DomainResult<T>
 │   └── enums/              # Enums puros (sem sqlx)

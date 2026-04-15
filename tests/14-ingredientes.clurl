@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create an ingredient ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-ingrediente \
     --loja-uuid {{main_store_uuid}} \
     --nome "Tomate" \
@@ -19,7 +19,7 @@ exit-code == 0
 stdout contains "Tomate"
 
 # --- List ingredients ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-ingredientes \
     --loja-uuid {{main_store_uuid}}
 
@@ -28,7 +28,7 @@ exit-code == 0
 stdout contains "Tomate"
 
 # --- Delete ingredient ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     delete-ingrediente \
     {{ingrediente_uuid}}
 

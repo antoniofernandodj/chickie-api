@@ -1,10 +1,10 @@
 [package]
-name = "chickie-scheduler"
+name = "scheduler"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-chickie-core.workspace = true
+chickie_core.workspace = true
 axum.workspace = true
 cron.workspace = true
 toml.workspace = true

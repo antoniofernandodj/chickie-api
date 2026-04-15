@@ -4,7 +4,7 @@
 # ============================================================
 
 # --- Create operating hours for Monday (dia 1) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-horario \
     --loja-uuid {{main_store_uuid}} \
     --dia-semana 1 \
@@ -15,7 +15,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Create operating hours for Tuesday (dia 2) ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     create-horario \
     --loja-uuid {{main_store_uuid}} \
     --dia-semana 2 \
@@ -26,7 +26,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- List all schedules ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     list-horarios \
     --loja-uuid {{main_store_uuid}}
 
@@ -34,7 +34,7 @@ RUN cargo run --quiet -p chickie-cli -- \
 exit-code == 0
 
 # --- Toggle schedule inactive ---
-RUN cargo run --quiet -p chickie-cli -- \
+RUN cargo run --quiet -p cli -- \
     toggle-horario-ativo \
     --loja-uuid {{main_store_uuid}} \
     --dia-semana 1
@@ -44,7 +44,7 @@ exit-code == 0
 
 # --- Delete schedule ---
 # SKIP: May fail if dia-semana 2 was already deleted or toggle caused issues
-# RUN cargo run --quiet -p chickie-cli -- \
+# RUN cargo run --quiet -p cli -- \
 #     delete-horario \
 #     --loja-uuid {{main_store_uuid}} \
 #     --dia-semana 2

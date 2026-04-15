@@ -27,7 +27,7 @@
   ✦ The user wants me to proceed with the commit. Let me commit the changes with the proposed commit message.
 
   ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-  │ ✓  Shell cd /home/antonio/Development/rust/chickie-api && git commit -m "feat: migrate data layer from sqlx to sea-orm       │
+  │ ✓  Shell cd /home/antonio/Development/rust/api && git commit -m "feat: migrate data layer from sqlx to sea-orm       │
   │                                                                                                                              │
   │    Migrate entire database layer from raw SQL (sqlx) to sea-orm ORM while                                                    │
   │    preserving business logic and API contracts.                                                                              │
@@ -79,7 +79,7 @@
     sleep.
 
   ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-  │ ✓  Shell cd /home/antonio/Development/rust/chickie-api && git log --oneline -1 && git status (Verify commit was successful)  │
+  │ ✓  Shell cd /home/antonio/Development/rust/api && git log --oneline -1 && git status (Verify commit was successful)  │
   │                                                                                                                              │
   │    c0e7fb4 (HEAD -> feat/seaorm) feat: migrate data layer from sqlx to sea-orm                                               │
   │    On branch feat/seaorm                                                                                                     │

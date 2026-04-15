@@ -34,7 +34,7 @@ Chickie é um sistema de delivery que permite:
 1. **Clone o repositório:**
    ```bash
    git clone <repo-url>
-   cd chickie-api
+   cd api
    ```
 
 2. **Suba o banco de dados (Docker):**

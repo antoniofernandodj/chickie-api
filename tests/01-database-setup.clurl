@@ -4,14 +4,14 @@
 # ============================================================
 
 # --- Wipe database (clean slate) ---
-RUN cargo run -p chickie-cli -- wipe
+RUN cargo run -p cli -- wipe
 
 [Asserts]
 exit-code == 0
 stdout contains "Todas as tabelas removidas"
 
 # --- Apply migrations ---
-RUN cargo run -p chickie-cli -- migrate
+RUN cargo run -p cli -- migrate
 
 [Asserts]
 exit-code == 0

@@ -20,11 +20,13 @@ pub async fn atualizar_avaliacao_produto(
     Extension(usuario): Extension<Usuario>,
     Protobuf(payload): Protobuf<proto::AtualizarAvaliacaoProdutoRequest>,
 ) -> Result<Protobuf<proto::AvaliacaoProduto>, AppError> {
+
     let usecase = MarketingUsecase::new(
         state.marketing_service.clone(),
         Uuid::nil(), // not needed for this operation
         usuario
     );
+
     let nota = payload.nota.parse::<f64>().unwrap_or_default();
     let descricao = if payload.descricao.is_empty() { None } else { Some(payload.descricao.clone()) };
     let comentario = if payload.comentario.is_empty() { None } else { Some(payload.comentario.clone()) };
@@ -34,35 +36,6 @@ pub async fn atualizar_avaliacao_produto(
         descricao.unwrap_or_default(),
         comentario
     ).await?;
+
     Ok(Protobuf(avaliacao.to_proto()))
 }
-
-/*
-use std::sync::Arc;
-use axum::{
-    Json, extract::{Path, State, Extension}, response::IntoResponse
-};
-use uuid::Uuid;
-use chickie_core::{
-    models::Usuario,
-    usecases::MarketingUsecase
-};
-use crate::handlers::{
-    AppState, dto::{AppError, AtualizarAvaliacaoProdutoRequest}
-};
-
-pub async fn atualizar_avaliacao_produto(
-    State(state): State<Arc<AppState>>,
-    Path(uuid): Path<Uuid>,
-    Extension(usuario): Extension<Usuario>,
-    Json(payload): Json<AtualizarAvaliacaoProdutoRequest>,
-) -> Result<impl IntoResponse, AppError> {
-    let usecase = MarketingUsecase::new(
-        state.marketing_service.clone(),
-        Uuid::nil(), // not needed for this operation
-        usuario
-    );
-    let avaliacao = usecase.atualizar_avaliacao_produto(uuid, payload.nota, payload.descricao, payload.comentario).await?;
-    Ok(Json(avaliacao))
-}
-*/
