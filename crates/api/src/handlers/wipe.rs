@@ -1,11 +1,11 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::State, response::IntoResponse, http::StatusCode};
-use serde_json::json;
+use axum::{extract::State, http::StatusCode};
 use sqlx::PgPool;
 use tracing::info;
 
-use crate::handlers::{AppState, OwnerPermission};
+use crate::handlers::{AppState, OwnerPermission, protobuf::Protobuf};
+use chickie_core::proto;
 
 /// ⚠️ **DEVELOPMENT ONLY** — Wipes ALL data from the database.
 /// Must be removed before production deployment.
@@ -13,15 +13,12 @@ use crate::handlers::{AppState, OwnerPermission};
 pub async fn wipe_database(
     State(state): State<Arc<AppState>>,
     _owner: OwnerPermission,
-) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+) -> Result<Protobuf<proto::GenericResponse>, StatusCode> {
 
     // Only allow in development mode
     let mode = std::env::var("MODE").unwrap_or_default();
     if mode != "development" {
-        return Err((
-            StatusCode::FORBIDDEN,
-            Json(json!({ "error": "Wipe endpoint is only available in development mode" })),
-        ));
+        return Err(StatusCode::FORBIDDEN);
     }
 
     let pool: &PgPool = state.db.as_ref();
@@ -62,17 +59,14 @@ pub async fn wipe_database(
     .execute(pool)
     .await
     .map_err(|e| {
-        let msg = format!("Failed to truncate database: {}", e);
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({ "error": msg })))
+        tracing::error!("Failed to truncate database: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
     info!("✅ WIPE DATABASE: All tables truncated successfully");
 
-    Ok((
-        StatusCode::OK,
-        Json(json!({
-            "message": "Database wiped successfully",
-            "warning": "⚠️ All data has been permanently deleted"
-        }))
-    ))
+    Ok(Protobuf(proto::GenericResponse {
+        message: "Database wiped successfully".to_string(),
+        success: true,
+    }))
 }
