@@ -15,13 +15,14 @@ use crate::handlers::{
     protobuf::Protobuf
 };
 use chickie_core::ports::to_proto::ToProto;
+use rust_decimal::{Decimal, prelude::FromPrimitive};
 
 pub async fn avaliar_loja(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Protobuf(payload): Protobuf<proto::AvaliarLojaRequest>,
-) -> Result<Protobuf<proto::AvaliacaoDeLoja>, AppError> {
+) -> Result<Protobuf<proto::AvaliacaoLoja>, AppError> {
 
     let usecase = MarketingUsecase::new(
         state.marketing_service.clone(),
@@ -33,7 +34,7 @@ pub async fn avaliar_loja(
     let comentario = if payload.comentario.is_empty() { None } else { Some(payload.comentario.clone()) };
 
     let avaliacao = usecase.avaliar_loja(
-        nota,
+        Decimal::from_f64(nota).unwrap_or(Decimal::ZERO),
         comentario
     ).await?;
 

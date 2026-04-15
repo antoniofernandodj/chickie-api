@@ -12,7 +12,7 @@ pub async fn criar_endereco(
     State(state): State<Arc<AppState>>,
     Extension(usuario): Extension<Usuario>,
     Protobuf(p): Protobuf<proto::EnderecoRequest>,
-) -> Result<Protobuf<proto::EnderecoUsuario>, AppError> {
+) -> Result<Protobuf<proto::Endereco>, AppError> {
 
     let cep = if p.cep.is_empty() { None } else { Some(p.cep.clone()) };
     let complemento = if p.complemento.is_empty() { None } else { Some(p.complemento.clone()) };

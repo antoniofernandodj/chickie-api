@@ -51,7 +51,7 @@ pub use auth::{
 pub use state::{AppState};
 
 pub use dto::{
-    CreateLojaRequest,
+    // CreateLojaRequest,
     Claims
 };
 

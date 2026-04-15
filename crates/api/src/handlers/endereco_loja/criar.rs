@@ -1,4 +1,4 @@
-use axum::{Extension, extract::{Path, State}, http::StatusCode};
+use axum::{Extension, extract::{Path, State}};
 use std::sync::Arc;
 use uuid::Uuid;
 

@@ -12,8 +12,8 @@ fn log_msg(level: &str, msg: &str) {
 }
 
 fn log_info(msg: &str) { log_msg("INFO", msg); }
-fn log_error(msg: &str) { log_msg("ERROR", msg); }
-fn log_warn(msg: &str) { log_msg("WARN", msg); }
+// fn log_error(msg: &str) { log_msg("ERROR", msg); }
+// fn log_warn(msg: &str) { log_msg("WARN", msg); }
 
 
 fn get_config_path() -> String {

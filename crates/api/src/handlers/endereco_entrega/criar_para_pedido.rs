@@ -14,7 +14,7 @@ pub async fn criar_para_pedido(
     Path((pedido_uuid, loja_uuid)): Path<(Uuid, Uuid)>,
     Extension(_): Extension<Usuario>,
     Protobuf(p): Protobuf<proto::EnderecoRequest>,
-) -> Result<Protobuf<proto::EnderecoEntrega>, AppError> {
+) -> Result<Protobuf<proto::Endereco>, AppError> {
 
     let cep = if p.cep.is_empty() { None } else { Some(p.cep.clone()) };
     let complemento = if p.complemento.is_empty() { None } else { Some(p.complemento.clone()) };

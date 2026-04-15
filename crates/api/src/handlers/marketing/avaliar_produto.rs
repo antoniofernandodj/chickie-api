@@ -3,6 +3,7 @@ use std::sync::Arc;
 use axum::{
     extract::{Path, State, Extension}
 };
+use rust_decimal::Decimal;
 use uuid::Uuid;
 use chickie_core::{
     models::Usuario,
@@ -15,13 +16,14 @@ use crate::handlers::{
     protobuf::Protobuf
 };
 use chickie_core::ports::to_proto::ToProto;
+use rust_decimal::prelude::FromPrimitive;
 
 pub async fn avaliar_produto(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Protobuf(payload): Protobuf<proto::AvaliarProdutoRequest>,
-) -> Result<Protobuf<proto::AvaliacaoDeProduto>, AppError> {
+) -> Result<Protobuf<proto::AvaliacaoProduto>, AppError> {
 
     let usecase = MarketingUsecase::new(
         state.marketing_service.clone(),
@@ -32,13 +34,13 @@ pub async fn avaliar_produto(
     let produto_uuid = Uuid::parse_str(&payload.produto_uuid)
         .map_err(|e| AppError::BadRequest(format!("Invalid produto_uuid: {}", e)))?;
     let nota = payload.nota.parse::<f64>().unwrap_or_default();
-    let descricao = if payload.descricao.is_empty() { None } else { Some(payload.descricao.clone()) };
-    let comentario = if payload.comentario.is_empty() { None } else { Some(payload.comentario.clone()) };
+    let descricao: Option<String> = if payload.descricao.is_empty() { None } else { Some(payload.descricao.clone()) };
+    let comentario: Option<String> = if payload.comentario.is_empty() { None } else { Some(payload.comentario.clone()) };
 
-    let avaliacao = usecase.avaliar_produto(
+    let avaliacao: chickie_core::models::AvaliacaoDeProduto = usecase.avaliar_produto(
         produto_uuid,
-        nota,
-        descricao,
+        Decimal::from_f64(nota).expect("Invalid f64 to Decimal conversion"),
+        descricao.unwrap_or_default(),
         comentario
     ).await?;
 

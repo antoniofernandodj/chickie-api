@@ -14,7 +14,7 @@ pub async fn atualizar_endereco(
     Path(uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Protobuf(p): Protobuf<proto::EnderecoRequest>,
-) -> Result<Protobuf<proto::EnderecoUsuario>, AppError> {
+) -> Result<Protobuf<proto::Endereco>, AppError> {
 
     let cep = if p.cep.is_empty() { None } else { Some(p.cep.clone()) };
     let complemento = if p.complemento.is_empty() { None } else { Some(p.complemento.clone()) };
