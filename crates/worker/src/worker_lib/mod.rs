@@ -77,7 +77,8 @@ impl WorkerConfig {
         Self {
             // host: env::var("RABBITMQ_HOST")
             //     .expect("RABBITMQ_HOST não encontrado!"),
-            host: "rabbitmq".into(),
+            host: env::var("RABBITMQ_HOST")
+                .expect("RABBITMQ_HOST não encontrado!"),
             // port: env::var("RABBITMQ_PORT").ok().and_then(|p| p.parse().ok())
             //     .expect("RABBITMQ_PORT não encontrado!"),
             port: 5672,
