@@ -127,6 +127,15 @@ impl ToProto<crate::proto::Loja> for Loja {
             logo_url: self.logo_url.clone().unwrap_or_default(),
             banner_url: self.banner_url.clone().unwrap_or_default(),
             bloqueado: self.bloqueado,
+            horario_abertura: self.horario_abertura.map(|t| t.format("%H:%M").to_string()).unwrap_or_default(),
+            horario_fechamento: self.horario_fechamento.map(|t| t.format("%H:%M").to_string()).unwrap_or_default(),
+            dias_funcionamento: self.dias_funcionamento.as_ref().map(|v| v.iter().map(|d| d.to_string()).collect::<Vec<String>>().join(",")).unwrap_or_default(),
+            tempo_preparo_min: self.tempo_preparo_min.unwrap_or_default(),
+            taxa_entrega: self.taxa_entrega.and_then(|d| d.try_into().ok()).unwrap_or_default(),
+            valor_minimo_pedido: self.valor_minimo_pedido.and_then(|d| d.try_into().ok()).unwrap_or_default(),
+            raio_entrega_km: self.raio_entrega_km.and_then(|d| d.try_into().ok()).unwrap_or_default(),
+            criado_em: self.criado_em.to_rfc3339(),
+            atualizado_em: self.atualizado_em.to_rfc3339(),
         }
     }
 }

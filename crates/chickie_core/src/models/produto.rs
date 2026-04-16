@@ -65,7 +65,7 @@ impl ToProto<crate::proto::Produto> for Produto {
             categoria_uuid: self.categoria_uuid.to_string(),
             nome: self.nome.clone(),
             descricao: self.descricao.clone().unwrap_or_default(),
-            preco: self.preco.to_string(),
+            preco: self.preco.try_into().unwrap_or_default(),
             imagem_url: self.imagem_url.clone().unwrap_or_default(),
             disponivel: self.disponivel,
             tempo_preparo_min: self.tempo_preparo_min.unwrap_or_default(),
