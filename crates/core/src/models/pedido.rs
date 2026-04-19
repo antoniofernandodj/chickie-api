@@ -227,7 +227,7 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for EstadoDePedido {
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Pedido {
     pub uuid: Uuid,
-    pub usuario_uuid: Uuid,
+    pub usuario_uuid: Option<Uuid>,
     pub loja_uuid: Uuid,
     pub entregador_uuid: Option<Uuid>,
     pub status: EstadoDePedido,
@@ -257,7 +257,7 @@ pub struct Pedido {
 #[allow(dead_code)]
 impl Pedido {
     pub fn new(
-        usuario_uuid: Uuid,
+        usuario_uuid: Option<Uuid>,
         loja_uuid: Uuid,
         subtotal: Decimal,
         taxa_entrega: Decimal,

@@ -39,6 +39,7 @@ pub use openapi::swagger_router;
 
 pub use auth::{
     auth_middleware,
+    optional_auth_middleware,
     create_jwt,
     AdminPermission,
     OwnerPermission,

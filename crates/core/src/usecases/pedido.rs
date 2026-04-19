@@ -13,7 +13,7 @@ use crate::{
 pub struct PedidoUsecase {
     pub pedido_service: Arc<PedidoService>,
     pub produto_repo: Arc<dyn ProdutoRepositoryPort>,
-    pub usuario: Usuario,
+    pub usuario: Option<Usuario>,
     pub loja_uuid: Uuid,
 }
 
@@ -22,7 +22,7 @@ impl PedidoUsecase {
     pub fn new(
         pedido_service: Arc<PedidoService>,
         produto_repo: Arc<dyn ProdutoRepositoryPort>,
-        usuario: Usuario,
+        usuario: Option<Usuario>,
         loja_uuid: Uuid,
     ) -> Self {
 
@@ -42,7 +42,7 @@ impl PedidoUsecase {
         observacoes: Option<String>,
         codigo_cupom: Option<String>,
         itens: Vec<ItemPedidoInput>,
-        endereco_entrega: EnderecoEntregaInput,
+        endereco_entrega: Option<EnderecoEntregaInput>,
     ) -> Result<Uuid, String> {
 
         // 1. Validar produtos e montar partes
@@ -69,8 +69,9 @@ impl PedidoUsecase {
         }
 
         // 2. Criar pedido base
+        let usuario_uuid = self.usuario.as_ref().map(|u| u.uuid);
         let mut pedido = Pedido::new(
-            self.usuario.uuid,
+            usuario_uuid,
             self.loja_uuid,
             Decimal::ZERO,
             taxa_entrega,
@@ -90,18 +91,18 @@ impl PedidoUsecase {
             }
         }
 
-        // 4. Montar endereço de entrega
-        let endereco: EnderecoEntrega = EnderecoEntrega::new(
+        // 4. Montar endereço de entrega (opcional)
+        let endereco: Option<EnderecoEntrega> = endereco_entrega.map(|e| EnderecoEntrega::new(
             Uuid::nil(), // Será substituído pelo service
             self.loja_uuid,
-            endereco_entrega.cep,
-            endereco_entrega.logradouro,
-            endereco_entrega.numero,
-            endereco_entrega.complemento,
-            endereco_entrega.bairro,
-            endereco_entrega.cidade,
-            endereco_entrega.estado,
-        );
+            e.cep,
+            e.logradouro,
+            e.numero,
+            e.complemento,
+            e.bairro,
+            e.cidade,
+            e.estado,
+        ));
 
         // 5. Salvar via service
         self.pedido_service
@@ -109,19 +110,16 @@ impl PedidoUsecase {
             .await
     }
 
-    // pub async fn processar_e_exibir_precos(
-    //     &self,
-    //     pedido: &mut Pedido,
-    // ) -> Result<(), String> {
-    //     self.pedido_service.processar_e_exibir_precos(pedido, self.loja_uuid).await
-    // }
-
     pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {
         self.pedido_service.listar_por_loja(self.loja_uuid).await
     }
 
     pub async fn listar_por_usuario(&self) -> Result<Vec<Pedido>, String> {
-        self.pedido_service.listar_por_usuario(self.usuario.uuid).await
+        let uuid = self.usuario
+            .as_ref()
+            .map(|u| u.uuid)
+            .ok_or_else(|| "Usuário não autenticado".to_string())?;
+        self.pedido_service.listar_por_usuario(uuid).await
     }
 
     pub async fn buscar_pedido_com_entrega(

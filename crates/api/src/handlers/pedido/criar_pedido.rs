@@ -25,7 +25,7 @@ pub struct CriarPedidoRequest {
     pub observacoes: Option<String>,
     pub codigo_cupom: Option<String>,
     pub itens: Vec<ItemPedidoRequest>,
-    pub endereco_entrega: EnderecoEntregaRequest,
+    pub endereco_entrega: Option<EnderecoEntregaRequest>,
 }
 
 #[derive(Deserialize)]
@@ -54,9 +54,12 @@ pub struct EnderecoEntregaRequest {
 
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
-    Extension(usuario): Extension<Usuario>,
+    usuario_ext: Option<Extension<Usuario>>,
     Json(p): Json<CriarPedidoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+
+    let usuario = usuario_ext
+        .map(|Extension(u)| u);
 
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
@@ -74,21 +77,23 @@ pub async fn criar_pedido(
         }).collect(),
     }).collect();
 
+    let endereco = p.endereco_entrega.map(|e| EnderecoEntregaInput {
+        cep: e.cep,
+        logradouro: e.logradouro,
+        numero: e.numero,
+        complemento: e.complemento,
+        bairro: e.bairro,
+        cidade: e.cidade,
+        estado: e.estado,
+    });
+
     let pedido_uuid = usecase.criar_pedido(
         p.taxa_entrega,
         p.forma_pagamento,
         p.observacoes,
         p.codigo_cupom,
         itens,
-        EnderecoEntregaInput {
-            cep: p.endereco_entrega.cep,
-            logradouro: p.endereco_entrega.logradouro,
-            numero: p.endereco_entrega.numero,
-            complemento: p.endereco_entrega.complemento,
-            bairro: p.endereco_entrega.bairro,
-            cidade: p.endereco_entrega.cidade,
-            estado: p.endereco_entrega.estado,
-        },
+        endereco,
     ).await?;
 
     Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido_uuid }))))

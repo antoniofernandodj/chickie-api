@@ -1,7 +1,11 @@
 use axum::{Router, middleware::from_fn_with_state, routing::{get, put, delete, post}};
 use std::sync::Arc;
 
-use crate::handlers::{AppState, auth_middleware};
+use crate::handlers::{
+    AppState,
+    auth_middleware,
+    optional_auth_middleware
+};
 use crate::handlers::{
     criar_pedido,
     listar_pedidos,
@@ -16,8 +20,13 @@ use crate::handlers::{
 };
 
 pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
-    Router::new()
+    // Rota sem auth obrigatória (usuário pode ser anônimo)
+    let public_routes = Router::new()
         .route("/criar", post(criar_pedido))
+        .layer(from_fn_with_state(s.clone(), optional_auth_middleware));
+
+    // Rotas que exigem autenticação
+    let auth_routes = Router::new()
         .route("/listar", get(listar_pedidos))
         .route("/meus", get(listar_meus_pedidos))
         .route("/por-loja/{loja_uuid}", get(listar_por_loja))
@@ -27,5 +36,9 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{uuid}/com-entregador", get(buscar_pedido_com_entregador))
         .route("/{pedido_uuid}/entregador/{loja_uuid}", put(atribuir_entregador))
         .route("/{pedido_uuid}/entregador/{loja_uuid}", delete(remover_entregador))
-        .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .layer(from_fn_with_state(s.clone(), auth_middleware));
+
+    Router::new()
+        .merge(public_routes)
+        .merge(auth_routes)
 }

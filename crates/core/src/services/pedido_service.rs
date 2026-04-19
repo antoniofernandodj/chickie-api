@@ -76,43 +76,6 @@ impl PedidoService {
         self.pedido_repo.criar(pedido).await.map_err(|e| e.to_string())
     }
 
-    // TODO: Depois verificar como integrara logica de descontos e cupons
-    // com o tipo de calculo de pedido
-
-    /// Calcula e exibe os preços baseado na configuração da loja
-    // pub async fn processar_e_exibir_precos(
-    //     &self,
-    //     pedido: &mut Pedido,
-    //     loja_uuid: uuid::Uuid
-    // ) -> Result<(), String> {
-    //     let config_loja = self
-    //         .config_repo
-    //         .buscar_por_loja(loja_uuid)
-    //         .await?
-    //         .unwrap();
-
-    //     tracing::info!("--- Processando Pedido {} ---", pedido.uuid);
-    //     for item in &pedido.itens {
-    //         let preco_media = calcular_preco_por_partes(
-    //             &item.partes, &TipoCalculoPedido::MediaPonderada
-    //         );
-    //         let preco_caro = calcular_preco_por_partes(
-    //             &item.partes, &TipoCalculoPedido::MaisCaro
-    //         );
-    //         let preco_loja = calcular_preco_por_partes(
-    //             &item.partes, &config_loja.tipo_calculo
-    //         );
-
-    //         tracing::info!(
-    //             "Item: Média: {:.2} | Mais caro: {:.2} | Loja Config: {:.2}",
-    //             preco_media,
-    //             preco_caro,
-    //             preco_loja
-    //         );
-    //     }
-    //     Ok(())
-    // }
-
     pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
         self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
@@ -203,29 +166,27 @@ impl PedidoService {
         Ok((Decimal::ZERO, String::new()))
     }
 
-    /// Método principal para criar pedido COM endereço de entrega
+    /// Método principal para criar pedido, com endereço de entrega opcional
     pub async fn criar_pedido_com_entrega(
         &self,
         pedido: &mut Pedido,
-        mut endereco_entrega: crate::models::EnderecoEntrega,  // <-- Modelo, não Request
+        endereco_entrega: Option<crate::models::EnderecoEntrega>,
         codigo_cupom: Option<String>,
     ) -> Result<Uuid, String> {
-        
-        // 1. Processar preços e descontos (lógica existente)
+
+        // 1. Processar preços e descontos
         self.__processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
 
         // 2. Salvar o pedido no banco (retorna UUID)
         let pedido_uuid = self.pedido_repo.criar(pedido).await?;
 
-        // 3. Atualizar o endereço com os UUIDs reais antes de salvar
-        endereco_entrega.uuid = Uuid::new_v4();
-        endereco_entrega.pedido_uuid = pedido_uuid;
-        endereco_entrega.loja_uuid = pedido.loja_uuid;
-        
-        // 4. Criar endereço de entrega vinculado ao pedido (snapshot imutável)
-        self.endereco_entrega_repo
-            .criar(&endereco_entrega)  // Usa o método padrão do trait Repository
-            .await?;
+        // 3. Criar endereço de entrega se fornecido
+        if let Some(mut endereco) = endereco_entrega {
+            endereco.uuid = Uuid::new_v4();
+            endereco.pedido_uuid = pedido_uuid;
+            endereco.loja_uuid = pedido.loja_uuid;
+            self.endereco_entrega_repo.criar(&endereco).await?;
+        }
 
         Ok(pedido_uuid)
     }

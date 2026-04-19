@@ -8,7 +8,7 @@ pub async fn run_create_pedido(state: &AppState, args: CreatePedidoArgs) {
     let subtotal = parse_decimal(args.subtotal);
     let taxa = parse_decimal(args.taxa_entrega);
     let pedido = Pedido::new(
-        args.usuario_uuid,
+        Some(args.usuario_uuid),
         args.loja_uuid,
         subtotal,
         taxa,

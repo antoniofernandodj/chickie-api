@@ -21,7 +21,7 @@ use crate::{
 #[derive(Debug, Clone, FromRow, Serialize, ToSchema)]
 pub struct PedidoComEntregador {
     pub uuid: Uuid,
-    pub usuario_uuid: Uuid,
+    pub usuario_uuid: Option<Uuid>,
     pub loja_uuid: Uuid,
     pub entregador_uuid: Option<Uuid>,
     pub status: EstadoDePedido,

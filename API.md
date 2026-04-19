@@ -808,9 +808,11 @@ Content-Type: application/json
 
 ### 6.1 Criar Pedido
 
+> Auth opcional: se `Authorization: Bearer <token>` for enviado e válido, o pedido fica vinculado ao usuário. Sem token, o pedido é criado como anônimo.
+
 ```
 POST /api/pedidos/criar
-Authorization: Bearer <token>
+Authorization: Bearer <token>  (opcional)
 Content-Type: application/json
 ```
 
@@ -833,6 +835,13 @@ Content-Type: application/json
       ]
     }
   ],
+  "endereco_entrega": null
+}
+```
+
+> `endereco_entrega` é opcional. Se fornecido, deve conter os campos abaixo:
+```json
+{
   "endereco_entrega": {
     "cep": "string | null",
     "logradouro": "string",
@@ -3005,7 +3014,7 @@ DELETE /api/wipe
 | 13 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | 🔒 | 👑 |
 | 14 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | 🔒 | 👑 |
 | 15 | `POST` | `/api/admin/lojas/{loja_uuid}/clientes` | 🔒 | 👑 |
-| 16 | `POST` | `/api/pedidos/criar` | 🔒 | — |
+| 16 | `POST` | `/api/pedidos/criar` | — (auth opcional) | — |
 | 17 | `GET` | `/api/pedidos/listar` | 🔒 | — |
 | 17.1 | `GET` | `/api/pedidos/meus` | 🔒 | — |
 | 18 | `GET` | `/api/pedidos/por-loja/{loja_uuid}` | 🔒 | — |

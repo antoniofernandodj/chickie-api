@@ -23,11 +23,13 @@ pub async fn listar_meus_pedidos(
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
         Arc::clone(&state.produto_repo),
-        usuario,
+        Some(usuario),
         Uuid::nil(),
     );
 
-    let pedidos = usecase.listar_por_usuario().await?;
+    let pedidos = usecase
+        .listar_por_usuario()
+        .await?;
 
     Ok(Json(pedidos))
 }

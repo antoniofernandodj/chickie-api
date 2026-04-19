@@ -312,11 +312,11 @@ Cada repositório implementa também:
 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Deletar adicional |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
 
-#### Pedidos (auth required)
+#### Pedidos
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — sem auth obrigatória; `usuario_uuid` e `endereco_entrega` são opcionais |
 | `GET` | `/api/pedidos/listar` | Listar todos pedidos |
 | `GET` | `/api/pedidos/por-loja/{loja_uuid}` | Listar pedidos por loja |
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido por UUID |
@@ -610,6 +610,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-19  | **Pedido sem usuário obrigatório**: `usuario_uuid` em `pedidos` agora é nullable (migration `0010`). `endereco_entrega` no body de criação de pedido agora é opcional. Endpoint `POST /api/pedidos/criar` não exige mais auth (usa `optional_auth_middleware`). Middleware `optional_auth_middleware` criado. Stack completa atualizada: model, repository, port, service, usecase, handlers, router. |
 | 2026-04-05  | **NUMERIC com tipo correto**: Todos os campos `f64`/`Option<f64>` mapeados para `NUMERIC` migrados para `rust_decimal::Decimal`. |
 | 2026-04-05  | **Endpoint minhas lojas**: `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. |
 | 2026-04-05  | **Campos TIME corrigidos**: `horario_abertura`, `horario_fechamento` (`loja`) e `abertura`, `fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. `loja_service` agora converte `String → NaiveTime::parse_from_str("%H:%M")`. |
