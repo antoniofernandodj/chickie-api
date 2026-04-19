@@ -10,7 +10,6 @@ use crate::handlers::{AppState, dto::AppError};
 pub struct UpdateCategoriaRequest {
     pub nome: String,
     pub descricao: Option<String>,
-    pub ordem: Option<i32>,
     #[serde(default)]
     pub pizza_mode: bool,
 }
@@ -27,7 +26,6 @@ pub async fn atualizar_categoria(
         loja_uuid,
         p.nome,
         p.descricao,
-        p.ordem,
         p.pizza_mode,
     ).await?;
 

@@ -54,9 +54,10 @@ impl CatalogoService {
         nome: String,
         descricao: Option<String>,
         loja_uuid: Uuid,
-        ordem: Option<i32>,
         pizza_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
+
+        let ordem = self.categoria_repo.proxima_ordem(loja_uuid).await?;
 
         let categoria: CategoriaProdutos = CategoriaProdutos::new(
             nome,
@@ -219,7 +220,6 @@ impl CatalogoService {
         loja_uuid: Uuid,
         nome: String,
         descricao: Option<String>,
-        ordem: Option<i32>,
         pizza_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
         let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
@@ -231,11 +231,19 @@ impl CatalogoService {
 
         categoria.nome = nome;
         categoria.descricao = descricao;
-        categoria.ordem = ordem;
         categoria.pizza_mode = pizza_mode;
 
         self.categoria_repo.atualizar(categoria.clone()).await?;
         Ok(categoria)
+    }
+
+    pub async fn reordenar_categorias(
+        &self,
+        loja_uuid: Uuid,
+        reordenacoes: Vec<(Uuid, i32)>,
+    ) -> Result<(), String> {
+        self.categoria_repo.reordenar(loja_uuid, reordenacoes).await?;
+        Ok(())
     }
 
     pub async fn deletar_categoria(

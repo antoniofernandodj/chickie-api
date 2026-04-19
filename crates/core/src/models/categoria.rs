@@ -11,7 +11,7 @@ pub struct CategoriaProdutos {
     pub loja_uuid: Uuid,
     pub nome: String,
     pub descricao: Option<String>,
-    pub ordem: Option<i32>,
+    pub ordem: i32,
     pub pizza_mode: bool,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
@@ -21,7 +21,7 @@ impl CategoriaProdutos {
         nome: String,
         descricao: Option<String>,
         loja_uuid: Uuid,
-        ordem: Option<i32>,
+        ordem: i32,
         pizza_mode: bool,
     ) -> Self {
         Self {

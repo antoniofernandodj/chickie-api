@@ -248,10 +248,6 @@ pub struct Pedido {
     #[sqlx(skip)]
     #[serde(default)]
     pub itens: Vec<ItemPedido>,
-    /// Legacy: partes agora estão dentro de cada item
-    #[sqlx(skip)]
-    #[serde(skip_serializing, skip_deserializing)]
-    pub partes: Vec<ParteDeItemPedido>
 }
 
 #[allow(dead_code)]
@@ -281,7 +277,6 @@ impl Pedido {
             atualizado_em: Utc::now(),
             itens_json: vec![],
             itens: Vec::new(),
-            partes: Vec::new()
         }
     }
 

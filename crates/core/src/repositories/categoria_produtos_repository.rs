@@ -5,6 +5,7 @@ use uuid::Uuid;
 use crate::{models::{CategoriaProdutos, Model}, repositories::Repository};
 use crate::ports::CategoriaRepositoryPort;
 use crate::domain::errors::{DomainError, DomainResult};
+use sqlx::Acquire;
 
 pub struct CategoriaProdutosRepository { pool: Arc<PgPool> }
 
@@ -115,5 +116,36 @@ impl CategoriaRepositoryPort for CategoriaProdutosRepository {
             .bind(categoria_uuid)
             .fetch_one(&*self.pool)
             .await.map_err(|e| DomainError::Internal(e.to_string()))
+    }
+
+    async fn proxima_ordem(&self, loja_uuid: Uuid) -> DomainResult<i32> {
+        let max: Option<i32> = sqlx::query_scalar(
+            "SELECT MAX(ordem) FROM categorias_produtos WHERE loja_uuid = $1"
+        )
+        .bind(loja_uuid)
+        .fetch_one(&*self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        Ok(max.unwrap_or(0) + 1)
+    }
+
+    async fn reordenar(&self, loja_uuid: Uuid, reordenacoes: Vec<(Uuid, i32)>) -> DomainResult<()> {
+        let mut conn = self.pool.acquire().await.map_err(|e| DomainError::Internal(e.to_string()))?;
+        let mut tx = conn.begin().await.map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        for (uuid, ordem) in reordenacoes {
+            sqlx::query(
+                "UPDATE categorias_produtos SET ordem = $1 WHERE uuid = $2 AND loja_uuid = $3"
+            )
+            .bind(ordem)
+            .bind(uuid)
+            .bind(loja_uuid)
+            .execute(&mut *tx)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+        }
+
+        tx.commit().await.map_err(|e| DomainError::Internal(e.to_string()))
     }
 }

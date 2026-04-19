@@ -12,4 +12,6 @@ pub trait CategoriaRepositoryPort: Send + Sync {
     async fn atualizar(&self, categoria: CategoriaProdutos) -> DomainResult<()>;
     async fn deletar(&self, uuid: Uuid) -> DomainResult<()>;
     async fn contar_produtos(&self, categoria_uuid: Uuid) -> DomainResult<i64>;
+    async fn proxima_ordem(&self, loja_uuid: Uuid) -> DomainResult<i32>;
+    async fn reordenar(&self, loja_uuid: Uuid, reordenacoes: Vec<(Uuid, i32)>) -> DomainResult<()>;
 }

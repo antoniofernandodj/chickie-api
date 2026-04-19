@@ -916,8 +916,7 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ],
-    "partes": []
+    ]
   }
 ]
 ```
@@ -972,8 +971,7 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ],
-    "partes": []
+    ]
   }
 ]
 ```
@@ -1039,8 +1037,7 @@ Authorization: Bearer <token>
         }
       ]
     }
-  ],
-  "partes": []
+  ]
 }
 ```
 
@@ -1092,8 +1089,7 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ],
-    "partes": []
+    ]
   }
 ]
 ```
@@ -1125,8 +1121,7 @@ Authorization: Bearer <token>
     "tempo_estimado_min": 45,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
-    "itens": [],
-    "partes": []
+    "itens": []
   },
   "endereco_entrega": {
     "uuid": "550e8400-e29b-41d4-a716-446655440020",

@@ -190,6 +190,7 @@ pub use catalogo::{
     listar_adicionais,
     listar_adicionais_disponiveis,
     listar_categorias,
+    reordenar_categorias,
 };
 
 pub use endereco_entrega::{

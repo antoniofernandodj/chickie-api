@@ -417,7 +417,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
-                atualizado_em: r.atualizado_em, itens_json: vec![], itens: vec![], partes: vec![],
+                atualizado_em: r.atualizado_em, itens_json: vec![], itens: vec![],
             };
             crate::ports::PedidoComEntregador {
                 pedido,

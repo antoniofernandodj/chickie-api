@@ -7,23 +7,24 @@ ALTER TABLE pedidos
 ADD COLUMN itens JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 -- 2. Migrar dados existentes das tabelas relacionais para JSONB
--- Estrutura do JSON:
+-- Estrutura do JSON (coluna `itens` em `pedidos`):
+-- Pedido não tem partes diretamente — partes pertencem a cada ItemPedido.
 -- [
---   {
+--   {                            <- ItemPedido
 --     "uuid": "...",
 --     "pedido_uuid": "...",
 --     "loja_uuid": "...",
 --     "quantidade": 1,
 --     "observacoes": "...",
---     "partes": [
---       {
+--     "partes": [                <- partes do item (não do pedido)
+--       {                        <- ParteDeItemPedido
 --         "uuid": "...",
 --         "loja_uuid": "...",
 --         "produto_uuid": "...",
 --         "produto_nome": "...",
 --         "preco_unitario": 0.00,
 --         "posicao": 1,
---         "adicionais": [
+--         "adicionais": [        <- adicionais da parte
 --           {
 --             "uuid": "...",
 --             "loja_uuid": "...",
@@ -33,8 +34,7 @@ ADD COLUMN itens JSONB NOT NULL DEFAULT '[]'::jsonb;
 --           }
 --         ]
 --       }
---     ],
---     "adicionais": []
+--     ]
 --   }
 -- ]
 

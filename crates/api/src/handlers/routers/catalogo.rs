@@ -12,6 +12,7 @@ use crate::handlers::{
     listar_categorias,
     atualizar_categoria,
     deletar_categoria,
+    reordenar_categorias,
 };
 
 pub fn catalogo_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
@@ -24,6 +25,7 @@ pub fn catalogo_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
         .route("/{loja_uuid}/adicionais/{adicional_uuid}", delete(deletar_adicional))
         .route("/{loja_uuid}/categorias", post(criar_categoria))
         .route("/{loja_uuid}/categorias", get(listar_categorias))
+        .route("/{loja_uuid}/categorias/reordenar", put(reordenar_categorias))
         .route("/{loja_uuid}/categorias/{uuid}", put(atualizar_categoria))
         .route("/{loja_uuid}/categorias/{uuid}", delete(deletar_categoria))
 }
