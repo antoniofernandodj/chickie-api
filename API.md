@@ -140,6 +140,7 @@ Entregue (terminal) ←─────────────┘
 | `/api/pedidos/` | Pedidos |
 | `/api/marketing/` | Cupons, avaliações, promoções |
 | `/api/catalogo/` | Adicionais, categorias |
+| `/api/horarios/` | Horários de funcionamento |
 | `/api/enderecos-entrega/` | Endereços de entrega |
 | `/api/enderecos-usuario/` | Endereços de usuário |
 | `/api/favoritos/` | Lojas favoritas |
@@ -1983,9 +1984,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 8. Catálogo (🔒)
+## 9. Catálogo (GETs públicos, mutações requerem 🔒)
 
-### 8.1 Criar Adicional
+### 9.1 Criar Adicional
 
 ```
 POST /api/catalogo/{loja_uuid}/adicionais
@@ -2017,7 +2018,7 @@ Content-Type: application/json
 
 ---
 
-### 8.2 Listar Adicionais
+### 9.2 Listar Adicionais
 
 ```
 GET /api/catalogo/{loja_uuid}/adicionais
@@ -2040,7 +2041,7 @@ GET /api/catalogo/{loja_uuid}/adicionais
 
 ---
 
-### 8.3 Listar Adicionais Disponíveis
+### 9.3 Listar Adicionais Disponíveis
 
 ```
 GET /api/catalogo/{loja_uuid}/adicionais/disponiveis
@@ -2063,7 +2064,7 @@ GET /api/catalogo/{loja_uuid}/adicionais/disponiveis
 
 ---
 
-### 8.4 Atualizar Adicional
+### 9.4 Atualizar Adicional
 
 ```
 PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}
@@ -2109,7 +2110,7 @@ Content-Type: application/json
 
 ---
 
-### 8.5 Atualizar Disponibilidade do Adicional
+### 9.5 Atualizar Disponibilidade do Adicional
 
 ```
 PUT /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade
@@ -2144,7 +2145,7 @@ Content-Type: application/json
 
 ---
 
-### 8.6 Deletar Adicional
+### 9.6 Deletar Adicional
 
 ```
 DELETE /api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}
@@ -2169,7 +2170,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 8.7 Criar Categoria
+### 9.7 Criar Categoria
 
 ```
 POST /api/catalogo/{loja_uuid}/categorias
@@ -2202,7 +2203,7 @@ Content-Type: application/json
 
 ---
 
-### 8.8 Listar Categorias
+### 9.8 Listar Categorias
 
 ```
 GET /api/catalogo/{loja_uuid}/categorias
@@ -2225,7 +2226,7 @@ GET /api/catalogo/{loja_uuid}/categorias
 
 ---
 
-### 8.9 Atualizar Categoria
+### 9.9 Atualizar Categoria
 
 ```
 PUT /api/catalogo/{loja_uuid}/categorias/{uuid}
@@ -2258,7 +2259,7 @@ Content-Type: application/json
 
 ---
 
-### 8.10 Deletar Categoria
+### 9.10 Deletar Categoria
 
 ```
 DELETE /api/catalogo/{loja_uuid}/categorias/{uuid}
@@ -2278,9 +2279,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 9. Endereços de Entrega (🔒)
+## 10. Endereços de Entrega (🔒)
 
-### 9.1 Criar Endereço para Pedido
+### 10.1 Criar Endereço para Pedido
 
 ```
 POST /api/enderecos-entrega/{pedido_uuid}/{loja_uuid}
@@ -2321,7 +2322,7 @@ Content-Type: application/json
 
 ---
 
-### 9.2 Buscar Endereço por Pedido
+### 10.2 Buscar Endereço por Pedido
 
 ```
 GET /api/enderecos-entrega/{pedido_uuid}
@@ -2348,7 +2349,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 9.3 Listar Endereços por Loja
+### 10.3 Listar Endereços por Loja
 
 ```
 GET /api/enderecos-entrega/{loja_uuid}/loja
@@ -2377,9 +2378,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 10. Endereços de Loja (🔒)
+## 11. Endereços de Loja (🔒)
 
-### 10.1 Listar Endereços da Loja
+### 11.1 Listar Endereços da Loja
 
 ```
 GET /api/enderecos-loja/{loja_uuid}
@@ -2407,7 +2408,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 10.2 Criar Endereço da Loja
+### 11.2 Criar Endereço da Loja
 
 ```
 POST /api/enderecos-loja/{loja_uuid}
@@ -2439,7 +2440,7 @@ Content-Type: application/json
 
 ---
 
-### 10.3 Atualizar Endereço da Loja
+### 11.3 Atualizar Endereço da Loja
 
 ```
 PUT /api/enderecos-loja/{loja_uuid}/{endereco_uuid}
@@ -2466,7 +2467,7 @@ Content-Type: application/json
 
 ---
 
-### 10.4 Deletar Endereço da Loja
+### 11.4 Deletar Endereço da Loja
 
 ```
 DELETE /api/enderecos-loja/{loja_uuid}/{endereco_uuid}
@@ -2484,9 +2485,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 11. Endereços de Usuário (🔒)
+## 12. Endereços de Usuário (🔒)
 
-### 11.1 Criar Endereço
+### 12.1 Criar Endereço
 
 ```
 POST /api/enderecos-usuario/
@@ -2526,7 +2527,7 @@ Content-Type: application/json
 
 ---
 
-### 11.2 Listar Endereços
+### 12.2 Listar Endereços
 
 ```
 GET /api/enderecos-usuario/
@@ -2554,7 +2555,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11.3 Buscar Endereço
+### 12.3 Buscar Endereço
 
 ```
 GET /api/enderecos-usuario/{uuid}
@@ -2580,7 +2581,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 11.4 Atualizar Endereço
+### 12.4 Atualizar Endereço
 
 ```
 PUT /api/enderecos-usuario/{uuid}
@@ -2620,7 +2621,7 @@ Content-Type: application/json
 
 ---
 
-### 11.5 Deletar Endereço
+### 12.5 Deletar Endereço
 
 ```
 DELETE /api/enderecos-usuario/{uuid}
@@ -2631,9 +2632,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 12. Lojas Favoritas (🔒)
+## 13. Lojas Favoritas (🔒)
 
-### 12.1 Adicionar Favorita
+### 13.1 Adicionar Favorita
 
 ```
 POST /api/favoritos/{loja_uuid}
@@ -2652,7 +2653,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.2 Remover Favorita
+### 13.2 Remover Favorita
 
 ```
 DELETE /api/favoritos/{loja_uuid}
@@ -2666,7 +2667,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.3 Listar Minhas Favoritas
+### 13.3 Listar Minhas Favoritas
 
 ```
 GET /api/favoritos/minhas
@@ -2687,7 +2688,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 12.4 Verificar se é Favorita
+### 13.4 Verificar se é Favorita
 
 ```
 GET /api/favoritos/{loja_uuid}/verificar
@@ -2701,9 +2702,9 @@ Authorization: Bearer <token>
 
 ---
 
-## 13. Produtos (🔒)
+## 14. Produtos (GETs públicos, mutações requerem 🔒)
 
-### 13.1 Criar Produto
+### 14.1 Criar Produto
 
 ```
 POST /api/produtos/
@@ -2746,7 +2747,7 @@ Content-Type: application/json
 
 ---
 
-### 13.2 Listar Produtos
+### 14.2 Listar Produtos
 
 ```
 GET /api/produtos/listar/{loja_uuid}
@@ -2774,7 +2775,7 @@ GET /api/produtos/listar/{loja_uuid}
 
 ---
 
-### 13.3 Listar Produtos por Categoria
+### 14.3 Listar Produtos por Categoria
 
 ```
 GET /api/produtos/categoria/{categoria_uuid}
@@ -2802,7 +2803,7 @@ GET /api/produtos/categoria/{categoria_uuid}
 
 ---
 
-### 13.4 Buscar Produto por UUID
+### 14.4 Buscar Produto por UUID
 
 ```
 GET /api/produtos/{uuid}
@@ -2828,7 +2829,7 @@ GET /api/produtos/{uuid}
 
 ---
 
-### 13.5 Atualizar Produto
+### 14.5 Atualizar Produto
 
 ```
 PUT /api/produtos/{uuid}
@@ -2867,7 +2868,7 @@ Content-Type: application/json
 
 ---
 
-### 13.6 Deletar Produto
+### 14.6 Deletar Produto
 
 ```
 DELETE /api/produtos/{uuid}
@@ -2878,7 +2879,7 @@ Authorization: Bearer <token>
 
 ---
 
-### 13.7 Atualizar Disponibilidade do Produto
+### 14.7 Atualizar Disponibilidade do Produto
 
 ```
 PUT /api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade
@@ -2913,7 +2914,7 @@ Content-Type: application/json
 
 ---
 
-### 13.8 Subir Imagem do Produto
+### 14.8 Subir Imagem do Produto
 
 ```
 POST /api/produtos/{uuid}/imagem
@@ -2944,9 +2945,85 @@ S3_SECRET_ACCESS_KEY=your-secret-key # Optional, for custom endpoints
 
 ---
 
-## 13. Utilitários
+## 15. Horários de Funcionamento (GET público, mutações requerem 🔒)
 
-### 13.1 OK
+### 15.1 Listar Horários
+
+```
+GET /api/horarios/{loja_uuid}
+```
+
+**Response `200`:**
+```json
+[
+  {
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "dia_semana": 1,
+    "abertura": "08:00",
+    "fechamento": "22:00",
+    "ativo": true
+  }
+]
+```
+
+---
+
+### 15.2 Criar ou Atualizar Horário
+
+```
+POST /api/horarios/{loja_uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "dia_semana": 1,
+  "abertura": "08:00",
+  "fechamento": "22:00",
+  "ativo": true
+}
+```
+
+**Response `204`:** No Content
+
+---
+
+### 15.3 Ativar/Desativar Dia
+
+```
+PUT /api/horarios/{loja_uuid}/dia/{dia_semana}/ativo
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "ativo": false
+}
+```
+
+**Response `204`:** No Content
+
+---
+
+### 15.4 Deletar Horário do Dia
+
+```
+DELETE /api/horarios/{loja_uuid}/dia/{dia_semana}
+Authorization: Bearer <token>
+```
+
+**Response `204`:** No Content
+
+---
+
+## 16. Utilitários
+
+### 15.1 OK
 
 ```
 GET /api/ok
@@ -2959,7 +3036,7 @@ GET /api/ok
 
 ---
 
-### 13.2 Wipe Database (⚠️ Dev Only)
+### 15.2 Wipe Database (⚠️ Dev Only)
 
 ```
 DELETE /api/wipe
@@ -3071,9 +3148,13 @@ DELETE /api/wipe
 | 70 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |
 | 71 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
 | 72 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
-| 73 | `GET` | `/api/ok` | — | — |
-| 74 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
+| 73 | `GET` | `/api/horarios/{loja_uuid}` | — | — |
+| 74 | `POST` | `/api/horarios/{loja_uuid}` | 🔒 | — |
+| 75 | `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | — |
+| 76 | `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | — |
+| 77 | `GET` | `/api/ok` | — | — |
+| 78 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
 
-**Total: 93 endpoints**
+**Total: 97 endpoints**
 
 > **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner
