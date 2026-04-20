@@ -342,26 +342,27 @@ pub enum DomainError {
 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário |
 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador |
 
-#### Produtos (auth required)
+#### Produtos (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/produtos/` | Criar produto |
-| `GET` | `/api/produtos/` | Listar produtos |
-| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
-| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
-| `PUT` | `/api/produtos/{uuid}` | Atualizar product |
-| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
-| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto (S3) |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/produtos/listar/{loja_uuid}` | — | Listar produtos da loja |
+| `GET` | `/api/produtos/categoria/{categoria_uuid}` | — | Listar produtos por categoria |
+| `GET` | `/api/produtos/{uuid}` | — | Buscar produto por UUID |
+| `POST` | `/api/produtos/` | 🔒 | Criar produto |
+| `PUT` | `/api/produtos/{uuid}` | 🔒 | Atualizar produto |
+| `DELETE` | `/api/produtos/{uuid}` | 🔒 | Deletar produto |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade |
+| `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | Subir imagem do produto (S3) |
 
-#### Horários de Funcionamento (🔒)
+#### Horários de Funcionamento (GET público, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/horarios/{loja_uuid}` | Listar horários |
-| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário |
-| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia |
-| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/horarios/{loja_uuid}` | — | Listar horários |
+| `POST` | `/api/horarios/{loja_uuid}` | 🔒 | Criar ou atualizar horário |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | Ativar/desativar dia |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | Deletar horário do dia |
 
 #### Configurações de Pedido (🔒)
 
@@ -402,18 +403,20 @@ pub enum DomainError {
 | `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
 | `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 
-#### Catálogo (auth required)
+#### Catálogo (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
-| `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
-| `GET` | `/api/catalogo/{loja_uuid}/categorias` | Listar categorias |
-| `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Atualizar categoria |
-| `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Deletar categoria (apenas se vazia) |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
+| `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |
+| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Deletar adicional |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | Criar categoria |
+| `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | Atualizar categoria |
+| `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | Deletar categoria (apenas se vazia) |
 
 #### Pedidos (auth required)
 

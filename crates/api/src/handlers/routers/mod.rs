@@ -29,14 +29,14 @@ pub use auth::auth_routes;
 pub use loja::loja_routes;
 pub use loja_admin::loja_admin_routes;
 pub use pedido::pedido_routes;
-pub use produto::produto_routes;
-pub use catalogo::catalogo_routes;
+pub use produto::{produto_routes, produto_public_routes};
+pub use catalogo::{catalogo_routes, catalogo_public_routes};
 pub use endereco_entrega::endereco_entrega_routes;
 pub use endereco_usuario::endereco_usuario_routes;
 pub use loja_favorita::loja_favorita_routes;
 pub use marketing::marketing_routes;
 pub use ingrediente::ingrediente_routes;
-pub use horario::horario_routes;
+pub use horario::{horario_routes, horario_public_routes};
 pub use endereco_loja::endereco_loja_routes;
 pub use config_pedido::config_pedido_routes;
 pub use cupom::cupom_routes;
@@ -70,6 +70,9 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
             .layer(from_fn_with_state(s.clone(), auth_middleware))
         .nest("/lojas", loja_routes())
         .nest("/auth", auth_routes(s))
+        .nest("/horarios", horario_public_routes())
+        .nest("/catalogo", catalogo_public_routes())
+        .nest("/produtos", produto_public_routes())
         .route("/ok", get(ok_handler));
 
     let mode = std::env::var("MODE").unwrap_or_default();

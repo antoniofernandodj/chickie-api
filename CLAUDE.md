@@ -195,8 +195,8 @@ Cada repositório implementa também:
 | Todas sob `/api`                | `POST /api/pedidos`                        |
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
-| Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/produtos`, `/marketing` (parcial), `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin` |
-| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}` |
+| Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/marketing` (parcial), `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin`; GETs de `/produtos`, `/catalogo`, `/horarios` são públicos |
+| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `GET /api/horarios/{loja_uuid}`, `GET /api/catalogo/{loja_uuid}/adicionais`, `GET /api/catalogo/{loja_uuid}/categorias`, `GET /api/produtos/listar/{loja_uuid}`, `GET /api/produtos/{uuid}`, `GET /api/produtos/categoria/{uuid}` |
 | Owner only                      | `/api/wipe` (dev only), `/api/usuarios/`, toggle bloqueio usuários |
 
 ### Referência Completa de Endpoints
@@ -241,27 +241,27 @@ Cada repositório implementa também:
 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário |
 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador |
 
-#### Produtos (auth required)
+#### Produtos (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/produtos/` | Criar produto |
-| `GET` | `/api/produtos/` | Listar produtos |
-| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
-| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
-| `PUT` | `/api/produtos/{uuid}` | Atualizar produto |
-| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
-| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | Atualizar disponibilidade |
-| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/produtos/listar/{loja_uuid}` | — | Listar produtos da loja |
+| `GET` | `/api/produtos/categoria/{categoria_uuid}` | — | Listar produtos por categoria |
+| `GET` | `/api/produtos/{uuid}` | — | Buscar produto por UUID |
+| `POST` | `/api/produtos/` | 🔒 | Criar produto |
+| `PUT` | `/api/produtos/{uuid}` | 🔒 | Atualizar produto |
+| `DELETE` | `/api/produtos/{uuid}` | 🔒 | Deletar produto |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade |
+| `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | Subir imagem do produto |
 
-#### Horários de Funcionamento (🔒)
+#### Horários de Funcionamento (GET público, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/horarios/{loja_uuid}` | Listar horários |
-| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário |
-| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia |
-| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/horarios/{loja_uuid}` | — | Listar horários |
+| `POST` | `/api/horarios/{loja_uuid}` | 🔒 | Criar ou atualizar horário |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | Ativar/desativar dia |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | Deletar horário do dia |
 
 #### Configurações de Pedido (🔒)
 
@@ -300,17 +300,18 @@ Cada repositório implementa também:
 | `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
 | `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 
-#### Catálogo (auth required)
+#### Catálogo (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | Atualizar disponibilidade (true/false) |
-| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Deletar adicional |
-| `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
+| `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |
+| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Deletar adicional |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | Criar categoria |
 
 #### Pedidos
 
@@ -610,6 +611,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-20  | **Endpoints públicos de leitura**: GETs de `/api/horarios/{loja_uuid}`, `/api/catalogo/{loja_uuid}/adicionais`, `/api/catalogo/{loja_uuid}/adicionais/disponiveis`, `/api/catalogo/{loja_uuid}/categorias`, `/api/produtos/listar/{loja_uuid}`, `/api/produtos/{uuid}` e `/api/produtos/categoria/{uuid}` movidos para fora do middleware de auth. Apenas POST, PUT e DELETE permanecem protegidos. |
 | 2026-04-19  | **Pedido sem usuário obrigatório**: `usuario_uuid` em `pedidos` agora é nullable (migration `0010`). `endereco_entrega` no body de criação de pedido agora é opcional. Endpoint `POST /api/pedidos/criar` não exige mais auth (usa `optional_auth_middleware`). Middleware `optional_auth_middleware` criado. Stack completa atualizada: model, repository, port, service, usecase, handlers, router. |
 | 2026-04-05  | **NUMERIC com tipo correto**: Todos os campos `f64`/`Option<f64>` mapeados para `NUMERIC` migrados para `rust_decimal::Decimal`. |
 | 2026-04-05  | **Endpoint minhas lojas**: `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. |
