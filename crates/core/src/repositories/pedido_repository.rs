@@ -280,9 +280,9 @@ impl Repository<Pedido> for PedidoRepository {
             .await
             .map_err(|e| e.to_string())?;
 
-        tracing::warn!(
+        tracing::info!(
             target: "pedido",
-            "[REPO] pedido_repo.criar chamado uuid={} loja={} itens={} — stacktrace: quem chamou isso?",
+            "[REPO] pedido_repo.criar chamado uuid={} loja={} itens={}",
             pedido.uuid, pedido.loja_uuid, pedido.itens.len(),
         );
         

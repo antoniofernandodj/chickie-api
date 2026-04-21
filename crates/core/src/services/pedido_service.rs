@@ -190,11 +190,7 @@ impl PedidoService {
         );
 
         // 2. Salvar o pedido no banco (retorna UUID)
-        tracing::warn!(
-            target: "pedido",
-            "[SERVICE] chamando pedido_repo.criar SEGUNDA VEZ uuid={} — isso causará duplicate key se __processar já salvou",
-            pedido.uuid,
-        );
+        tracing::info!(target: "pedido", "[SERVICE] chamando pedido_repo.criar uuid={}", pedido.uuid);
         let pedido_uuid = self.pedido_repo.criar(pedido).await?;
         tracing::info!(target: "pedido", "[SERVICE] pedido_repo.criar retornou uuid={}", pedido_uuid);
 
@@ -326,14 +322,6 @@ impl PedidoService {
             "[SERVICE] pedido processado uuid={} subtotal={:.2} desconto={:.2} total={:.2}",
             pedido.uuid, pedido.subtotal, desconto_final, pedido.total,
         );
-
-        tracing::warn!(
-            target: "pedido",
-            "[SERVICE] chamando self.salvar (INSERT) dentro de __processar uuid={}",
-            pedido.uuid,
-        );
-        self.salvar(pedido).await?;
-        tracing::info!(target: "pedido", "[SERVICE] self.salvar concluido para uuid={}", pedido.uuid);
 
         Ok(())
     }
