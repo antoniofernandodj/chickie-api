@@ -38,7 +38,7 @@ pub use marketing::marketing_routes;
 pub use ingrediente::ingrediente_routes;
 pub use horario::{horario_routes, horario_public_routes};
 pub use endereco_loja::endereco_loja_routes;
-pub use config_pedido::config_pedido_routes;
+pub use config_pedido::{config_pedido_routes, config_pedido_public_routes};
 pub use cupom::cupom_routes;
 pub use cupom_admin::cupom_admin_routes;
 pub use funcionario::funcionario_routes;
@@ -76,6 +76,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/horarios", horario_public_routes())
         .nest("/catalogo", catalogo_public_routes())
         .nest("/produtos", produto_public_routes())
+        .nest("/config-pedido", config_pedido_public_routes())
         .route("/ok", get(ok_handler));
 
     let mode = std::env::var("MODE").unwrap_or_default();
