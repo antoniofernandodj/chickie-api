@@ -49,8 +49,7 @@ pub use wipe::wipe_route;
 use super::ok_handler;
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
-    let mut router = Router::new()
-        .nest("/pedidos", pedido_routes(s))
+    let protected = Router::new()
         .nest("/usuarios", usuario_routes())
         .nest("/produtos", produto_routes())
         .nest("/marketing", marketing_routes(s))
@@ -67,7 +66,11 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/funcionarios", funcionario_routes())
         .nest("/entregadores", entregador_routes())
         .nest("/admin", loja_admin_routes())
-            .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .layer(from_fn_with_state(s.clone(), auth_middleware));
+
+    let mut router = Router::new()
+        .merge(protected)
+        .nest("/pedidos", pedido_routes(s))
         .nest("/lojas", loja_routes())
         .nest("/auth", auth_routes(s))
         .nest("/horarios", horario_public_routes())
