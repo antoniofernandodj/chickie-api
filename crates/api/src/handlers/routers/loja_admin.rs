@@ -1,5 +1,5 @@
 use axum::Router;
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post, put};
 
 use crate::handlers::{
     criar_loja,
@@ -9,6 +9,8 @@ use crate::handlers::{
     adicionar_entregador,
     adicionar_cliente,
     criar_categoria_global,
+    atualizar_categoria_global,
+    deletar_categoria_global,
 };
 
 pub fn loja_admin_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
@@ -20,4 +22,6 @@ pub fn loja_admin_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> 
         .route("/lojas/{loja_uuid}/entregadores", post(adicionar_entregador))
         .route("/lojas/{loja_uuid}/clientes", post(adicionar_cliente))
         .route("/categorias/globais", post(criar_categoria_global))
+        .route("/categorias/globais/{uuid}", put(atualizar_categoria_global))
+        .route("/categorias/globais/{uuid}", delete(deletar_categoria_global))
 }

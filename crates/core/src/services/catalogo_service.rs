@@ -277,6 +277,52 @@ impl CatalogoService {
         self.categoria_repo.deletar(uuid).await.map_err(|e| e.to_string())
     }
 
+    pub async fn atualizar_categoria_global(
+        &self,
+        uuid: Uuid,
+        nome: String,
+        descricao: Option<String>,
+        pizza_mode: bool,
+        drink_mode: bool,
+    ) -> Result<CategoriaProdutos, String> {
+        let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid.is_some() {
+            return Err("Categoria não é global".to_string());
+        }
+
+        categoria.nome = nome;
+        categoria.descricao = descricao;
+        categoria.pizza_mode = pizza_mode;
+        categoria.drink_mode = drink_mode;
+
+        self.categoria_repo.atualizar(categoria.clone()).await?;
+        Ok(categoria)
+    }
+
+    pub async fn deletar_categoria_global(
+        &self,
+        uuid: Uuid,
+    ) -> Result<(), String> {
+        let categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid.is_some() {
+            return Err("Categoria não é global".to_string());
+        }
+
+        let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
+        if !produtos.is_empty() {
+            return Err(format!(
+                "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
+                produtos.len()
+            ));
+        }
+
+        self.categoria_repo.deletar(uuid).await.map_err(|e| e.to_string())
+    }
+
     pub async fn buscar_produto_por_uuid(
         &self,
         uuid: Uuid,

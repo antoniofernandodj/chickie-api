@@ -2241,6 +2241,72 @@ Content-Type: application/json
 
 ---
 
+### 9.8.0 Atualizar Categoria Global (🔒 + 👑 Owner)
+
+```
+PUT /api/admin/categorias/globais/{uuid}
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "nome": "Pizzas Especiais",
+  "descricao": "Pizzas premium de diversos sabores",
+  "pizza_mode": true,
+  "drink_mode": false
+}
+```
+
+**Response `200`:**
+```json
+{
+  "uuid": "uuid",
+  "loja_uuid": null,
+  "nome": "Pizzas Especiais",
+  "descricao": "Pizzas premium de diversos sabores",
+  "pizza_mode": true,
+  "drink_mode": false,
+  "criado_em": "2026-04-21T00:00:00Z"
+}
+```
+
+**Response `404`:**
+```json
+{ "error": "Categoria não encontrada" }
+```
+
+**Response `400`:**
+```json
+{ "error": "Categoria não é global" }
+```
+
+---
+
+### 9.8.0b Deletar Categoria Global (🔒 + 👑 Owner)
+
+```
+DELETE /api/admin/categorias/globais/{uuid}
+Authorization: Bearer <token>
+```
+
+> ⚠️ Apenas funciona se a categoria não tiver produtos vinculados.
+
+**Response `204`:** No Content
+
+**Response `404`:**
+```json
+{ "error": "Categoria não encontrada" }
+```
+
+**Response `400`:**
+```json
+{ "error": "Categoria não é global" }
+```
+
+---
+
 ### 9.8.1 Listar Categorias Globais
 
 ```
@@ -3160,6 +3226,8 @@ DELETE /api/wipe
 | 14 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | 🔒 | 👑 |
 | 15 | `POST` | `/api/admin/lojas/{loja_uuid}/clientes`  | ✅   | Admin  |
 | 15.1 | `POST` | `/api/admin/categorias/globais` | 🔒 | 👑 Owner |
+| 15.2 | `PUT` | `/api/admin/categorias/globais/{uuid}` | 🔒 | 👑 Owner |
+| 15.3 | `DELETE` | `/api/admin/categorias/globais/{uuid}` | 🔒 | 👑 Owner |
 | 16 | `POST` | `/api/pedidos/criar` | — (auth opcional) | — |
 | 17 | `GET` | `/api/pedidos/listar` | 🔒 | — |
 | 17.1 | `GET` | `/api/pedidos/meus` | 🔒 | — |
