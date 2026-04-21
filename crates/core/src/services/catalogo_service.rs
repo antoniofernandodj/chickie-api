@@ -53,8 +53,9 @@ impl CatalogoService {
         &self,
         nome: String,
         descricao: Option<String>,
-        loja_uuid: Uuid,
+        loja_uuid: Option<Uuid>,
         pizza_mode: bool,
+        drink_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
 
         let ordem = self.categoria_repo.proxima_ordem(loja_uuid).await?;
@@ -64,7 +65,8 @@ impl CatalogoService {
             descricao,
             loja_uuid,
             ordem,
-            pizza_mode
+            pizza_mode,
+            drink_mode
         );
 
         self.categoria_repo.criar(&categoria).await?;
@@ -214,6 +216,12 @@ impl CatalogoService {
         self.categoria_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
     }
 
+    pub async fn listar_categorias_globais(
+        &self,
+    ) -> Result<Vec<CategoriaProdutos>, String> {
+        self.categoria_repo.listar_globais().await.map_err(|e| e.to_string())
+    }
+
     pub async fn atualizar_categoria(
         &self,
         uuid: Uuid,
@@ -221,17 +229,19 @@ impl CatalogoService {
         nome: String,
         descricao: Option<String>,
         pizza_mode: bool,
+        drink_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
         let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
             .ok_or("Categoria não encontrada")?;
 
-        if categoria.loja_uuid != loja_uuid {
+        if categoria.loja_uuid != Some(loja_uuid) {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 
         categoria.nome = nome;
         categoria.descricao = descricao;
         categoria.pizza_mode = pizza_mode;
+        categoria.drink_mode = drink_mode;
 
         self.categoria_repo.atualizar(categoria.clone()).await?;
         Ok(categoria)
@@ -239,7 +249,7 @@ impl CatalogoService {
 
     pub async fn reordenar_categorias(
         &self,
-        loja_uuid: Uuid,
+        loja_uuid: Option<Uuid>,
         reordenacoes: Vec<(Uuid, i32)>,
     ) -> Result<(), String> {
         self.categoria_repo.reordenar(loja_uuid, reordenacoes).await?;
@@ -254,7 +264,7 @@ impl CatalogoService {
         let categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
             .ok_or("Categoria não encontrada")?;
 
-        if categoria.loja_uuid != loja_uuid {
+        if categoria.loja_uuid != Some(loja_uuid) {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 

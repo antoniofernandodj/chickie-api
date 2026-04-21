@@ -47,7 +47,7 @@ pub async fn reordenar_categorias(
 
     let reordenacoes = p.into_iter().map(|i| (i.categoria_uuid, i.ordem)).collect();
 
-    state.catalogo_service.reordenar_categorias(loja_uuid, reordenacoes).await?;
+    state.catalogo_service.reordenar_categorias(Some(loja_uuid), reordenacoes).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

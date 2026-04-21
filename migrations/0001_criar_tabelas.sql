@@ -118,7 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_lojas_favoritas_loja ON lojas_favoritas(loja_uuid
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS categorias_produtos (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    loja_uuid UUID NOT NULL,
+    loja_uuid UUID,
     nome TEXT NOT NULL,
     descricao TEXT,
     ordem INTEGER,

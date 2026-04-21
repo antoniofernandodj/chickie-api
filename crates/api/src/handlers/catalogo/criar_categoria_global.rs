@@ -1,13 +1,11 @@
-use axum::{Extension, Json, extract::{Path, State}, response::IntoResponse};
+use axum::{Json, extract::State, response::IntoResponse};
 use serde::Deserialize;
 use std::sync::Arc;
-use uuid::Uuid;
 
-use chickie_core::models::Usuario;
-use crate::handlers::{AppState, dto::AppError};
+use crate::handlers::{dto::AppError, AppState, OwnerPermission};
 
 #[derive(Deserialize)]
-pub struct UpdateCategoriaRequest {
+pub struct CreateCategoriaGlobalRequest {
     pub nome: String,
     pub descricao: Option<String>,
     #[serde(default)]
@@ -16,24 +14,22 @@ pub struct UpdateCategoriaRequest {
     pub drink_mode: bool,
 }
 
-pub async fn atualizar_categoria(
+pub async fn criar_categoria_global(
     State(state): State<Arc<AppState>>,
-    Path((loja_uuid, uuid)): Path<(Uuid, Uuid)>,
-    Extension(_): Extension<Usuario>,
-    Json(p): Json<UpdateCategoriaRequest>,
+    _owner: OwnerPermission,
+    Json(p): Json<CreateCategoriaGlobalRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
     if p.pizza_mode && p.drink_mode {
         return Err(AppError::BadRequest("Uma categoria não pode ter pizza_mode e drink_mode ativos ao mesmo tempo".to_string()));
     }
 
-    let categoria = state.catalogo_service.atualizar_categoria(
-        uuid,
-        loja_uuid,
+    let categoria = state.catalogo_service.criar_categoria(
         p.nome,
         p.descricao,
+        None, // Global category
         p.pizza_mode,
-        p.drink_mode,
+        p.drink_mode
     ).await?;
 
     Ok(Json(categoria))

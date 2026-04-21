@@ -8,11 +8,12 @@ use utoipa::ToSchema;
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct CategoriaProdutos {
     pub uuid: Uuid,
-    pub loja_uuid: Uuid,
+    pub loja_uuid: Option<Uuid>,
     pub nome: String,
     pub descricao: Option<String>,
     pub ordem: i32,
     pub pizza_mode: bool,
+    pub drink_mode: bool,
     pub criado_em: chrono::DateTime<chrono::Utc>,
 }
 
@@ -20,9 +21,10 @@ impl CategoriaProdutos {
     pub fn new(
         nome: String,
         descricao: Option<String>,
-        loja_uuid: Uuid,
+        loja_uuid: Option<Uuid>,
         ordem: i32,
         pizza_mode: bool,
+        drink_mode: bool,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
@@ -31,6 +33,7 @@ impl CategoriaProdutos {
             descricao,
             ordem,
             pizza_mode,
+            drink_mode,
             criado_em: Utc::now()
         }
     }

@@ -9,9 +9,10 @@ pub trait CategoriaRepositoryPort: Send + Sync {
     async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<CategoriaProdutos>>;
     async fn listar_todos(&self) -> DomainResult<Vec<CategoriaProdutos>>;
     async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<CategoriaProdutos>>;
+    async fn listar_globais(&self) -> DomainResult<Vec<CategoriaProdutos>>;
     async fn atualizar(&self, categoria: CategoriaProdutos) -> DomainResult<()>;
     async fn deletar(&self, uuid: Uuid) -> DomainResult<()>;
     async fn contar_produtos(&self, categoria_uuid: Uuid) -> DomainResult<i64>;
-    async fn proxima_ordem(&self, loja_uuid: Uuid) -> DomainResult<i32>;
-    async fn reordenar(&self, loja_uuid: Uuid, reordenacoes: Vec<(Uuid, i32)>) -> DomainResult<()>;
+    async fn proxima_ordem(&self, loja_uuid: Option<Uuid>) -> DomainResult<i32>;
+    async fn reordenar(&self, loja_uuid: Option<Uuid>, reordenacoes: Vec<(Uuid, i32)>) -> DomainResult<()>;
 }

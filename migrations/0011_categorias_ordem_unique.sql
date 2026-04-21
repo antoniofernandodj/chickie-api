@@ -18,4 +18,4 @@ ALTER TABLE categorias_produtos ALTER COLUMN ordem SET NOT NULL;
 --    para permitir reordenação atômica dentro de uma transação
 ALTER TABLE categorias_produtos
 ADD CONSTRAINT uq_categorias_loja_ordem
-UNIQUE (loja_uuid, ordem) DEFERRABLE INITIALLY DEFERRED;
+UNIQUE NULLS NOT DISTINCT (loja_uuid, ordem) DEFERRABLE INITIALLY DEFERRED;

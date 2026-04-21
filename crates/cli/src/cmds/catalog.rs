@@ -84,7 +84,7 @@ pub async fn run_delete_produto(state: &AppState, args: DeleteProdutoArgs) {
 pub async fn run_create_categoria(state: &AppState, args: CreateCategoriaArgs) {
     match state
         .catalogo_service
-        .criar_categoria(args.nome, args.descricao, args.loja_uuid, args.pizza_mode)
+        .criar_categoria(args.nome, args.descricao, Some(args.loja_uuid), args.pizza_mode, args.drink_mode)
         .await
     {
         Ok(c) => {
@@ -115,6 +115,7 @@ pub async fn run_update_categoria(state: &AppState, args: UpdateCategoriaArgs) {
             args.nome,
             args.descricao,
             args.pizza_mode,
+            args.drink_mode,
         )
         .await
     {

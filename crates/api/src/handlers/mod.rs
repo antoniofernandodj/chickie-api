@@ -41,7 +41,6 @@ pub use auth::{
     auth_middleware,
     optional_auth_middleware,
     create_jwt,
-    AdminPermission,
     OwnerPermission,
 };
 
@@ -185,11 +184,13 @@ pub use catalogo::{
     deletar_adicional,
     atualizar_disponibilidade,
     criar_categoria,
+    criar_categoria_global,
     atualizar_categoria,
     deletar_categoria,
     listar_adicionais,
     listar_adicionais_disponiveis,
     listar_categorias,
+    listar_categorias_globais,
     reordenar_categorias,
 };
 
