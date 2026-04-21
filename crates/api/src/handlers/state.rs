@@ -13,6 +13,7 @@ use chickie_core::{
         CupomRepositoryPort,
         AdicionalRepositoryPort,
         CategoriaRepositoryPort,
+        OrdemCategoriaRepositoryPort,
         PromocaoRepositoryPort,
         AvaliacaoDeLojaRepositoryPort,
         AvaliacaoDeProdutoRepositoryPort,
@@ -32,6 +33,7 @@ use chickie_core::{
         AvaliacaoDeLojaRepository,
         AvaliacaoDeProdutoRepository,
         CategoriaProdutosRepository,
+        CategoriaOrdemRepository,
         ClienteRepository,
         ConfiguracaoPedidosLojaRepository,
         CupomRepository,
@@ -122,6 +124,8 @@ impl AppState {
             Arc::new(FuncionarioRepository::new(pool.clone()));
         let categorias_de_produtos_repo =
             Arc::new(CategoriaProdutosRepository::new(pool.clone()));
+        let categoria_ordem_repo =
+            Arc::new(CategoriaOrdemRepository::new(pool.clone()));
         let entregador_repo =
             Arc::new(EntregadorRepository::new(pool.clone()));
         let promocao_repo =
@@ -164,7 +168,8 @@ impl AppState {
             CatalogoService::new(
                 Arc::clone(&produto_repo) as Arc<dyn ProdutoRepositoryPort>,
                 Arc::clone(&categorias_de_produtos_repo) as Arc<dyn CategoriaRepositoryPort>,
-                Arc::clone(&adicional_repo) as Arc<dyn AdicionalRepositoryPort>
+                Arc::clone(&adicional_repo) as Arc<dyn AdicionalRepositoryPort>,
+                Arc::clone(&categoria_ordem_repo) as Arc<dyn OrdemCategoriaRepositoryPort>,
             )
         );
 

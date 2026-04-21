@@ -7,7 +7,7 @@ use crate::handlers::{AppState, dto::AppError};
 pub async fn listar_categorias(
     State(state): State<Arc<AppState>>,
     Path(loja_uuid): Path<Uuid>,
-) -> Result<Json<Vec<chickie_core::models::CategoriaProdutos>>, AppError> {
+) -> Result<Json<Vec<chickie_core::models::CategoriaProdutosOrdenada>>, AppError> {
     let categorias = state.catalogo_service.listar_categorias(loja_uuid).await?;
     Ok(Json(categorias))
 }

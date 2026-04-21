@@ -130,7 +130,7 @@ pub async fn run_update_categoria(state: &AppState, args: UpdateCategoriaArgs) {
 pub async fn run_delete_categoria(state: &AppState, args: DeleteCategoriaArgs) {
     match state
         .catalogo_service
-        .deletar_categoria(args.loja_uuid, args.uuid)
+        .deletar_categoria(args.uuid, args.loja_uuid)
         .await
     {
         Ok(()) => print_ok("Categoria deletada"),

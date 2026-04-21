@@ -11,7 +11,6 @@ pub struct CategoriaProdutos {
     pub loja_uuid: Option<Uuid>,
     pub nome: String,
     pub descricao: Option<String>,
-    pub ordem: i32,
     pub pizza_mode: bool,
     pub drink_mode: bool,
     pub criado_em: chrono::DateTime<chrono::Utc>,
@@ -22,7 +21,6 @@ impl CategoriaProdutos {
         nome: String,
         descricao: Option<String>,
         loja_uuid: Option<Uuid>,
-        ordem: i32,
         pizza_mode: bool,
         drink_mode: bool,
     ) -> Self {
@@ -31,7 +29,6 @@ impl CategoriaProdutos {
             loja_uuid,
             nome,
             descricao,
-            ordem,
             pizza_mode,
             drink_mode,
             criado_em: Utc::now()
@@ -42,4 +39,27 @@ impl CategoriaProdutos {
 impl Model for CategoriaProdutos {
     fn get_uuid(&self) -> Uuid { self.uuid }
     fn set_uuid(&mut self, uuid: Uuid) { self.uuid = uuid; }
+}
+
+/// Categoria com ordem no contexto de uma loja específica.
+/// Categorias sem ordem definida recebem um valor de fallback calculado por criado_em.
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct CategoriaProdutosOrdenada {
+    pub uuid: Uuid,
+    pub loja_uuid: Option<Uuid>,
+    pub nome: String,
+    pub descricao: Option<String>,
+    pub ordem: i32,
+    pub pizza_mode: bool,
+    pub drink_mode: bool,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct OrdemCategoriaProdutos {
+    pub uuid: Uuid,
+    pub loja_uuid: Uuid,
+    pub categoria_uuid: Uuid,
+    pub ordem: i32,
+    pub criado_em: chrono::DateTime<chrono::Utc>,
 }

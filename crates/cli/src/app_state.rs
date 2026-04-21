@@ -43,6 +43,7 @@ impl AppState {
         let avaliacoes_de_loja_repo = Arc::new(AvaliacaoDeLojaRepository::new(pool.clone()));
         let funcionario_repo = Arc::new(FuncionarioRepository::new(pool.clone()));
         let categorias_de_produtos_repo = Arc::new(CategoriaProdutosRepository::new(pool.clone()));
+        let categoria_ordem_repo = Arc::new(CategoriaOrdemRepository::new(pool.clone()));
         let entregador_repo = Arc::new(EntregadorRepository::new(pool.clone()));
         let promocao_repo = Arc::new(PromocaoRepository::new(pool.clone()));
         let horario_repo = Arc::new(HorarioFuncionamentoRepository::new(pool.clone()));
@@ -70,6 +71,7 @@ impl AppState {
                 produto_repo,
                 categorias_de_produtos_repo,
                 adicional_repo,
+                categoria_ordem_repo,
             )),
             pedido_service: Arc::new(PedidoService::new(
                 pedido_repo.clone(),

@@ -76,10 +76,7 @@ async fn seed_categorias_globais(pool: &PgPool) -> Result<(), String> {
         ("Quentinhas Fitness", "Refeições balanceadas e saudáveis para manter o foco", false, false),
     ];
 
-    for (i, (nome, descricao, pizza_mode, drink_mode)) in categorias.into_iter().enumerate() {
-        let ordem = (i + 1) as i32;
-        
-        // Verifica se a categoria global já existe pelo nome
+    for (nome, descricao, pizza_mode, drink_mode) in categorias {
         let exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM categorias_produtos WHERE loja_uuid IS NULL AND nome = $1)")
             .bind(nome)
             .fetch_one(pool)
@@ -87,10 +84,9 @@ async fn seed_categorias_globais(pool: &PgPool) -> Result<(), String> {
             .map_err(|e| format!("Falha ao verificar categoria {}: {}", nome, e))?;
 
         if !exists {
-            sqlx::query("INSERT INTO categorias_produtos (nome, descricao, ordem, pizza_mode, drink_mode, loja_uuid) VALUES ($1, $2, $3, $4, $5, NULL)")
+            sqlx::query("INSERT INTO categorias_produtos (nome, descricao, pizza_mode, drink_mode, loja_uuid) VALUES ($1, $2, $3, $4, NULL)")
                 .bind(nome)
                 .bind(descricao)
-                .bind(ordem)
                 .bind(pizza_mode)
                 .bind(drink_mode)
                 .execute(pool)

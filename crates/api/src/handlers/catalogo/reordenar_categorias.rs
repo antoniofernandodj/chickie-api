@@ -20,34 +20,26 @@ pub async fn reordenar_categorias(
 ) -> Result<impl IntoResponse, AppError> {
 
     if p.is_empty() {
-        return Err(
-            AppError::BadRequest(
-                "Lista de reordenação não pode ser vazia".to_string()
-            )
-        );
+        return Err(AppError::BadRequest("Lista de reordenação não pode ser vazia".to_string()));
     }
 
     let mut ordens_vistas: HashSet<i32> = HashSet::new();
     for item in &p {
         if item.ordem < 1 {
-            return Err(
-                AppError::BadRequest(
-                    format!("Ordem deve ser maior que zero, recebido: {}", item.ordem)
-                )
-            );
+            return Err(AppError::BadRequest(
+                format!("Ordem deve ser maior que zero, recebido: {}", item.ordem)
+            ));
         }
         if !ordens_vistas.insert(item.ordem) {
-            return Err(
-                AppError::BadRequest(
-                    format!("Ordem {} duplicada na requisição", item.ordem)
-                )
-            );
+            return Err(AppError::BadRequest(
+                format!("Ordem {} duplicada na requisição", item.ordem)
+            ));
         }
     }
 
     let reordenacoes = p.into_iter().map(|i| (i.categoria_uuid, i.ordem)).collect();
 
-    state.catalogo_service.reordenar_categorias(Some(loja_uuid), reordenacoes).await?;
+    state.catalogo_service.reordenar_categorias(loja_uuid, reordenacoes).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

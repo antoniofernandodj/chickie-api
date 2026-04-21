@@ -4,13 +4,14 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::{
-    Adicional, CategoriaProdutos, Produto
+    Adicional, CategoriaProdutos, CategoriaProdutosOrdenada, Produto
 };
 
 use crate::ports::{
     ProdutoRepositoryPort,
     CategoriaRepositoryPort,
     AdicionalRepositoryPort,
+    OrdemCategoriaRepositoryPort,
 };
 
 #[derive(Clone)]
@@ -18,6 +19,7 @@ pub struct CatalogoService {
     produto_repo: Arc<dyn ProdutoRepositoryPort>,
     categoria_repo: Arc<dyn CategoriaRepositoryPort>,
     adicional_repo: Arc<dyn AdicionalRepositoryPort>,
+    ordem_categoria_repo: Arc<dyn OrdemCategoriaRepositoryPort>,
 }
 
 impl CatalogoService {
@@ -25,8 +27,9 @@ impl CatalogoService {
         produto_repo: Arc<dyn ProdutoRepositoryPort>,
         categoria_repo: Arc<dyn CategoriaRepositoryPort>,
         adicional_repo: Arc<dyn AdicionalRepositoryPort>,
+        ordem_categoria_repo: Arc<dyn OrdemCategoriaRepositoryPort>,
     ) -> Self {
-        Self { produto_repo, categoria_repo, adicional_repo }
+        Self { produto_repo, categoria_repo, adicional_repo, ordem_categoria_repo }
     }
 
     pub async fn criar_adicional(
@@ -58,13 +61,10 @@ impl CatalogoService {
         drink_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
 
-        let ordem = self.categoria_repo.proxima_ordem(loja_uuid).await?;
-
-        let categoria: CategoriaProdutos = CategoriaProdutos::new(
+        let categoria = CategoriaProdutos::new(
             nome,
             descricao,
             loja_uuid,
-            ordem,
             pizza_mode,
             drink_mode
         );
@@ -97,7 +97,7 @@ impl CatalogoService {
 
         Ok(produto)
     }
-    
+
     pub async fn listar_produtos_de_loja(
         &self,
         loja_uuid: Uuid
@@ -114,7 +114,6 @@ impl CatalogoService {
         categoria_uuid: Uuid,
         tempo_preparo_min: Option<i32>,
     ) -> Result<Produto, String> {
-
 
         let produto_antigo_busca =
             self.produto_repo.buscar_por_uuid(produto_uuid)
@@ -212,8 +211,8 @@ impl CatalogoService {
     pub async fn listar_categorias(
         &self,
         loja_uuid: Uuid,
-    ) -> Result<Vec<CategoriaProdutos>, String> {
-        self.categoria_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+    ) -> Result<Vec<CategoriaProdutosOrdenada>, String> {
+        self.categoria_repo.listar_por_loja_com_ordem(loja_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn listar_categorias_globais(
@@ -249,11 +248,10 @@ impl CatalogoService {
 
     pub async fn reordenar_categorias(
         &self,
-        loja_uuid: Option<Uuid>,
+        loja_uuid: Uuid,
         reordenacoes: Vec<(Uuid, i32)>,
     ) -> Result<(), String> {
-        self.categoria_repo.reordenar(loja_uuid, reordenacoes).await?;
-        Ok(())
+        self.ordem_categoria_repo.definir_ordens(loja_uuid, reordenacoes).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_categoria(
@@ -268,7 +266,6 @@ impl CatalogoService {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 
-        // Verificar se a categoria está vazia (sem produtos)
         let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
         if !produtos.is_empty() {
             return Err(format!(

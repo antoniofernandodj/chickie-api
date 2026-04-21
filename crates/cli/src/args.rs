@@ -264,8 +264,6 @@ pub struct CreateCategoriaArgs {
     pub nome: String,
     #[arg(long)]
     pub descricao: Option<String>,
-    #[arg(long)]
-    pub ordem: i32,
     #[arg(long, default_value = "false")]
     pub pizza_mode: bool,
     #[arg(long, default_value = "false")]
@@ -287,8 +285,6 @@ pub struct UpdateCategoriaArgs {
     pub nome: String,
     #[arg(long)]
     pub descricao: Option<String>,
-    #[arg(long)]
-    pub ordem: i32,
     #[arg(long)]
     pub pizza_mode: bool,
     #[arg(long)]
