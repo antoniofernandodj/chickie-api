@@ -115,15 +115,10 @@ impl PedidoRepository {
 
     /// Helper para parsear JSONB em Vec<ItemPedido>
     fn parsear_itens_jsonb(
-        itens_json: &[serde_json::Value]
+        itens_json: &serde_json::Value
     ) -> Result<Vec<ItemPedido>, String> {
-        let json_str = serde_json::to_string(itens_json)
-            .map_err(|e| e.to_string())?;
-        
-        let itens: Vec<ItemPedido> = serde_json::from_str(&json_str)
-            .map_err(|e| format!("Erro ao parsear itens JSONB: {}", e))?;
-        
-        Ok(itens)
+        serde_json::from_value(itens_json.clone())
+            .map_err(|e| format!("Erro ao parsear itens JSONB: {}", e))
     }
 
     /// Mesma logica mas para multiplos pedidos (ex: listar pedidos de uma loja)
@@ -421,7 +416,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
-                atualizado_em: r.atualizado_em, itens_json: vec![], itens: vec![],
+                atualizado_em: r.atualizado_em, itens_json: serde_json::Value::Array(vec![]), itens: vec![],
             };
             crate::ports::PedidoComEntregador {
                 pedido,

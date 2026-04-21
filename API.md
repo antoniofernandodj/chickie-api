@@ -1047,7 +1047,7 @@ Authorization: Bearer <token>
 ### 6.4 Listar Pedidos por Loja
 
 ```
-GET /api/pedidos/criar
+GET /api/pedidos/por-loja/{loja_uuid}
 Authorization: Bearer <token>
 ```
 

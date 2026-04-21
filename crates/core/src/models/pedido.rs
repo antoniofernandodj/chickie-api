@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
 use crate::models::Model;
 use chrono::Utc;
@@ -240,11 +239,11 @@ pub struct Pedido {
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
-    /// Campo JSONB que armazena itens/partes/adicionais (NÃO mapeado pelo sqlx - campo computado)
-    #[sqlx(skip)]
-    #[serde(default)]
-    pub itens_json: Vec<JsonValue>,
-    /// Itens parseados (não mapeado pelo sqlx)
+    /// Coluna JSONB do banco — mapeada pelo sqlx, parseada para `itens`
+    #[sqlx(rename = "itens")]
+    #[serde(skip)]
+    pub itens_json: serde_json::Value,
+    /// Itens parseados a partir de `itens_json` (não mapeado pelo sqlx)
     #[sqlx(skip)]
     #[serde(default)]
     pub itens: Vec<ItemPedido>,
@@ -275,7 +274,7 @@ impl Pedido {
             tempo_estimado_min: None,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
-            itens_json: vec![],
+            itens_json: serde_json::Value::Array(vec![]),
             itens: Vec::new(),
         }
     }
