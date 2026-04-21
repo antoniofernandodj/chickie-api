@@ -1,0 +1,40 @@
+{
+   "loja_uuid": "c57a6cd4-0ed6-4400-ab6a-4b49405cd6c5",
+   "taxa_entrega": "0",
+   "forma_pagamento": "PIX",
+   "observacoes": null,
+   "codigo_cupom": null,
+   "itens":[
+      {
+         "quantidade": 1,
+         "partes": [
+            {
+               "produto_uuid":"ed29452c-59d9-43d8-ba75-098a689aad51",
+               "posicao": 1
+            }
+         ]
+      },
+      {
+         "quantidade": 1,
+         "partes": [
+            {
+               "produto_uuid": "71670890-562f-4af8-8feb-4592a0724cc8",
+               "posicao": 1
+            },
+            {
+               "produto_uuid": "7abb514f-0f4a-4afa-81e8-4bca97d07a85",
+               "posicao": 2
+            }
+         ]
+      }
+   ],
+   "endereco_entrega": {
+      "logradouro": "Rua carlota duque estrada",
+      "numero": "292",
+      "complemento": "Casa 72",
+      "bairro": "Galo branco",
+      "cidade": "São Gonçalo",
+      "estado": "RJ",
+      "cep": "24422400"
+   }
+}

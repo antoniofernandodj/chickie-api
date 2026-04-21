@@ -58,8 +58,18 @@ pub async fn criar_pedido(
     Json(p): Json<CriarPedidoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
-    let usuario = usuario_ext
-        .map(|Extension(u)| u);
+    let usuario = usuario_ext.map(|Extension(u)| u);
+
+    let usuario_uuid = usuario.as_ref().map(|u| u.uuid);
+    tracing::info!(
+        target: "pedido",
+        "[HANDLER] criar_pedido — loja={} usuario={:?} itens={} tem_endereco={} tem_cupom={}",
+        p.loja_uuid,
+        usuario_uuid,
+        p.itens.len(),
+        p.endereco_entrega.is_some(),
+        p.codigo_cupom.is_some(),
+    );
 
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
@@ -87,14 +97,22 @@ pub async fn criar_pedido(
         estado: e.estado,
     });
 
-    let pedido_uuid = usecase.criar_pedido(
+    tracing::info!(target: "pedido", "[HANDLER] chamando usecase.criar_pedido");
+
+    let result = usecase.criar_pedido(
         p.taxa_entrega,
         p.forma_pagamento,
         p.observacoes,
         p.codigo_cupom,
         itens,
         endereco,
-    ).await?;
+    ).await;
 
+    match &result {
+        Ok(uuid) => tracing::info!(target: "pedido", "[HANDLER] pedido criado com sucesso uuid={}", uuid),
+        Err(e) => tracing::error!(target: "pedido", "[HANDLER] erro ao criar pedido: {}", e),
+    }
+
+    let pedido_uuid = result?;
     Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido_uuid }))))
 }

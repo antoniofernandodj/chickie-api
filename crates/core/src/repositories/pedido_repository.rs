@@ -280,7 +280,11 @@ impl Repository<Pedido> for PedidoRepository {
             .await
             .map_err(|e| e.to_string())?;
 
-        tracing::info!("[PEDIDO] Inserindo pedido uuid={} com {} itens (JSONB)", pedido.uuid, pedido.itens.len());
+        tracing::warn!(
+            target: "pedido",
+            "[REPO] pedido_repo.criar chamado uuid={} loja={} itens={} — stacktrace: quem chamou isso?",
+            pedido.uuid, pedido.loja_uuid, pedido.itens.len(),
+        );
         
         let stmt = "
             INSERT INTO pedidos (
@@ -308,18 +312,18 @@ impl Repository<Pedido> for PedidoRepository {
             .execute(&mut *tx)
             .await
             .map_err(|e| {
-                tracing::info!("[PEDIDO] Erro ao inserir pedido: {}", e);
+                tracing::error!(target: "pedido", "[REPO] ERRO no INSERT uuid={}: {}", pedido.uuid, e);
                 e.to_string()
             })?;
 
-        tracing::info!("[PEDIDO] Pedido inserido com sucesso uuid={}", pedido.uuid);
+        tracing::info!(target: "pedido", "[REPO] INSERT executado com sucesso uuid={}", pedido.uuid);
         
         tx.commit().await.map_err(|e| {
-            tracing::info!("[PEDIDO] Erro no commit: {}", e);
+            tracing::error!(target: "pedido", "[REPO] ERRO no commit uuid={}: {}", pedido.uuid, e);
             e.to_string()
         })?;
 
-        tracing::info!("[PEDIDO] Transacao commitada com sucesso uuid={}", pedido.uuid);
+        tracing::info!(target: "pedido", "[REPO] transação commitada uuid={}", pedido.uuid);
         Ok(pedido.uuid)
     }
 

@@ -45,18 +45,27 @@ impl PedidoUsecase {
         endereco_entrega: Option<EnderecoEntregaInput>,
     ) -> Result<Uuid, String> {
 
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] criar_pedido iniciado — loja={} usuario={:?}",
+            self.loja_uuid,
+            self.usuario.as_ref().map(|u| u.uuid),
+        );
+
         // 1. Validar produtos e montar partes
         let mut partes_por_item: Vec<Vec<ParteDeItemPedido>> = Vec::new();
 
         for item_req in &itens {
             let mut partes_item = Vec::new();
             for parte_req in &item_req.partes {
+                tracing::debug!(target: "pedido", "[USECASE] buscando produto uuid={}", parte_req.produto_uuid);
                 let produto: Produto = self.produto_repo
                     .buscar_por_uuid(parte_req.produto_uuid)
                     .await
                     .map_err(|e| e.to_string())?
                     .ok_or_else(|| format!("Produto {} não encontrado", parte_req.produto_uuid))?;
 
+                tracing::debug!(target: "pedido", "[USECASE] produto encontrado: nome={} preco={}", produto.nome, produto.preco);
                 partes_item.push(ParteDeItemPedido::new(
                     produto.uuid,
                     produto.nome.clone(),
@@ -79,6 +88,12 @@ impl PedidoUsecase {
             observacoes,
         );
 
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] pedido instanciado uuid={} loja={} usuario={:?}",
+            pedido.uuid, pedido.loja_uuid, pedido.usuario_uuid,
+        );
+
         // 3. Adicionar itens com partes
         let mut partes_iter = partes_por_item.into_iter();
         for item_req in itens {
@@ -91,9 +106,15 @@ impl PedidoUsecase {
             }
         }
 
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] itens montados: {} itens no pedido uuid={}",
+            pedido.itens.len(), pedido.uuid,
+        );
+
         // 4. Montar endereço de entrega (opcional)
         let endereco: Option<EnderecoEntrega> = endereco_entrega.map(|e| EnderecoEntrega::new(
-            Uuid::nil(), // Será substituído pelo service
+            Uuid::nil(),
             self.loja_uuid,
             e.cep,
             e.logradouro,
@@ -104,10 +125,23 @@ impl PedidoUsecase {
             e.estado,
         ));
 
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] chamando service.criar_pedido_com_entrega uuid={} tem_endereco={}",
+            pedido.uuid, endereco.is_some(),
+        );
+
         // 5. Salvar via service
-        self.pedido_service
+        let result = self.pedido_service
             .criar_pedido_com_entrega(&mut pedido, endereco, codigo_cupom)
-            .await
+            .await;
+
+        match &result {
+            Ok(uuid) => tracing::info!(target: "pedido", "[USECASE] service retornou uuid={}", uuid),
+            Err(e) => tracing::error!(target: "pedido", "[USECASE] service retornou erro: {}", e),
+        }
+
+        result
     }
 
     pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {

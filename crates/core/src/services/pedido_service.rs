@@ -174,20 +174,45 @@ impl PedidoService {
         codigo_cupom: Option<String>,
     ) -> Result<Uuid, String> {
 
-        // 1. Processar preços e descontos
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] criar_pedido_com_entrega iniciado uuid={} loja={} itens={}",
+            pedido.uuid, pedido.loja_uuid, pedido.itens.len(),
+        );
+
+        // 1. Processar preços e descontos (ATENÇÃO: também chama self.salvar internamente)
+        tracing::info!(target: "pedido", "[SERVICE] chamando __processar_e_finalizar_pedido uuid={}", pedido.uuid);
         self.__processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] __processar_e_finalizar_pedido concluido uuid={} subtotal={} total={} desconto={:?}",
+            pedido.uuid, pedido.subtotal, pedido.total, pedido.desconto,
+        );
 
         // 2. Salvar o pedido no banco (retorna UUID)
+        tracing::warn!(
+            target: "pedido",
+            "[SERVICE] chamando pedido_repo.criar SEGUNDA VEZ uuid={} — isso causará duplicate key se __processar já salvou",
+            pedido.uuid,
+        );
         let pedido_uuid = self.pedido_repo.criar(pedido).await?;
+        tracing::info!(target: "pedido", "[SERVICE] pedido_repo.criar retornou uuid={}", pedido_uuid);
 
         // 3. Criar endereço de entrega se fornecido
         if let Some(mut endereco) = endereco_entrega {
             endereco.uuid = Uuid::new_v4();
             endereco.pedido_uuid = pedido_uuid;
             endereco.loja_uuid = pedido.loja_uuid;
-            self.endereco_entrega_repo.criar(&endereco).await?;
+            tracing::info!(target: "pedido", "[SERVICE] criando endereco_entrega para pedido uuid={}", pedido_uuid);
+            let result = self.endereco_entrega_repo.criar(&endereco).await;
+            match &result {
+                Ok(_) => tracing::info!(target: "pedido", "[SERVICE] endereco_entrega criado para pedido uuid={}", pedido_uuid),
+                Err(e) => tracing::error!(target: "pedido", "[SERVICE] erro ao criar endereco_entrega para pedido uuid={}: {}", pedido_uuid, e),
+            }
+            result?;
         }
 
+        tracing::info!(target: "pedido", "[SERVICE] criar_pedido_com_entrega concluido uuid={}", pedido_uuid);
         Ok(pedido_uuid)
     }
 
@@ -221,11 +246,19 @@ impl PedidoService {
         codigo_cupom: Option<String>,
     ) -> Result<(), String> {
 
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] __processar_e_finalizar_pedido iniciado uuid={} loja={}",
+            pedido.uuid, pedido.loja_uuid,
+        );
+
         // 1. Buscar configuração da loja (como calcular preço dos sabores)
+        tracing::debug!(target: "pedido", "[SERVICE] buscando config da loja={}", pedido.loja_uuid);
         let config_loja = self.config_repo
             .buscar_por_loja(pedido.loja_uuid)
             .await?
             .ok_or("Configuração da loja não encontrada")?;
+        tracing::debug!(target: "pedido", "[SERVICE] config loja encontrada tipo_calculo={:?}", config_loja.tipo_calculo);
 
         // 2. Calcular Subtotal dos Itens
         // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
@@ -288,13 +321,19 @@ impl PedidoService {
             pedido.observacoes = Some(observacao_desconto);
         }
 
-        tracing::info!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}",
-            pedido.subtotal,
-            desconto_final,
-            pedido.total
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] pedido processado uuid={} subtotal={:.2} desconto={:.2} total={:.2}",
+            pedido.uuid, pedido.subtotal, desconto_final, pedido.total,
         );
 
+        tracing::warn!(
+            target: "pedido",
+            "[SERVICE] chamando self.salvar (INSERT) dentro de __processar uuid={}",
+            pedido.uuid,
+        );
         self.salvar(pedido).await?;
+        tracing::info!(target: "pedido", "[SERVICE] self.salvar concluido para uuid={}", pedido.uuid);
 
         Ok(())
     }
