@@ -109,10 +109,10 @@ pub async fn criar_pedido(
     ).await;
 
     match &result {
-        Ok(uuid) => tracing::info!(target: "pedido", "[HANDLER] pedido criado com sucesso uuid={}", uuid),
+        Ok(criado) => tracing::info!(target: "pedido", "[HANDLER] pedido criado com sucesso uuid={} codigo={}", criado.uuid, criado.codigo),
         Err(e) => tracing::error!(target: "pedido", "[HANDLER] erro ao criar pedido: {}", e),
     }
 
-    let pedido_uuid = result?;
-    Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido_uuid }))))
+    let pedido = result?;
+    Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido.uuid, "codigo": pedido.codigo }))))
 }

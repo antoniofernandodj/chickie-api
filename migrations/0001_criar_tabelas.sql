@@ -291,6 +291,7 @@ EXECUTE FUNCTION update_updated_at_column();
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS pedidos (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    codigo TEXT NOT NULL CHECK (codigo ~ '^[A-Z0-9]{6}$'),
     loja_uuid UUID NOT NULL,
     usuario_uuid UUID NOT NULL,
     status TEXT NOT NULL DEFAULT 'criado' CHECK (
@@ -321,6 +322,7 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_usuario ON pedidos(usuario_uuid);
 CREATE INDEX IF NOT EXISTS idx_pedidos_loja ON pedidos(loja_uuid);
 CREATE INDEX IF NOT EXISTS idx_pedidos_status ON pedidos(status);
 CREATE INDEX IF NOT EXISTS idx_pedidos_criado_em ON pedidos(criado_em);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_codigo_unique ON pedidos(codigo);
 
 CREATE TRIGGER trigger_pedidos_atualizado
 BEFORE UPDATE ON pedidos

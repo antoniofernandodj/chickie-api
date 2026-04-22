@@ -56,6 +56,7 @@ pub use pedido::{
     criar_pedido,
     listar_pedidos,
     buscar_pedido,
+    buscar_pedido_por_codigo,
     listar_por_loja,
     buscar_pedido_com_entrega,
     atualizar_status,

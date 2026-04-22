@@ -11,6 +11,7 @@ use crate::handlers::{
     listar_pedidos,
     listar_por_loja,
     buscar_pedido,
+    buscar_pedido_por_codigo,
     buscar_pedido_com_entrega,
     atualizar_status,
     listar_meus_pedidos,
@@ -23,6 +24,7 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     // Rota sem auth obrigatória (usuário pode ser anônimo)
     let public_routes = Router::new()
         .route("/criar", post(criar_pedido))
+        .route("/codigo/{codigo}", get(buscar_pedido_por_codigo))
         .layer(from_fn_with_state(s.clone(), optional_auth_middleware));
 
     // Rotas que exigem autenticação

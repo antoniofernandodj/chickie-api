@@ -7,6 +7,7 @@ use rust_decimal::Decimal;
 use crate::{
     models::{ParteDeItemPedido, Pedido, EstadoDePedido, EnderecoEntrega, Produto, Usuario},
     services::{PedidoService, PedidoComEntrega},
+    ports::PedidoCriado,
     ports::ProdutoRepositoryPort,
 };
 
@@ -43,7 +44,7 @@ impl PedidoUsecase {
         codigo_cupom: Option<String>,
         itens: Vec<ItemPedidoInput>,
         endereco_entrega: Option<EnderecoEntregaInput>,
-    ) -> Result<Uuid, String> {
+    ) -> Result<PedidoCriado, String> {
 
         tracing::info!(
             target: "pedido",
@@ -137,11 +138,15 @@ impl PedidoUsecase {
             .await;
 
         match &result {
-            Ok(uuid) => tracing::info!(target: "pedido", "[USECASE] service retornou uuid={}", uuid),
+            Ok(criado) => tracing::info!(target: "pedido", "[USECASE] service retornou uuid={} codigo={}", criado.uuid, criado.codigo),
             Err(e) => tracing::error!(target: "pedido", "[USECASE] service retornou erro: {}", e),
         }
 
         result
+    }
+
+    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Pedido, String> {
+        self.pedido_service.buscar_por_codigo(codigo).await
     }
 
     pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {

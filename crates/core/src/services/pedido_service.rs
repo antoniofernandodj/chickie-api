@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
 use chrono::{Datelike, Utc};
+use rand::Rng;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
-use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador};
+use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador, PedidoCriado};
 
 
 use crate::models::EnderecoEntrega;
@@ -62,6 +63,9 @@ pub struct PedidoService {
 }
 
 impl PedidoService {
+    const CODIGO_TAMANHO: usize = 6;
+    const CODIGO_MAX_TENTATIVAS: usize = 64;
+
     pub fn new(
         pedido_repo: Arc<dyn PedidoRepositoryPort>,
         config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
@@ -72,8 +76,9 @@ impl PedidoService {
         Self { pedido_repo, config_repo, cupom_repo, promocao_repo, endereco_entrega_repo }
     }
 
-    pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
-        self.pedido_repo.criar(pedido).await.map_err(|e| e.to_string())
+    pub async fn salvar(&self, pedido: &Pedido) -> Result<PedidoCriado, String> {
+        let mut pedido = pedido.clone();
+        self.salvar_com_codigo_unico(&mut pedido).await
     }
 
     pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
@@ -82,6 +87,23 @@ impl PedidoService {
 
     pub async fn listar_por_usuario(&self, usuario_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
         self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn buscar_por_uuid(&self, pedido_uuid: Uuid) -> Result<Pedido, String> {
+        self.pedido_repo
+            .buscar_completo(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or("Pedido não encontrado".to_string())
+    }
+
+    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Pedido, String> {
+        let codigo = codigo.trim().to_uppercase();
+        self.pedido_repo
+            .buscar_por_codigo(&codigo)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or("Pedido não encontrado".to_string())
     }
 
     /// Lógica para verificar promoções ativas da loja
@@ -172,13 +194,15 @@ impl PedidoService {
         pedido: &mut Pedido,
         endereco_entrega: Option<crate::models::EnderecoEntrega>,
         codigo_cupom: Option<String>,
-    ) -> Result<Uuid, String> {
+    ) -> Result<PedidoCriado, String> {
 
         tracing::info!(
             target: "pedido",
             "[SERVICE] criar_pedido_com_entrega iniciado uuid={} loja={} itens={}",
             pedido.uuid, pedido.loja_uuid, pedido.itens.len(),
         );
+
+        self.preencher_codigo_se_necessario(pedido).await?;
 
         // 1. Processar preços e descontos (ATENÇÃO: também chama self.salvar internamente)
         tracing::info!(target: "pedido", "[SERVICE] chamando __processar_e_finalizar_pedido uuid={}", pedido.uuid);
@@ -189,27 +213,27 @@ impl PedidoService {
             pedido.uuid, pedido.subtotal, pedido.total, pedido.desconto,
         );
 
-        // 2. Salvar o pedido no banco (retorna UUID)
-        tracing::info!(target: "pedido", "[SERVICE] chamando pedido_repo.criar uuid={}", pedido.uuid);
-        let pedido_uuid = self.pedido_repo.criar(pedido).await?;
-        tracing::info!(target: "pedido", "[SERVICE] pedido_repo.criar retornou uuid={}", pedido_uuid);
+        // 2. Salvar o pedido no banco (retorna UUID + codigo)
+        tracing::info!(target: "pedido", "[SERVICE] chamando persistencia do pedido uuid={}", pedido.uuid);
+        let pedido_criado = self.salvar_com_codigo_unico(pedido).await?;
+        tracing::info!(target: "pedido", "[SERVICE] persistencia concluida uuid={} codigo={}", pedido_criado.uuid, pedido_criado.codigo);
 
         // 3. Criar endereço de entrega se fornecido
         if let Some(mut endereco) = endereco_entrega {
             endereco.uuid = Uuid::new_v4();
-            endereco.pedido_uuid = pedido_uuid;
+            endereco.pedido_uuid = pedido_criado.uuid;
             endereco.loja_uuid = pedido.loja_uuid;
-            tracing::info!(target: "pedido", "[SERVICE] criando endereco_entrega para pedido uuid={}", pedido_uuid);
+            tracing::info!(target: "pedido", "[SERVICE] criando endereco_entrega para pedido uuid={}", pedido_criado.uuid);
             let result = self.endereco_entrega_repo.criar(&endereco).await;
             match &result {
-                Ok(_) => tracing::info!(target: "pedido", "[SERVICE] endereco_entrega criado para pedido uuid={}", pedido_uuid),
-                Err(e) => tracing::error!(target: "pedido", "[SERVICE] erro ao criar endereco_entrega para pedido uuid={}: {}", pedido_uuid, e),
+                Ok(_) => tracing::info!(target: "pedido", "[SERVICE] endereco_entrega criado para pedido uuid={}", pedido_criado.uuid),
+                Err(e) => tracing::error!(target: "pedido", "[SERVICE] erro ao criar endereco_entrega para pedido uuid={}: {}", pedido_criado.uuid, e),
             }
             result?;
         }
 
-        tracing::info!(target: "pedido", "[SERVICE] criar_pedido_com_entrega concluido uuid={}", pedido_uuid);
-        Ok(pedido_uuid)
+        tracing::info!(target: "pedido", "[SERVICE] criar_pedido_com_entrega concluido uuid={} codigo={}", pedido_criado.uuid, pedido_criado.codigo);
+        Ok(pedido_criado)
     }
 
 
@@ -231,6 +255,67 @@ impl PedidoService {
             pedido,
             endereco_entrega,
         })
+    }
+
+    async fn preencher_codigo_se_necessario(&self, pedido: &mut Pedido) -> Result<(), String> {
+        if !pedido.codigo.is_empty() {
+            return Ok(());
+        }
+
+        for _ in 0..Self::CODIGO_MAX_TENTATIVAS {
+            let codigo = Self::gerar_codigo_aleatorio();
+            let existe = self.pedido_repo.codigo_existe(&codigo).await.map_err(|e| e.to_string())?;
+            if !existe {
+                pedido.codigo = codigo;
+                return Ok(());
+            }
+        }
+
+        Err("Não foi possível gerar um código único para o pedido".to_string())
+    }
+
+    async fn salvar_com_codigo_unico(&self, pedido: &mut Pedido) -> Result<PedidoCriado, String> {
+        for _ in 0..Self::CODIGO_MAX_TENTATIVAS {
+            self.preencher_codigo_se_necessario(pedido).await?;
+
+            match self.pedido_repo.criar(pedido).await {
+                Ok(uuid) => {
+                    return Ok(PedidoCriado {
+                        uuid,
+                        codigo: pedido.codigo.clone(),
+                    });
+                }
+                Err(e) => {
+                    let erro = e.to_string();
+                    if Self::is_codigo_duplicado_error(&erro) {
+                        pedido.codigo.clear();
+                        continue;
+                    }
+                    return Err(erro);
+                }
+            }
+        }
+
+        Err("Não foi possível persistir o pedido com um código único".to_string())
+    }
+
+    fn gerar_codigo_aleatorio() -> String {
+        const CHARS: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let mut rng = rand::thread_rng();
+        let mut result = String::new();
+        for _ in 0..Self::CODIGO_TAMANHO {
+            let idx = rng.gen_range(0..CHARS.len());
+            let c = CHARS[idx] as char;
+            result.push(c);
+        }
+
+        result
+    }
+
+    fn is_codigo_duplicado_error(erro: &str) -> bool {
+        erro.contains("idx_pedidos_codigo_unique")
+            || erro.contains("pedidos_codigo_unique")
+            || erro.contains("duplicate key value")
     }
 
 

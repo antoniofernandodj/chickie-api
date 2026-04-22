@@ -27,7 +27,7 @@ pub use repository::{RepositoryPort, Entity};
 pub use storage::ImageStoragePort;
 pub use usuario_port::UsuarioRepositoryPort;
 pub use loja_port::LojaRepositoryPort;
-pub use pedido_port::{PedidoRepositoryPort, PedidoComEntrega, PedidoComEntregador};
+pub use pedido_port::{PedidoRepositoryPort, PedidoComEntrega, PedidoComEntregador, PedidoCriado};
 pub use produto_port::ProdutoRepositoryPort;
 pub use categoria_port::CategoriaRepositoryPort;
 pub use ordem_categoria_port::OrdemCategoriaRepositoryPort;

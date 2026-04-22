@@ -1,5 +1,6 @@
 mod criar_pedido;
 mod buscar_pedido;
+mod buscar_pedido_por_codigo;
 mod listar_pedidos;
 mod processar_precos;
 mod listar_por_loja;
@@ -11,6 +12,7 @@ mod buscar_pedido_com_entregador_info;
 
 pub use criar_pedido::criar_pedido;
 pub use buscar_pedido::buscar_pedido;
+pub use buscar_pedido_por_codigo::buscar_pedido_por_codigo;
 pub use listar_pedidos::listar_pedidos;
 // pub use processar_precos::processar_precos;
 pub use listar_por_loja::listar_por_loja;

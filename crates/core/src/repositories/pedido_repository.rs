@@ -21,6 +21,7 @@ use crate::{
 #[derive(Debug, Clone, FromRow, Serialize, ToSchema)]
 pub struct PedidoComEntregador {
     pub uuid: Uuid,
+    pub codigo: String,
     pub usuario_uuid: Option<Uuid>,
     pub loja_uuid: Uuid,
     pub entregador_uuid: Option<Uuid>,
@@ -111,6 +112,24 @@ impl PedidoRepository {
         pedido.itens = Self::parsear_itens_jsonb(&pedido.itens_json)?;
         
         Ok(Some(pedido))
+    }
+
+    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Option<Pedido>, String> {
+        let pedido = match sqlx::query_as::<_, Pedido>(
+            "SELECT * FROM pedidos WHERE codigo = $1"
+        )
+            .bind(codigo)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| e.to_string())?
+        {
+            Some(p) => p,
+            None => return Ok(None),
+        };
+
+        let mut pedidos = vec![pedido];
+        pedidos = self.hidratar_pedidos(pedidos).await?;
+        Ok(Some(pedidos.remove(0)))
     }
 
     /// Helper para parsear JSONB em Vec<ItemPedido>
@@ -223,6 +242,7 @@ impl PedidoRepository {
         let row = sqlx::query_as::<_, PedidoComEntregador>(
             "SELECT
                 p.uuid,
+                p.codigo,
                 p.usuario_uuid,
                 p.loja_uuid,
                 p.entregador_uuid,
@@ -283,15 +303,16 @@ impl Repository<Pedido> for PedidoRepository {
         
         let stmt = "
             INSERT INTO pedidos (
-                uuid, usuario_uuid, loja_uuid, entregador_uuid, status, 
+                uuid, codigo, usuario_uuid, loja_uuid, entregador_uuid, status,
                 total, subtotal, taxa_entrega, desconto, forma_pagamento, 
                 observacoes, tempo_estimado_min, itens
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb)
         ";
 
         sqlx::query(stmt)
             .bind(&pedido.uuid)
+            .bind(&pedido.codigo)
             .bind(&pedido.usuario_uuid)
             .bind(&pedido.loja_uuid)
             .bind(&pedido.entregador_uuid)
@@ -369,6 +390,9 @@ impl PedidoRepositoryPort for PedidoRepository {
     async fn buscar_por_uuid(&self, uuid: Uuid) -> DomainResult<Option<Pedido>> {
         <Self as Repository<Pedido>>::buscar_por_uuid(self, uuid).await.map_err(|e| DomainError::Internal(e))
     }
+    async fn buscar_por_codigo(&self, codigo: &str) -> DomainResult<Option<Pedido>> {
+        PedidoRepository::buscar_por_codigo(self, codigo).await.map_err(DomainError::Internal)
+    }
     async fn buscar_completo(&self, uuid: Uuid) -> DomainResult<Option<Pedido>> {
         let pedido = match sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos WHERE uuid = $1")
             .bind(uuid)
@@ -391,6 +415,14 @@ impl PedidoRepositoryPort for PedidoRepository {
     async fn listar_todos(&self) -> DomainResult<Vec<Pedido>> {
         <Self as Repository<Pedido>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
     }
+    async fn codigo_existe(&self, codigo: &str) -> DomainResult<bool> {
+        let existe: Option<i64> = sqlx::query_scalar("SELECT 1 FROM pedidos WHERE codigo = $1 LIMIT 1")
+            .bind(codigo)
+            .fetch_optional(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+        Ok(existe.is_some())
+    }
     async fn atualizar_status(&self, uuid: Uuid, novo_status: &str) -> DomainResult<()> {
         sqlx::query("UPDATE pedidos SET status = $1 WHERE uuid = $2")
             .bind(novo_status).bind(uuid)
@@ -411,7 +443,7 @@ impl PedidoRepositoryPort for PedidoRepository {
         let r = PedidoRepository::buscar_com_entregador(self, uuid).await.map_err(|e| DomainError::Internal(e))?;
         Ok(r.map(|r| {
             let pedido = Pedido {
-                uuid: r.uuid, usuario_uuid: r.usuario_uuid, loja_uuid: r.loja_uuid,
+                uuid: r.uuid, codigo: r.codigo, usuario_uuid: r.usuario_uuid, loja_uuid: r.loja_uuid,
                 entregador_uuid: r.entregador_uuid, status: r.status, total: r.total,
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,

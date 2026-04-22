@@ -1,20 +1,19 @@
 use axum::{
-    Json, extract::{Path, State}, response::{IntoResponse}
+    Json,
+    extract::{Path, State},
+    response::IntoResponse,
 };
-use uuid::Uuid;
-
 use std::sync::Arc;
-use crate::{handlers::dto::AppError};
-use crate::handlers::AppState;
 
+use crate::handlers::{dto::AppError, AppState};
 
-pub async fn buscar_pedido(
+pub async fn buscar_pedido_por_codigo(
     State(state): State<Arc<AppState>>,
-    Path(uuid): Path<Uuid>,
+    Path(codigo): Path<String>,
 ) -> Result<impl IntoResponse, AppError> {
     let pedido = state
         .pedido_service
-        .buscar_por_uuid(uuid)
+        .buscar_por_codigo(&codigo)
         .await
         .map_err(AppError::Internal)?;
 

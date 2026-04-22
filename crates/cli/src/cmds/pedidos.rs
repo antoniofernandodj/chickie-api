@@ -26,9 +26,10 @@ pub async fn run_create_pedido(state: &AppState, args: CreatePedidoArgs) {
         .salvar(&pedido)
         .await
     {
-        Ok(uuid) => {
+        Ok(criado) => {
             print_ok("Pedido criado");
-            println!("{}", uuid);
+            println!("{}", criado.uuid);
+            println!("codigo: {}", criado.codigo);
         }
         Err(e) => print_err(&format!("{:?}", e)),
     }
