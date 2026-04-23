@@ -20,9 +20,10 @@ impl ProdutoRepository {
         .map_err(|e| e.to_string())
     }
 
-    pub async fn buscar_por_categoria(&self, categoria_uuid: Uuid) -> Result<Vec<Produto>, String> {
-        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE categoria_uuid = $1")
+    pub async fn buscar_por_loja_e_categoria(&self, loja_uuid: Uuid, categoria_uuid: Uuid) -> Result<Vec<Produto>, String> {
+        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE categoria_uuid = $1 AND loja_uuid = $2")
         .bind(categoria_uuid)
+        .bind(loja_uuid)
         .fetch_all(self.pool())
         .await
         .map_err(|e| e.to_string())
@@ -136,8 +137,8 @@ impl ProdutoRepositoryPort for ProdutoRepository {
     async fn listar_todos(&self) -> DomainResult<Vec<Produto>> {
         <Self as Repository<Produto>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
     }
-    async fn listar_por_categoria(&self, categoria_uuid: Uuid) -> DomainResult<Vec<Produto>> {
-        self.buscar_por_categoria(categoria_uuid).await.map_err(|e| DomainError::Internal(e))
+    async fn listar_por_categoria(&self, loja_uuid: Uuid, categoria_uuid: Uuid) -> DomainResult<Vec<Produto>> {
+        self.buscar_por_loja_e_categoria(loja_uuid, categoria_uuid).await.map_err(|e| DomainError::Internal(e))
     }
     async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Produto>> {
         self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))

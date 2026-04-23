@@ -24,6 +24,6 @@ pub fn produto_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
 pub fn produto_public_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
     Router::new()
         .route("/listar/{loja_uuid}", get(listar_produtos))
-        .route("/categoria/{categoria_uuid}", get(listar_produtos_por_categoria))
+        .route("/categoria/{loja_uuid}/{categoria_uuid}", get(listar_produtos_por_categoria))
         .route("/{uuid}", get(buscar_produto_por_uuid))
 }

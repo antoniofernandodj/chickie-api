@@ -196,7 +196,7 @@ Cada repositório implementa também:
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
 | Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/marketing` (parcial), `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin`; GETs de `/produtos`, `/catalogo`, `/horarios` são públicos |
-| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `GET /api/horarios/{loja_uuid}`, `GET /api/catalogo/{loja_uuid}/adicionais`, `GET /api/catalogo/{loja_uuid}/categorias`, `GET /api/produtos/listar/{loja_uuid}`, `GET /api/produtos/{uuid}`, `GET /api/produtos/categoria/{uuid}` |
+| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `GET /api/horarios/{loja_uuid}`, `GET /api/catalogo/{loja_uuid}/adicionais`, `GET /api/catalogo/{loja_uuid}/categorias`, `GET /api/produtos/listar/{loja_uuid}`, `GET /api/produtos/{uuid}`, `GET /api/produtos/categoria/{loja_uuid}/{categoria_uuid}` |
 | Owner only                      | `/api/wipe` (dev only), `/api/usuarios/`, toggle bloqueio usuários |
 
 ### Referência Completa de Endpoints
@@ -246,7 +246,8 @@ Cada repositório implementa também:
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | `GET` | `/api/produtos/listar/{loja_uuid}` | — | Listar produtos da loja |
-| `GET` | `/api/produtos/categoria/{categoria_uuid}` | — | Listar produtos por categoria |
+| `GET`  | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | — | Listar produtos por categoria |
+
 | `GET` | `/api/produtos/{uuid}` | — | Buscar produto por UUID |
 | `POST` | `/api/produtos/` | 🔒 | Criar produto |
 | `PUT` | `/api/produtos/{uuid}` | 🔒 | Atualizar produto |

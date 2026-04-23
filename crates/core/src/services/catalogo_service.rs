@@ -266,11 +266,11 @@ impl CatalogoService {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 
-        let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
-        if !produtos.is_empty() {
+        let total_produtos = self.categoria_repo.contar_produtos(uuid).await.map_err(|e| e.to_string())?;
+        if total_produtos > 0 {
             return Err(format!(
                 "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
-                produtos.len()
+                total_produtos
             ));
         }
 
@@ -312,11 +312,11 @@ impl CatalogoService {
             return Err("Categoria não é global".to_string());
         }
 
-        let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
-        if !produtos.is_empty() {
+        let total_produtos = self.categoria_repo.contar_produtos(uuid).await.map_err(|e| e.to_string())?;
+        if total_produtos > 0 {
             return Err(format!(
                 "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
-                produtos.len()
+                total_produtos
             ));
         }
 
@@ -333,9 +333,10 @@ impl CatalogoService {
 
     pub async fn listar_produtos_por_categoria(
         &self,
+        loja_uuid: Uuid,
         categoria_uuid: Uuid,
     ) -> Result<Vec<Produto>, String> {
-        self.produto_repo.listar_por_categoria(categoria_uuid).await.map_err(|e| e.to_string())
+        self.produto_repo.listar_por_categoria(loja_uuid, categoria_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_produto(

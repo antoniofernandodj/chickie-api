@@ -6,10 +6,10 @@ use chickie_core::models::Produto;
 
 pub async fn listar_produtos_por_categoria(
     State(state): State<Arc<AppState>>,
-    Path(categoria_uuid): Path<Uuid>,
+    Path((loja_uuid, categoria_uuid)): Path<(Uuid, Uuid)>,
 ) -> Result<Json<Vec<Produto>>, AppError> {
     let produtos = state.catalogo_service
-        .listar_produtos_por_categoria(categoria_uuid)
+        .listar_produtos_por_categoria(loja_uuid, categoria_uuid)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
     Ok(Json(produtos))

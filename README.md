@@ -148,7 +148,7 @@ Todos os endpoints vivem sob `/api`.
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
 | `GET`  | `/api/produtos/listar/{loja_uuid}` | Listar produtos da loja | ❌ |
-| `GET`  | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria | ❌ |
+| `GET`  | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | Listar produtos por categoria | ❌ |
 | `GET`  | `/api/produtos/{uuid}` | Buscar produto por UUID | ❌ |
 | `POST` | `/api/produtos/`    | Criar produto       | ✅   |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |

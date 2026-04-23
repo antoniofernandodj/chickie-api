@@ -950,6 +950,8 @@ pub struct ListAdicionaisDisponiveisArgs {
 
 #[derive(clap::Args)]
 pub struct ListProdutosPorCategoriaArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
     pub categoria_uuid: Uuid,
 }
 

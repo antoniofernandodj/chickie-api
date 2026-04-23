@@ -2958,7 +2958,7 @@ GET /api/produtos/listar/{loja_uuid}
 ### 14.3 Listar Produtos por Categoria
 
 ```
-GET /api/produtos/categoria/{categoria_uuid}
+GET /api/produtos/categoria/{loja_uuid}/{categoria_uuid}
 ```
 
 **Response `200`:**
@@ -3327,7 +3327,7 @@ DELETE /api/wipe
 | 64 | `GET` | `/api/favoritos/{loja_uuid}/verificar` | 🔒 | — |
 | 65 | `POST` | `/api/produtos/` | 🔒 | — |
 | 66 | `GET` | `/api/produtos/listar/{loja_uuid}` | — | — |
-| 67 | `GET` | `/api/produtos/categoria/{categoria_uuid}` | — | — |
+| 67 | `GET` | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | — | — |
 | 68 | `GET` | `/api/produtos/{uuid}` | — | — |
 | 69 | `PUT` | `/api/produtos/{uuid}` | 🔒 | — |
 | 70 | `DELETE` | `/api/produtos/{uuid}` | 🔒 | — |

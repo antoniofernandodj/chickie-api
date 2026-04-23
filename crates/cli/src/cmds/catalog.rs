@@ -206,7 +206,7 @@ pub async fn run_list_adicionais_disponiveis(state: &AppState, args: ListAdicion
 pub async fn run_list_produtos_por_categoria(state: &AppState, args: ListProdutosPorCategoriaArgs) {
     match state
         .catalogo_service
-        .listar_produtos_por_categoria(args.categoria_uuid)
+        .listar_produtos_por_categoria(args.loja_uuid, args.categoria_uuid)
         .await
     {
         Ok(prods) => json_print(&prods),
