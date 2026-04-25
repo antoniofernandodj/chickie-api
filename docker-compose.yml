@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15.2
@@ -43,6 +41,44 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    container_name: chickie-surreal
+    user: root
+    command: start --log info --user root --pass root surrealkv:/data/db
+    volumes:
+      - surreal_data:/data/db
+    network_mode: "host"
+    healthcheck:
+      test: ["CMD", "/surreal", "is-ready", "--endpoint", "http://localhost:8000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # CLI completo do SurrealDB — não sobe com "docker compose up"
+  # Exemplos:
+  #   docker compose run --rm surreal-cli migrate apply
+  #   docker compose run --rm surreal-cli migrate create nome_da_migration
+  #   docker compose run --rm surreal-cli sql
+  #   docker compose run --rm surreal-cli export --file /migrations/backup.surql
+  surreal:
+    image: surrealdb/surrealdb:latest
+    profiles: ["cli"]
+    working_dir: /migrations
+    environment:
+      SURREAL_URL: ws://localhost:8000
+      SURREAL_USER: root
+      SURREAL_PASS: root
+      SURREAL_NS: chickie
+      SURREAL_DB: development
+    volumes:
+      - ./surreal_migrations:/migrations
+    network_mode: "host"
+    depends_on:
+      surrealdb:
+        condition: service_healthy
 
   api:
     build:
@@ -140,6 +176,7 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  surreal_data:
 
 networks:
   mynetwork:

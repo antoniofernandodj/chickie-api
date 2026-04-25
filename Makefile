@@ -15,3 +15,10 @@ sync:
 
 test:
 	export DATABASE_URL="postgres://myuser:mypassword@localhost:5432/mydatabase" && clurl tests/00-tests.clurl
+
+surreal:
+	docker compose run --rm surreal sql --namespace chickie --db development
+
+surrealdb:
+	docker compose up -d surreal
+	docker compose logs -f surreal
