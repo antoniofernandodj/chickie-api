@@ -32,6 +32,7 @@ pub struct PedidoComEntregador {
     pub desconto: Option<rust_decimal::Decimal>,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
+    pub contato: Option<String>,
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
@@ -304,10 +305,10 @@ impl Repository<Pedido> for PedidoRepository {
         let stmt = "
             INSERT INTO pedidos (
                 uuid, codigo, usuario_uuid, loja_uuid, entregador_uuid, status,
-                total, subtotal, taxa_entrega, desconto, forma_pagamento, 
-                observacoes, tempo_estimado_min, itens
+                total, subtotal, taxa_entrega, desconto, forma_pagamento,
+                observacoes, contato, tempo_estimado_min, itens
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb)
         ";
 
         sqlx::query(stmt)
@@ -323,6 +324,7 @@ impl Repository<Pedido> for PedidoRepository {
             .bind(&pedido.desconto)
             .bind(&pedido.forma_pagamento)
             .bind(&pedido.observacoes)
+            .bind(&pedido.contato)
             .bind(&pedido.tempo_estimado_min)
             .bind(&itens_json)
             .execute(&mut *tx)
@@ -346,8 +348,8 @@ impl Repository<Pedido> for PedidoRepository {
     async fn atualizar(&self, item: Pedido) -> Result<(), String> {
         let uuid = item.get_uuid();
         let stmt = "
-            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, tempo_estimado_min = $8, entregador_uuid = $9
-            WHERE uuid = $10
+            UPDATE pedidos SET status = $1, total = $2, subtotal = $3, taxa_entrega = $4, desconto = $5, forma_pagamento = $6, observacoes = $7, contato = $8, tempo_estimado_min = $9, entregador_uuid = $10
+            WHERE uuid = $11
         ";
 
         let result = sqlx::query(stmt)
@@ -358,6 +360,7 @@ impl Repository<Pedido> for PedidoRepository {
             .bind(item.desconto)
             .bind(&item.forma_pagamento)
             .bind(&item.observacoes)
+            .bind(&item.contato)
             .bind(item.tempo_estimado_min)
             .bind(item.entregador_uuid)
             .bind(uuid)
@@ -447,6 +450,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 entregador_uuid: r.entregador_uuid, status: r.status, total: r.total,
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
+                contato: r.contato,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
                 atualizado_em: r.atualizado_em, itens_json: serde_json::Value::Array(vec![]), itens: vec![],
             };

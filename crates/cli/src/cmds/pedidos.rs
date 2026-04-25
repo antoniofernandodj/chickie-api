@@ -14,6 +14,7 @@ pub async fn run_create_pedido(state: &AppState, args: CreatePedidoArgs) {
         taxa,
         args.forma_pagamento,
         args.observacoes,
+        None,
     );
 
     // TODO: cupom handling - not supported via this CLI path yet

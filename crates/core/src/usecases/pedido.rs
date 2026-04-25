@@ -41,6 +41,7 @@ impl PedidoUsecase {
         taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
+        contato: Option<String>,
         codigo_cupom: Option<String>,
         itens: Vec<ItemPedidoInput>,
         endereco_entrega: Option<EnderecoEntregaInput>,
@@ -80,6 +81,7 @@ impl PedidoUsecase {
 
         // 2. Criar pedido base
         let usuario_uuid = self.usuario.as_ref().map(|u| u.uuid);
+        let contato_filtrado = contato.map(|c| c.chars().filter(|ch| ch.is_ascii_digit()).collect::<String>()).filter(|s| !s.is_empty());
         let mut pedido = Pedido::new(
             usuario_uuid,
             self.loja_uuid,
@@ -87,6 +89,7 @@ impl PedidoUsecase {
             taxa_entrega,
             forma_pagamento,
             observacoes,
+            contato_filtrado,
         );
 
         tracing::info!(

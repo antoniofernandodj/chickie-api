@@ -587,6 +587,7 @@ DEFINE TABLE pedidos SCHEMALESS;
   "desconto": "0.00",
   "forma_pagamento": "PIX",
   "observacoes": null,
+  "contato": "11999999999",
   "tempo_estimado_min": 45,
   "criado_em": "2026-04-23T00:00:00Z",
   "atualizado_em": "2026-04-23T00:00:00Z",

@@ -318,7 +318,7 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — sem auth obrigatória; `usuario_uuid` e `endereco_entrega` são opcionais |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — sem auth obrigatória; `usuario_uuid`, `endereco_entrega` e `contato` são opcionais |
 | `GET` | `/api/pedidos/listar` | Listar todos pedidos |
 | `GET` | `/api/pedidos/por-loja/{loja_uuid}` | Listar pedidos por loja |
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido por UUID |
@@ -612,6 +612,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model `Pedido`, repository (INSERT + UPDATE), usecase (`criar_pedido`), handler (`CriarPedidoRequest`). Migration `0006` absorveu as mudanças de `usuario_uuid` nullable e o novo campo (migration `0010` removida). |
 | 2026-04-21  | **Ordem de categorias desacoplada**: campo `ordem` removido de `categorias_produtos`. Nova tabela `ordem_categorias_de_produtos (loja_uuid, categoria_uuid, ordem)` permite que cada loja defina sua própria ordem para qualquer categoria (própria ou global). Migration `0012` criada. Stack completa atualizada: model (`CategoriaProdutosOrdenada`, `OrdemCategoriaProdutos`), port (`OrdemCategoriaRepositoryPort`), repository (`CategoriaOrdemRepository`), service (`reordenar_categorias` → novo repo), handlers (`listar_categorias` retorna `CategoriaProdutosOrdenada`), CLI (args sem `ordem`), seed (INSERT sem `ordem`). |
 | 2026-04-20  | **Endpoints públicos de leitura**: GETs de `/api/horarios/{loja_uuid}`, `/api/catalogo/{loja_uuid}/adicionais`, `/api/catalogo/{loja_uuid}/adicionais/disponiveis`, `/api/catalogo/{loja_uuid}/categorias`, `/api/produtos/listar/{loja_uuid}`, `/api/produtos/{uuid}` e `/api/produtos/categoria/{uuid}` movidos para fora do middleware de auth. Apenas POST, PUT e DELETE permanecem protegidos. Handlers refatorados para chamar o service diretamente, removendo `Extension<Usuario>` que causava 500 em rotas públicas. |
 | 2026-04-19  | **Pedido sem usuário obrigatório**: `usuario_uuid` em `pedidos` agora é nullable (migration `0010`). `endereco_entrega` no body de criação de pedido agora é opcional. Endpoint `POST /api/pedidos/criar` não exige mais auth (usa `optional_auth_middleware`). Middleware `optional_auth_middleware` criado. Stack completa atualizada: model, repository, port, service, usecase, handlers, router. |

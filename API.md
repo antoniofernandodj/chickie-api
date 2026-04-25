@@ -859,6 +859,7 @@ Content-Type: application/json
   "taxa_entrega": 5.0,
   "forma_pagamento": "PIX",
   "observacoes": "string | null",
+  "contato": "string | null",
   "codigo_cupom": "string | null",
   "itens": [
     {

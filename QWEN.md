@@ -717,6 +717,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, não-numéricos filtrados) adicionado ao model `Pedido`, repository INSERT/UPDATE, usecase `criar_pedido`, handler `CriarPedidoRequest`. Migration `0006` consolidada com `usuario_uuid` nullable + `contato VARCHAR(11)` (migration `0010` removida). |
 | 2026-04-20  | **Endpoints públicos de leitura**: GETs de horários, adicionais, categorias e produtos movidos para fora do middleware JWT. Handlers `listar_horarios`, `listar_adicionais`, `listar_adicionais_disponiveis`, `listar_categorias`, `listar_produtos` e `listar_produtos_por_categoria` refatorados para chamar o service diretamente, sem `Extension<Usuario>`. |
 | 2026-04-07  | **Campo pizza_mode na categoria**: `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model `CategoriaProdutos`, repository SQL, `CatalogoService`, handlers criar/atualizar categoria com DTOs. |
 | 2026-04-07  | **Listar pedidos por usuário**: Novo endpoint `GET /api/pedidos/meus` retorna todos os pedidos do usuário autenticado com hidratação completa (itens, partes, adicionais). Pipeline: Handler → Usecase → Service → Repository (`buscar_completos_por_usuario`). |

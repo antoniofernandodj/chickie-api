@@ -1,4 +1,4 @@
--- Migration 0011: Tornar ordem de categorias obrigatória e única por loja
+-- Migration 0010: Tornar ordem de categorias obrigatória e única por loja
 
 -- 1. Normalizar ordens existentes — reatribuir sequencialmente por loja
 WITH ranked AS (

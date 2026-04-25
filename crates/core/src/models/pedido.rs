@@ -237,6 +237,7 @@ pub struct Pedido {
     pub desconto: Option<Decimal>,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
+    pub contato: Option<String>,
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
@@ -259,6 +260,7 @@ impl Pedido {
         taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
+        contato: Option<String>,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
@@ -273,6 +275,7 @@ impl Pedido {
             desconto: None,
             forma_pagamento,
             observacoes,
+            contato,
             tempo_estimado_min: None,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),

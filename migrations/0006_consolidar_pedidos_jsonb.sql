@@ -142,3 +142,18 @@ DROP TABLE IF EXISTS itens_pedido CASCADE;
 
 -- 5. Atualizar trigger de updated_at para incluir coluna itens
 -- (já existe trigger_pedidos_atualizado, não precisa recriar)
+
+-- 6. Tornar usuario_uuid opcional (pedidos de balcão / convidado)
+ALTER TABLE pedidos
+DROP CONSTRAINT IF EXISTS pedidos_usuario_uuid_fkey;
+
+ALTER TABLE pedidos
+ALTER COLUMN usuario_uuid DROP NOT NULL;
+
+ALTER TABLE pedidos
+ADD CONSTRAINT pedidos_usuario_uuid_fkey
+FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE SET NULL;
+
+-- 7. Campo contato: telefone do cliente (11 dígitos, apenas números)
+ALTER TABLE pedidos
+ADD COLUMN IF NOT EXISTS contato VARCHAR(11);

@@ -223,7 +223,7 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
-| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) | ✅ |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — `contato`, `endereco_entrega` opcionais; auth opcional | — |
 | `GET`  | `/api/pedidos/listar` | Listar todos pedidos | ✅   |
 | `GET`  | `/api/pedidos/meus` | Listar meus pedidos | ✅ |
 | `GET`  | `/api/pedidos/por-loja/{loja_uuid}` | Listar por loja | ✅ |
