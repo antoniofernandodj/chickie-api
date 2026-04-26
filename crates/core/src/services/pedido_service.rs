@@ -81,29 +81,62 @@ impl PedidoService {
         self.salvar_com_codigo_unico(&mut pedido).await
     }
 
+    pub async fn listar_todos(&self) -> Result<Vec<Pedido>, String> {
+        let pedidos = self.pedido_repo.buscar_todos_completos().await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
+    }
+
     pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+        let pedidos = self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
     }
 
     pub async fn listar_por_usuario(&self, usuario_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
+        let pedidos = self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
     }
 
     pub async fn buscar_por_uuid(&self, pedido_uuid: Uuid) -> Result<Pedido, String> {
-        self.pedido_repo
+        let mut pedido = self.pedido_repo
             .buscar_completo(pedido_uuid)
             .await
             .map_err(|e| e.to_string())?
-            .ok_or("Pedido não encontrado".to_string())
+            .ok_or("Pedido não encontrado".to_string())?;
+        pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(pedido)
     }
 
     pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Pedido, String> {
         let codigo = codigo.trim().to_uppercase();
-        self.pedido_repo
+        let mut pedido = self.pedido_repo
             .buscar_por_codigo(&codigo)
             .await
             .map_err(|e| e.to_string())?
-            .ok_or("Pedido não encontrado".to_string())
+            .ok_or("Pedido não encontrado".to_string())?;
+        let uuid = pedido.uuid;
+        pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(pedido)
+    }
+
+    async fn hidratar_com_endereco(&self, mut pedidos: Vec<Pedido>) -> Result<Vec<Pedido>, String> {
+        if pedidos.is_empty() {
+            return Ok(pedidos);
+        }
+        let uuids: Vec<Uuid> = pedidos.iter().map(|p| p.uuid).collect();
+        let mut mapa = self.endereco_entrega_repo
+            .buscar_por_pedidos(&uuids)
+            .await
+            .map_err(|e| e.to_string())?;
+        for p in &mut pedidos {
+            p.endereco_entrega = mapa.remove(&p.uuid);
+        }
+        Ok(pedidos)
     }
 
     /// Lógica para verificar promoções ativas da loja
@@ -244,12 +277,15 @@ impl PedidoService {
         _loja_uuid: uuid::Uuid
     ) -> Result<PedidoComEntrega, String> {
 
-        let pedido = self.pedido_repo.buscar_completo(pedido_uuid).await.map_err(|e| e.to_string())?
+        let mut pedido = self.pedido_repo.buscar_completo(pedido_uuid).await.map_err(|e| e.to_string())?
             .ok_or("Pedido não encontrado")?;
 
         let endereco_entrega = self.endereco_entrega_repo
             .buscar_por_pedido(pedido_uuid)
-            .await?;
+            .await
+            .map_err(|e| e.to_string())?;
+
+        pedido.endereco_entrega = endereco_entrega.clone();
 
         Ok(PedidoComEntrega {
             pedido,
@@ -476,7 +512,12 @@ impl PedidoService {
         &self,
         pedido_uuid: Uuid,
     ) -> Result<PedidoComEntregador, String> {
-        self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
-            .ok_or("Pedido não encontrado".to_string())
+        let mut resultado = self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
+            .ok_or("Pedido não encontrado".to_string())?;
+        resultado.pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(resultado)
     }
 }

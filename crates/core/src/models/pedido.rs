@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::models::Model;
+use crate::models::{Model, EnderecoEntrega};
 use chrono::Utc;
 use sqlx::FromRow;
 use rust_decimal::Decimal;
@@ -249,6 +249,9 @@ pub struct Pedido {
     #[sqlx(skip)]
     #[serde(default)]
     pub itens: Vec<ItemPedido>,
+    /// Endereço de entrega — hidratado após a query, não mapeado pelo sqlx
+    #[sqlx(skip)]
+    pub endereco_entrega: Option<EnderecoEntrega>,
 }
 
 #[allow(dead_code)]
@@ -281,6 +284,7 @@ impl Pedido {
             atualizado_em: Utc::now(),
             itens_json: serde_json::Value::Array(vec![]),
             itens: Vec::new(),
+            endereco_entrega: None,
         }
     }
 

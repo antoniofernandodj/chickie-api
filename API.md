@@ -901,8 +901,10 @@ Content-Type: application/json
 
 ### 6.2 Listar Pedidos
 
+> Lista todos os pedidos da plataforma, ordenados do mais recente. Todos os responses de pedido agora incluem `contato` e `endereco_entrega`.
+
 ```
-GET /api/pedidos/
+GET /api/pedidos/listar
 Authorization: Bearer <token>
 ```
 
@@ -922,6 +924,7 @@ Authorization: Bearer <token>
     "desconto": 0.0,
     "forma_pagamento": "PIX",
     "observacoes": "Sem cebola",
+    "contato": "11999999999",
     "tempo_estimado_min": 45,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
@@ -955,10 +958,26 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ]
+    ],
+    "endereco_entrega": {
+      "uuid": "550e8400-e29b-41d4-a716-446655440020",
+      "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+      "cep": "01001-000",
+      "logradouro": "Rua das Flores",
+      "numero": "123",
+      "complemento": "Apto 101",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "latitude": -23.5505,
+      "longitude": -46.6333
+    }
   }
 ]
 ```
+
+> `endereco_entrega` é `null` quando o pedido não possui endereço de entrega cadastrado.
 
 ---
 
@@ -969,7 +988,7 @@ GET /api/pedidos/meus
 Authorization: Bearer <token>
 ```
 
-> Retorna todos os pedidos criados pelo usuário autenticado, ordenados do mais recente ao mais antigo. Inclui itens, partes e adicionais hidratados.
+> Retorna todos os pedidos criados pelo usuário autenticado, ordenados do mais recente ao mais antigo. Inclui itens, partes, adicionais, `contato` e `endereco_entrega`.
 
 **Response `200`:**
 ```json
@@ -987,6 +1006,7 @@ Authorization: Bearer <token>
     "desconto": 0.0,
     "forma_pagamento": "PIX",
     "observacoes": "Sem cebola",
+    "contato": "11999999999",
     "tempo_estimado_min": 45,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
@@ -1011,7 +1031,8 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ]
+    ],
+    "endereco_entrega": null
   }
 ]
 ```
@@ -1045,6 +1066,7 @@ Authorization: Bearer <token>
   "desconto": 0.0,
   "forma_pagamento": "PIX",
   "observacoes": "Sem cebola",
+  "contato": "11999999999",
   "tempo_estimado_min": 45,
   "criado_em": "2026-04-04T00:00:00Z",
   "atualizado_em": "2026-04-04T00:00:00Z",
@@ -1078,7 +1100,21 @@ Authorization: Bearer <token>
         }
       ]
     }
-  ]
+  ],
+  "endereco_entrega": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440020",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "cep": "01001-000",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 101",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
 }
 ```
 
@@ -1107,10 +1143,12 @@ GET /api/pedidos/codigo/{codigo}
   "desconto": 0.0,
   "forma_pagamento": "PIX",
   "observacoes": "Sem cebola",
+  "contato": "11999999999",
   "tempo_estimado_min": 45,
   "criado_em": "2026-04-04T00:00:00Z",
   "atualizado_em": "2026-04-04T00:00:00Z",
-  "itens": []
+  "itens": [],
+  "endereco_entrega": null
 }
 ```
 
@@ -1128,6 +1166,7 @@ Authorization: Bearer <token>
 [
   {
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "codigo": "A1B2C3",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "entregador_uuid": null,
@@ -1138,6 +1177,7 @@ Authorization: Bearer <token>
     "desconto": 0.0,
     "forma_pagamento": "PIX",
     "observacoes": "Sem cebola",
+    "contato": "11999999999",
     "tempo_estimado_min": 45,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
@@ -1162,7 +1202,8 @@ Authorization: Bearer <token>
           }
         ]
       }
-    ]
+    ],
+    "endereco_entrega": null
   }
 ]
 ```
@@ -1170,6 +1211,8 @@ Authorization: Bearer <token>
 ---
 
 ### 6.5 Buscar Pedido com Endereço de Entrega
+
+> Este endpoint retorna a estrutura `{ pedido, endereco_entrega }` mantida por compatibilidade. O campo `endereco_entrega` também está disponível diretamente dentro do objeto `pedido`.
 
 ```
 GET /api/pedidos/{pedido_uuid}/com-entrega
@@ -1181,6 +1224,7 @@ Authorization: Bearer <token>
 {
   "pedido": {
     "uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "codigo": "A1B2C3",
     "usuario_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
     "entregador_uuid": null,
@@ -1191,10 +1235,25 @@ Authorization: Bearer <token>
     "desconto": 0.0,
     "forma_pagamento": "PIX",
     "observacoes": null,
+    "contato": "11999999999",
     "tempo_estimado_min": 45,
     "criado_em": "2026-04-04T00:00:00Z",
     "atualizado_em": "2026-04-04T00:00:00Z",
-    "itens": []
+    "itens": [],
+    "endereco_entrega": {
+      "uuid": "550e8400-e29b-41d4-a716-446655440020",
+      "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+      "cep": "01001-000",
+      "logradouro": "Rua das Flores",
+      "numero": "123",
+      "complemento": "Apto 101",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "latitude": -23.5505,
+      "longitude": -46.6333
+    }
   },
   "endereco_entrega": {
     "uuid": "550e8400-e29b-41d4-a716-446655440020",
@@ -1330,14 +1389,31 @@ Authorization: Bearer <token>
   "desconto": 0.0,
   "forma_pagamento": "PIX",
   "observacoes": "Sem cebola",
+  "contato": "11999999999",
   "tempo_estimado_min": 45,
   "criado_em": "2026-04-04T00:00:00Z",
   "atualizado_em": "2026-04-04T00:00:00Z",
+  "endereco_entrega": {
+    "uuid": "550e8400-e29b-41d4-a716-446655440080",
+    "loja_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "pedido_uuid": "550e8400-e29b-41d4-a716-446655440010",
+    "cep": "01001-000",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "complemento": "Apto 101",
+    "bairro": "Centro",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  },
   "entregador_nome": "Carlos Entregador",
   "veiculo": "Moto",
   "placa": "ABC-1234"
 }
 ```
+
+> `contato` e `endereco_entrega` são `null` quando não informados.
 
 **Response `404`:**
 ```json

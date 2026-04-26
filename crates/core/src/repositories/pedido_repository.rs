@@ -415,6 +415,13 @@ impl PedidoRepositoryPort for PedidoRepository {
     async fn buscar_completos_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
         self.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
     }
+    async fn buscar_todos_completos(&self) -> DomainResult<Vec<Pedido>> {
+        let pedidos = sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos ORDER BY criado_em DESC")
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+        self.hidratar_pedidos(pedidos).await.map_err(|e| DomainError::Internal(e))
+    }
     async fn listar_todos(&self) -> DomainResult<Vec<Pedido>> {
         <Self as Repository<Pedido>>::listar_todos(self).await.map_err(|e| DomainError::Internal(e))
     }
@@ -453,6 +460,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 contato: r.contato,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
                 atualizado_em: r.atualizado_em, itens_json: serde_json::Value::Array(vec![]), itens: vec![],
+                endereco_entrega: None,
             };
             crate::ports::PedidoComEntregador {
                 pedido,

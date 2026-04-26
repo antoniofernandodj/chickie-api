@@ -32,6 +32,7 @@ pub trait PedidoRepositoryPort: Send + Sync {
     async fn buscar_completo(&self, uuid: Uuid) -> DomainResult<Option<Pedido>>;
     async fn buscar_completos_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Pedido>>;
     async fn buscar_completos_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>>;
+    async fn buscar_todos_completos(&self) -> DomainResult<Vec<Pedido>>;
     async fn listar_todos(&self) -> DomainResult<Vec<Pedido>>;
     async fn codigo_existe(&self, codigo: &str) -> DomainResult<bool>;
     async fn atualizar_status(&self, uuid: Uuid, novo_status: &str) -> DomainResult<()>;

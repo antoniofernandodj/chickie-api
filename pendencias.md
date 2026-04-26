@@ -25,6 +25,7 @@ _(nenhum bug conhecido)_
 
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
+| 32 | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos** | Campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (`#[sqlx(skip)]`). Batch hydration via `buscar_por_pedidos` (`ANY($1)`) no repository. Service `PedidoService` hidrata todos os endpoints: `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix no handler `listar_pedidos` (extraia `Path(loja_uuid)` em rota sem parâmetro). | 2026-04-26 |
 | 31 | **Campo `contato` em pedidos** | `contato: Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model, repository (INSERT/UPDATE), usecase, handler. Migration `0006` absorveu `usuario_uuid` nullable + `contato VARCHAR(11)` (migration `0010` removida). | 2026-04-24 |
 | 30 | **Pedido sem usuário obrigatório** | `usuario_uuid` em `pedidos` agora é nullable (absorvida na migration `0006`). `endereco_entrega` no body de `/api/pedidos/criar` é opcional. Endpoint sem auth obrigatória (usa `optional_auth_middleware`). Stack completa atualizada. | 2026-04-19 |
 | 29 | **Celular UNIQUE + endpoint verificar** | Migration `0009` adiciona UNIQUE constraint em `celular`. Handler signup filtra caracteres especiais, mantendo apenas dígitos. Novo endpoint `GET /api/usuarios/verificar-celular/{celular}`. Service `verificar_celular_disponivel` adicionado. | 2026-04-13 |
@@ -70,8 +71,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 15 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29 |
+| ✅ Concluídas | 16 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 32 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 15 concluídas recentemente**
+**Total: 11 pendências ativas, 16 concluídas recentemente**
