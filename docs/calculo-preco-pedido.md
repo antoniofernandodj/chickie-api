@@ -280,3 +280,134 @@ Sua lógica deve prever um campo valor_maximo_desconto na tabela de cupons/promo
 
 5. Disponibilidade de Estoque (ou Itens Desativados)
 No Passo 2, além de capturar o preço, verifique se o produto está ativo e disponível. Se o cliente deixou o carrinho aberto por 2 horas e o lojista pausou a "Coca-Cola" nesse meio tempo, o servidor deve recusar o pedido no Passo 2.
+
+
+
+
+
+/////////////////////
+
+
+os descontos devem ser calculados APÓS a soma dos adicionais.
+
+Na estrutura de um pedido de delivery, o "produto" que o cliente está comprando não é apenas a base, mas a composição final. Se o cliente monta uma pizza e coloca R$ 20,00 em borda recheada e bacon extra, isso passa a integrar o valor agregado do item.
+
+Aqui está o porquê de calcular após os adicionais e como isso se encaixa na sua lógica:
+
+1. A Lógica do "Valor Percebido"
+Quando um cliente usa um cupom de 10%, ele espera que o desconto incida sobre o total do carrinho (exceto, às vezes, o frete).
+
+Cenário A (Desconto ANTES dos adicionais):
+
+Pizza: R$ 50,00 -> 10% desc. = R$ 45,00
+
+Adicionais: R$ 10,00
+
+Total: R$ 55,00 (O cliente sente que o desconto foi "comido" pelos adicionais).
+
+Cenário B (Desconto APÓS os adicionais):
+
+Pizza + Adicionais: R$ 60,00
+
+10% desc. sobre R$ 60,00 = R$ 6,00
+
+Total: R$ 54,00 (O cliente sente que o cupom valorizou toda a escolha dele).
+
+2. Alinhamento com sua Especificação (Passo 4 e 5)
+Sua especificação já está desenhada corretamente para isso. Veja a ordem:
+
+Passo 4c: Você calcula a contribuicao_item como (preco_base + total_adicionais) × quantidade.
+
+Passo 4d: Você soma todas as contribuições para gerar o subtotal.
+
+Passo 5: O desconto é calculado sobre o subtotal.
+
+Dessa forma, os adicionais já estão "embutidos" no subtotal quando a porcentagem do cupom ou da promoção entra em cena.
+
+3. Exceção: Descontos em Itens Específicos
+Se no futuro você implementar promoções do tipo "Leve o adicional de queijo grátis", aí sim o cálculo muda, pois o desconto é direcionado a um componente. Mas para cupons de pedido e promoções de subtotal, o cálculo após os adicionais é o padrão de mercado (iFood, Rappi, etc.).
+
+4. Dica de Ouro: O "Frete Grátis"
+Note que no seu Passo 5, você separou corretamente o cálculo do desconto de frete.
+
+Atenção: Nunca inclua a taxa_entrega na base de cálculo de um desconto percentual (ex: 10% de desconto). O desconto deve incidir apenas sobre o subtotal (Produtos + Adicionais). O lojista geralmente não quer dar desconto sobre o valor que ele repassa ao motoboy.
+
+Resumo da implementação:
+Soma Sabores (Regra mais caro/média).
+
+Soma Adicionais.
+
+Multiplica pela Quantidade.
+
+Gera Subtotal.
+
+Aplica Desconto sobre o Subtotal.
+
+Soma o Frete.
+
+Isso mantém sua margem de erro segura e a compreensão do cliente clara. Faz sentido para o modelo de negócio que você está pensando para o Chiquitos?
+
+
+
+/////////////////////////////////////////////
+
+
+
+
+algum ponto q esqueci de me atentar?
+
+Sua lógica está muito acima da média para um MVP (Produto Mínimo Viável), mas existem três pontos "invisíveis" que costumam causar problemas reais em sistemas de delivery quando o volume de pedidos aumenta.
+
+Considerando que você está criando um SaaS para vender para lojistas em São Gonçalo, atente-se a isto:
+
+1. A Regra do "Meio-a-Meio" com Adicionais
+Você definiu que a loja escolhe entre "Mais Caro" ou "Média Ponderada" para o preço base. Mas, e os adicionais?
+
+O problema: Se o cliente pede uma pizza "Metade Mussarela / Metade Calabresa" e pede "Dobro de Queijo", esse adicional vai na pizza inteira ou apenas em uma das metades?
+
+A solução: No seu payload, o adicional deve estar vinculado à Parte (Sabor) ou ao Item (Pizza Inteira)?
+
+Se for vinculado à Parte, o cálculo do Passo 4b deve garantir que, se o preço da parte for fracionado (média), o preço do adicional talvez também precise ser, ou o lojista pode sair no prejuízo (ou o cliente pagar caro por um adicional que só vem em metade do produto).
+
+Sugestão: Geralmente, para facilitar, adicionais em itens fracionados são cobrados pelo valor cheio e aplicados ao item todo.
+
+2. O Valor Mínimo da Loja
+Você previu o valor mínimo para Cupons, mas esqueceu do Valor Mínimo do Pedido.
+
+Cenário: O cliente pede um refrigerante de R$ 8,00. A taxa de entrega é R$ 5,00. O lojista gasta com embalagem, taxa de cartão e tempo do motoboy, e o pedido acaba não sendo lucrativo.
+
+Sugestão: No seu Passo 1, adicione uma validação: SE subtotal < configuracao_loja.valor_minimo_pedido -> REJEITAR.
+
+3. Cancelamento e Estorno (A "Snapshot" não basta)
+Você fez o snapshot do preço, o que é ótimo. Mas e se o pedido for cancelado ou alterado pelo lojista (ex: "Acabou a Coca, troquei por Guaraná e dei R$ 2,00 de desconto")?
+
+O ponto: Sua lógica de cálculo no backend deve ser capaz de ser re-executada ou permitir ajustes manuais pelo lojista no painel de administração.
+
+Sugestão: Tenha um campo desconto_manual_admin no banco de dados para que o lojista possa ajustar o valor final em casos excepcionais sem quebrar a integridade do cálculo original.
+
+4. Arredondamento de "Meio Centavo"
+Ao usar a Média Ponderada, você inevitavelmente cairá em dízimas.
+
+Exemplo: Três sabores de R$ 10,00. Subtotal = R$ 33,33333...
+
+O risco: Se o cliente compra 10 pizzas dessas, a diferença de arredondamento começa a aparecer.
+
+Sugestão: No seu código Rust, use rust_decimal e force o arredondamento em cada contribuicao_item. Nunca deixe para arredondar apenas no total_final.
+
+5. Limite de Uso de Cupom (Por Cliente vs. Global)
+Sua lógica valida se o cupom está ativo, mas não valida quantas vezes ele pode ser usado.
+
+Cenário: Você lança um cupom "PRIMEIRACOMPRA". O cliente (mesmo deslogado, usando o ID do aparelho) pode tentar usar 10 vezes.
+
+Sugestão: Adicione um campo limite_uso_total e limite_uso_por_usuario (ou por dispositivo, no caso do seu checkout deslogado).
+
+Resumo do que adicionar na Spec:
+Validação de Pedido Mínimo da loja.
+
+Definição se Adicionais seguem a regra de fracionamento das partes ou são sempre somados fixos.
+
+Estratégia de Arredondamento explícita (ex: Arredondar para cima em 2 casas decimais em cada linha).
+
+Fora isso, o fluxo está muito profissional. O uso de um código de 6 dígitos para o acompanhamento deslogado vai funcionar muito bem para o comércio local.
+
+Você já decidiu como vai lidar com a identificação do aparelho para o usuário deslogado não perder o pedido se fechar o browser? (LocalStorage ou Cookies?)
