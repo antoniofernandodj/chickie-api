@@ -111,6 +111,7 @@ impl ItemPedido {
 // --- EstadoDePedido ---
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum EstadoDePedido {
     Criado,
     AguardandoConfirmacaoDeLoja,

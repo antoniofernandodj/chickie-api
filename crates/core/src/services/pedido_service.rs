@@ -111,15 +111,18 @@ impl PedidoService {
     }
 
     pub async fn buscar_por_uuid(&self, pedido_uuid: Uuid) -> Result<Pedido, String> {
+
         let mut pedido = self.pedido_repo
             .buscar_completo(pedido_uuid)
             .await
             .map_err(|e| e.to_string())?
             .ok_or("Pedido não encontrado".to_string())?;
+
         pedido.endereco_entrega = self.endereco_entrega_repo
             .buscar_por_pedido(pedido_uuid)
             .await
             .map_err(|e| e.to_string())?;
+
         Ok(pedido)
     }
 

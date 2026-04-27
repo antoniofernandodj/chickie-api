@@ -61,6 +61,7 @@ pub use pedido::{
     buscar_pedido_com_entrega,
     atualizar_status,
     avancar_status,
+    cancelar_pedido,
     listar_meus_pedidos,
     atribuir_entregador,
     remover_entregador,
