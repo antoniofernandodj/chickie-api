@@ -41,6 +41,7 @@ pub use auth::{
     auth_middleware,
     optional_auth_middleware,
     create_jwt,
+    validar_token,
     OwnerPermission,
 };
 
@@ -58,6 +59,7 @@ pub use pedido::{
     buscar_pedido,
     buscar_pedido_por_codigo,
     listar_por_loja,
+    ws_listar_por_loja,
     buscar_pedido_com_entrega,
     atualizar_status,
     avancar_status,
