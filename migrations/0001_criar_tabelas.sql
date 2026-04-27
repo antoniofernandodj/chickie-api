@@ -300,9 +300,10 @@ CREATE TABLE IF NOT EXISTS pedidos (
             'aguardando_confirmacao_de_loja',
             'confirmado_pela_loja',
             'em_preparo',
-            'pronto_para_retirada',
+            'pronto',
             'saiu_para_entrega',
-            'entregue'
+            'entregue',
+            'cancelado'
         )
     ),
     total NUMERIC(10,2) NOT NULL DEFAULT 0.0,
