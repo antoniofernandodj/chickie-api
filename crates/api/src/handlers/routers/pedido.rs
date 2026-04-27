@@ -9,8 +9,9 @@ use crate::handlers::{
 use crate::handlers::{
     criar_pedido,
     listar_pedidos,
-    listar_por_loja,
+    // listar_por_loja,
     ws_listar_por_loja,
+    ws_buscar_por_codigo,
     buscar_pedido,
     buscar_pedido_por_codigo,
     buscar_pedido_com_entrega,
@@ -34,7 +35,7 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     let auth_routes = Router::new()
         .route("/listar", get(listar_pedidos))
         .route("/meus", get(listar_meus_pedidos))
-        .route("/por-loja/{loja_uuid}", get(listar_por_loja))
+        // .route("/por-loja/{loja_uuid}", get(listar_por_loja))
         .route("/{uuid}", get(buscar_pedido))
         .route("/{uuid}/com-entrega", get(buscar_pedido_com_entrega))
         .route("/{uuid}/status", put(atualizar_status))
@@ -48,7 +49,8 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     // WebSocket: browser não suporta headers customizados no handshake,
     // então o token é recebido via query param e validado dentro do handler.
     let ws_routes = Router::new()
-        .route("/por-loja/{loja_uuid}/ws", get(ws_listar_por_loja));
+        .route("/por-loja/{loja_uuid}/ws", get(ws_listar_por_loja))
+        .route("/codigo/{codigo}/ws", get(ws_buscar_por_codigo));
 
     Router::new()
         .merge(public_routes)
