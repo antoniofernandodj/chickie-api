@@ -52,7 +52,7 @@ pub async fn run_list_meus_pedidos(state: &AppState, args: ListMeusPedidosArgs) 
 }
 
 pub async fn run_list_pedidos_por_loja(state: &AppState, args: ListPedidosPorLojaArgs) {
-    match state.pedido_service.listar_por_loja(args.loja_uuid).await {
+    match state.pedido_service.listar_por_loja(args.loja_uuid, chickie_core::models::EstadoDePedido::Criado).await {
         Ok(pedidos) => json_print(&pedidos),
         Err(e) => print_err(&format!("{:?}", e)),
     }

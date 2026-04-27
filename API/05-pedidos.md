@@ -69,7 +69,20 @@ Endpoint público para localizar um pedido pelo código alfanumérico de 6 carac
 
 ## GET /api/pedidos/por-loja/{loja_uuid} 🔒
 
+**Query Parameters:**
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `status` | `string` | Não | Filtrar por status do pedido. Default: `criado` |
+
+**Valores válidos para `status`:** `criado`, `aguardando_confirmacao_de_loja`, `confirmado_pela_loja`, `em_preparo`, `pronto`, `saiu_para_entrega`, `entregue`
+
 **Response `200`:** array de pedidos completos.
+
+**Response `400` (status inválido):**
+```json
+{ "error": "Estado inválido: foo" }
+```
 
 ---
 
@@ -187,7 +200,6 @@ Remove o entregador vinculado (define `entregador_uuid` como NULL).
       "pedido_uuid": "uuid",
       "quantidade": 1,
       "observacoes": null,
-      "adicionais": [],
       "partes": [
         {
           "uuid": "uuid",

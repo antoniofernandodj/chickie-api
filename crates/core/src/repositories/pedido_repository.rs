@@ -145,10 +145,12 @@ impl PedidoRepository {
     pub async fn buscar_completos_por_loja(
         &self,
         loja_uuid: Uuid,
+        status: &str,
     ) -> Result<Vec<Pedido>, String> {
-        let stmt = "SELECT * FROM pedidos WHERE loja_uuid = $1 ORDER BY criado_em DESC";
+        let stmt = "SELECT * FROM pedidos WHERE loja_uuid = $1 AND status = $2 ORDER BY criado_em DESC";
         let pedidos = sqlx::query_as::<_, Pedido>(stmt)
             .bind(loja_uuid)
+            .bind(status)
             .fetch_all(&*self.pool)
             .await
             .map_err(|e| e.to_string())?;
@@ -409,8 +411,8 @@ impl PedidoRepositoryPort for PedidoRepository {
         pedidos = self.hidratar_pedidos(pedidos).await.map_err(|e| DomainError::Internal(e))?;
         Ok(Some(pedidos.remove(0)))
     }
-    async fn buscar_completos_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
-        self.buscar_completos_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))
+    async fn buscar_completos_por_loja(&self, loja_uuid: Uuid, status: &str) -> DomainResult<Vec<Pedido>> {
+        self.buscar_completos_por_loja(loja_uuid, status).await.map_err(|e| DomainError::Internal(e))
     }
     async fn buscar_completos_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
         self.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))

@@ -152,8 +152,8 @@ impl PedidoUsecase {
         self.pedido_service.buscar_por_codigo(codigo).await
     }
 
-    pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {
-        self.pedido_service.listar_por_loja(self.loja_uuid).await
+    pub async fn listar_por_loja(&self, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
+        self.pedido_service.listar_por_loja(self.loja_uuid, status).await
     }
 
     pub async fn listar_por_usuario(&self) -> Result<Vec<Pedido>, String> {

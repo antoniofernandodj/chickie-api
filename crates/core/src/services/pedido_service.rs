@@ -100,8 +100,8 @@ impl PedidoService {
         self.hidratar_com_endereco(pedidos).await
     }
 
-    pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        let pedidos = self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())?;
+    pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
+        let pedidos = self.pedido_repo.buscar_completos_por_loja(loja_uuid, status.as_str()).await.map_err(|e| e.to_string())?;
         self.hidratar_com_endereco(pedidos).await
     }
 
