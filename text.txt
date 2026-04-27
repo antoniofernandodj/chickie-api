@@ -1,8 +1,0 @@
-  Rota: GET /api/pedidos/por-loja/{loja_uuid}/ws?status=criado&token=<jwt>
-
-  Comportamento:
-  1. Valida o JWT via query param ?token= antes de aceitar o upgrade (WebSocket browsers não suportam headers customizados)
-  2. Valida e parseia o ?status= antes do upgrade, retornando 400/401 HTTP normal se inválido
-  3. Após conectar, faz a primeira busca na primeira tick do interval (1 segundo)
-  4. Loop com tokio::select!: a cada 1 segundo busca os pedidos via PedidosLiveUsecase; só emite ao cliente quando o JSON mudou
-  5. Encerra o loop se o cliente desconectar (recv retorna None, Close ou erro), se send falhar, ou se o cliente mandar uma mensagem de Close
