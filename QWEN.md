@@ -679,7 +679,7 @@ Cliente → cadastra-se como usuário (classe: "cliente", padrão)
 | `aguardando_confirmacao_de_loja`| Loja ainda não confirmou                       |
 | `confirmado_pela_loja`          | Loja confirmou o pedido                        |
 | `em_preparo`                    | Pedido sendo preparado na cozinha              |
-| `pronto_para_retirada`          | Pedido pronto para o cliente                   |
+| `pronto`                        | Pedido pronto para o cliente                   |
 | `saiu_para_entrega`             | Entregador saiu com o pedido                   |
 | `entregue`                      | Pedido entregue ao cliente                     |
 

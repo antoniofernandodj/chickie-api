@@ -112,9 +112,9 @@ Entregue (terminal) ←─────────────┘
 | `criado` | `aguardando_confirmacao_de_loja` |
 | `aguardando_confirmacao_de_loja` | `confirmado_pela_loja` ou voltar para `criado` |
 | `confirmado_pela_loja` | `em_preparo` ou voltar para `aguardando_confirmacao_de_loja` |
-| `em_preparo` | `pronto_para_retirada` ou voltar para `confirmado_pela_loja` |
-| `pronto_para_retirada` | `saiu_para_entrega` ou voltar para `em_preparo` |
-| `saiu_para_entrega` | `entregue` ou voltar para `pronto_para_retirada` |
+| `em_preparo` | `pronto` ou voltar para `confirmado_pela_loja` |
+| `pronto` | `saiu_para_entrega` ou voltar para `em_preparo` |
+| `saiu_para_entrega` | `entregue` ou voltar para `pronto` |
 | `entregue` | **(estado terminal — sem transições)** |
 
 ### Response ao Avançar Estado
@@ -123,7 +123,7 @@ Entregue (terminal) ←─────────────┘
 {
   "uuid": "pedido-uuid",
   "status": "em_preparo",
-  "transicoes_permitidas": ["pronto_para_retirada", "confirmado_pela_loja"]
+  "transicoes_permitidas": ["pronto", "confirmado_pela_loja"]
 }
 ```
 
@@ -1294,7 +1294,7 @@ Content-Type: application/json
 - `aguardando_confirmacao_de_loja`
 - `confirmado_pela_loja`
 - `em_preparo`
-- `pronto_para_retirada`
+- `pronto`
 - `saiu_para_entrega`
 - `entregue`
 
@@ -1305,7 +1305,7 @@ Content-Type: application/json
 {
   "uuid": "pedido-uuid",
   "status": "em_preparo",
-  "transicoes_permitidas": ["pronto_para_retirada", "confirmado_pela_loja"]
+  "transicoes_permitidas": ["pronto", "confirmado_pela_loja"]
 }
 ```
 

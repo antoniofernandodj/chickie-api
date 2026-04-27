@@ -441,7 +441,7 @@ Pedido
 
 ```
 criado → aguardando_confirmacao → confirmado → em_preparo
-       → pronto_para_retirada → saiu_para_entrega → entregue
+       → pronto → saiu_para_entrega → entregue
 ```
 
 ---
