@@ -103,8 +103,8 @@ vai usar na verdade algum usecase, que vai usar algum service, que vai usar
 os repositórios. então sempre que for pedido um endpoint, deve-se observar
 esta pilha.
 - Logo após ser editados documentos de projeto, toda a documentação deve
-ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
-- Sempre que eu mencionar documentação completa estou falando de @API.md,
+ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API/README.md
+- Sempre que eu mencionar documentação completa estou falando de @API/,
 @QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
 
 ## Microserviços (Visão Futura)
@@ -410,7 +410,7 @@ cargo check                      # Verificar compilação sem gerar binário
 
 | Documento | Descrição |
 |-----------|-----------|
-| [`API.md`](./API.md) | Especificação completa de todos os 46 endpoints |
+| [`API/`](./API/README.md) | Especificação completa de todos os endpoints (pasta com 15 arquivos) |
 | [`pendencias.md`](./pendencias.md) | Lista de pendências (bugs, melhorias, features faltando) |
 
 ---
@@ -624,4 +624,4 @@ Entregador entrega → pedido status → ENTREGUE
 
 ## AI Added Memories
 - Regra arquitetural obrigatória: TODO endpoint deve seguir a pilha Handler → Usecase → Service → Repository → Database. Handlers NUNCA podem conter lógica de negócio, queries SQL, ou chamadas diretas a repositories. Handlers apenas extraem dados da request, instanciam o usecase, chamam seu método e retornam a response. Isso vale para qualquer novo endpoint criado no projeto Chickie API.
-- O projeto Chickie API usa o comando `make export-docs` para sincronizar API.md, CLAUDE.md e README.md para o projeto chickie-ui em ../../TS/chickie-ui/api_docs/
+- O projeto Chickie API usa o comando `make export-docs` para sincronizar a pasta API/, CLAUDE.md e README.md para o projeto chickie-ui em ../../TS/chickie-ui/api_docs/

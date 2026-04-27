@@ -103,8 +103,8 @@ vai usar na verdade algum usecase, que vai usar algum service, que vai usar
 os repositórios. então sempre que for pedido um endpoint, deve-se observar
 esta pilha.
 - Logo após ser editados documentos de projeto, toda a documentação deve
-ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
-- Sempre que eu mencionar documentação completa estou falando de @API.md,
+ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API/README.md
+- Sempre que eu mencionar documentação completa estou falando de @API/,
 @QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
 
 ## Microserviços (Visão Futura)
@@ -429,7 +429,7 @@ cargo check                      # Verificar compilação sem gerar binário
 
 | Documento | Descrição |
 |-----------|-----------|
-| [`API.md`](./API.md) | Especificação completa de todos os 46 endpoints |
+| [`API/`](./API/README.md) | Especificação completa de todos os endpoints (pasta com 15 arquivos) |
 | [`pendencias.md`](./pendencias.md) | Lista de pendências (bugs, melhorias, features faltando) |
 
 ---

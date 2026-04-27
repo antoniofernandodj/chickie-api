@@ -84,8 +84,6 @@ pub struct ItemPedido {
     pub observacoes: Option<String>,
     #[serde(default)]
     pub partes: Vec<ParteDeItemPedido>,
-    #[serde(default)]
-    pub adicionais: Vec<AdicionalDeItemDePedido>,
 }
 
 impl ItemPedido {
@@ -103,7 +101,6 @@ impl ItemPedido {
             quantidade,
             observacoes,
             partes,
-            adicionais: Vec::new(),
         }
     }
 }

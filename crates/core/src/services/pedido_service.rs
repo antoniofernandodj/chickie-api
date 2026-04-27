@@ -554,12 +554,17 @@ impl PedidoService {
         &self,
         pedido_uuid: Uuid,
     ) -> Result<PedidoComEntregador, String> {
-        let mut resultado = self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
+
+        let mut resultado = self.pedido_repo
+            .buscar_com_entregador(pedido_uuid)
+            .await?
             .ok_or("Pedido não encontrado".to_string())?;
+
         resultado.pedido.endereco_entrega = self.endereco_entrega_repo
             .buscar_por_pedido(pedido_uuid)
             .await
             .map_err(|e| e.to_string())?;
+
         Ok(resultado)
     }
 }

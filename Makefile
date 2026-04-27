@@ -1,5 +1,5 @@
 export-docs:
-	cp API.md ../../TS/chickie-ui/api_docs/API.md
+	cp -r API/ ../../TS/chickie-ui/api_docs/API/
 	cp CLAUDE.md ../../TS/chickie-ui/api_docs/CLAUDE.md
 	cp README.md ../../TS/chickie-ui/api_docs/README.md
 
