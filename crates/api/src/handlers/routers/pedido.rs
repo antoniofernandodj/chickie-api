@@ -14,6 +14,7 @@ use crate::handlers::{
     buscar_pedido_por_codigo,
     buscar_pedido_com_entrega,
     atualizar_status,
+    avancar_status,
     listar_meus_pedidos,
     atribuir_entregador,
     remover_entregador,
@@ -35,6 +36,7 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/{uuid}", get(buscar_pedido))
         .route("/{uuid}/com-entrega", get(buscar_pedido_com_entrega))
         .route("/{uuid}/status", put(atualizar_status))
+        .route("/{uuid}/avancar", post(avancar_status))
         .route("/{uuid}/com-entregador", get(buscar_pedido_com_entregador))
         .route("/{pedido_uuid}/entregador/{loja_uuid}", put(atribuir_entregador))
         .route("/{pedido_uuid}/entregador/{loja_uuid}", delete(remover_entregador))

@@ -60,6 +60,7 @@ pub use pedido::{
     listar_por_loja,
     buscar_pedido_com_entrega,
     atualizar_status,
+    avancar_status,
     listar_meus_pedidos,
     atribuir_entregador,
     remover_entregador,

@@ -171,6 +171,14 @@ impl PedidoUsecase {
         self.pedido_service.buscar_pedido_com_entrega(pedido_uuid, self.loja_uuid).await
     }
 
+    pub async fn avancar_status_pedido(
+        &self,
+        pedido_uuid: Uuid,
+        is_retirada: bool,
+    ) -> Result<Pedido, String> {
+        self.pedido_service.avancar_status(pedido_uuid, is_retirada).await
+    }
+
     pub async fn atualizar_status_pedido(
         &self,
         pedido_uuid: Uuid,

@@ -5,8 +5,22 @@ use rand::Rng;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
-use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador, PedidoCriado};
+use crate::models::{
+    Pedido,
+    EstadoDePedido,
+    StatusCupom,
+    calcular_preco_por_partes
+};
+
+use crate::ports::{
+    ConfiguracaoPedidosLojaRepositoryPort,
+    CupomRepositoryPort, 
+    EnderecoEntregaRepositoryPort,
+    PedidoRepositoryPort,
+    PromocaoRepositoryPort,
+    PedidoComEntregador,
+    PedidoCriado
+};
 
 
 use crate::models::EnderecoEntrega;
@@ -448,6 +462,31 @@ impl PedidoService {
     }
 
     /// Atualiza o status de um pedido para um novo estado válido
+    pub async fn avancar_status(
+        &self,
+        pedido_uuid: Uuid,
+        is_retirada: bool,
+    ) -> Result<Pedido, String> {
+
+        let mut pedido = self.pedido_repo
+            .buscar_por_uuid(pedido_uuid)
+            .await?
+            .ok_or("Pedido não encontrado")?;
+
+        let status_atual: EstadoDePedido = pedido.status.clone();
+        let novo_status: EstadoDePedido = status_atual.avancar(is_retirada)?;
+
+        pedido.status = novo_status.clone();
+        self.pedido_repo.atualizar(pedido.clone()).await?;
+
+        tracing::info!(
+            "Pedido {} avançado: {:?} -> {:?}",
+            pedido_uuid, status_atual, novo_status
+        );
+
+        Ok(pedido)
+    }
+
     pub async fn atualizar_status(
         &self,
         pedido_uuid: Uuid,
