@@ -50,6 +50,7 @@ RUN useradd -r -u 1000 appuser
 
 COPY --from=builder /app/target/release/chickie-api /app/chickie-api
 COPY migrations /app/migrations
+COPY data /app/data
 
 RUN chown -R appuser:appuser /app
 USER appuser
