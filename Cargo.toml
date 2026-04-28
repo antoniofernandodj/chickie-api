@@ -43,4 +43,5 @@ toml = "0.8"
 rand = "0.8"
 reqwest = { version = "0.12", features = ["json"] }
 tera = "1"
+lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls", "builder"] }
 chickie-core = { path = "crates/core" }
