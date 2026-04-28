@@ -1,3 +1,18 @@
+//! Serviço de envio de email via SMTP (implementação atual).
+//!
+//! # Implementação atual: SMTP
+//!
+//! Utiliza a crate `lettre` com STARTTLS (porta 587).
+//! Variáveis de ambiente necessárias:
+//!
+//! ```env
+//! SMTP_NAME=Chickie
+//! SMTP_SERVER=smtp.seudominio.com
+//! SMTP_PORT=587
+//! SMTP_USER=no-reply@seudominio.com
+//! SMTP_PASS=sua_senha
+//! FRONTEND_BASE_URL=https://app.seudominio.com
+//! ```
 use async_trait::async_trait;
 use lettre::{
     AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
@@ -12,13 +27,18 @@ use crate::ports::EmailServicePort;
 const VERIFICACAO_TEMPLATE: &str =
     include_str!("../templates/verificacao_email.html");
 
+/// Implementação SMTP do `EmailServicePort`.
+///
+/// Lê configuração de variáveis de ambiente no momento da construção.
+/// Se `SMTP_SERVER` não estiver definido, loga um warning e falha apenas
+/// no momento do envio — não impede o startup da aplicação.
 pub struct EmailService {
     smtp_name: String,
     smtp_server: String,
     smtp_port: u16,
     smtp_user: String,
     smtp_pass: String,
-    base_url: String,
+    frontend_base_url: String,
 }
 
 impl EmailService {
@@ -30,22 +50,24 @@ impl EmailService {
         }
 
         Self {
-            smtp_name:   std::env::var("SMTP_NAME").unwrap_or_else(|_| "Chickie".into()),
+            smtp_name:  std::env::var("SMTP_NAME").unwrap_or_else(|_| "Chickie".into()),
             smtp_server,
-            smtp_port:   std::env::var("SMTP_PORT")
+            smtp_port:  std::env::var("SMTP_PORT")
                             .unwrap_or_else(|_| "587".into())
                             .parse()
                             .unwrap_or(587),
-            smtp_user:   std::env::var("SMTP_USER").unwrap_or_default(),
-            smtp_pass:   std::env::var("SMTP_PASS").unwrap_or_default(),
-            base_url:    std::env::var("APP_BASE_URL")
-                            .unwrap_or_else(|_| "http://localhost:3000".into()),
+            smtp_user:          std::env::var("SMTP_USER").unwrap_or_default(),
+            smtp_pass:          std::env::var("SMTP_PASS").unwrap_or_default(),
+            frontend_base_url:  std::env::var("FRONTEND_BASE_URL")
+                                    .unwrap_or_else(|_| "http://localhost:5173".into()),
         }
     }
 }
 
 #[async_trait]
 impl EmailServicePort for EmailService {
+    /// Renderiza o template HTML de verificação de cadastro via Tera e envia
+    /// por SMTP com STARTTLS. O email contém versão texto puro como fallback.
     async fn enviar_verificacao_cadastro(
         &self,
         email: &str,
@@ -58,7 +80,7 @@ impl EmailServicePort for EmailService {
             ));
         }
 
-        let link = format!("{}/api/auth/confirmar-email?token={}", self.base_url, token);
+        let link = format!("{}/auth/confirmar-email?token={}", self.frontend_base_url, token);
 
         let mut ctx = Context::new();
         ctx.insert("nome", nome);
