@@ -10,6 +10,7 @@ pub struct CreateUsuarioRequest {
     pub senha: String,
     pub email: String,
     pub celular: String,
+    pub cpf: String,
     pub auth_method: String,
     #[schema(example = "cliente")]
     pub classe: Option<String>,  // "cliente" (default) | "administrador"

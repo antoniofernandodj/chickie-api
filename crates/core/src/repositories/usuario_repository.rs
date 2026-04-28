@@ -144,6 +144,18 @@ impl UsuarioRepository {
 
         Ok(result.rows_affected())
     }
+
+    pub async fn salvar_asaas_customer_id(&self, uuid: Uuid, customer_id: &str) -> Result<(), String> {
+        sqlx::query(
+            "UPDATE usuarios SET asaas_customer_id = $2, atualizado_em = NOW() WHERE uuid = $1 AND deletado = false"
+        )
+        .bind(uuid)
+        .bind(customer_id)
+        .execute(self.pool())
+        .await
+        .map_err(|e| e.to_string())?;
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -154,8 +166,8 @@ impl Repository<Usuario> for UsuarioRepository {
 
     async fn criar(&self, item: &Usuario) -> Result<Uuid, String> {
         sqlx::query("
-            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, celular, classe, modo_de_cadastro, passou_pelo_primeiro_acesso)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            INSERT INTO usuarios (uuid, nome, username, email, senha_hash, celular, cpf, classe, modo_de_cadastro, passou_pelo_primeiro_acesso)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         ")
         .bind(&item.uuid)
         .bind(&item.nome)
@@ -163,6 +175,7 @@ impl Repository<Usuario> for UsuarioRepository {
         .bind(&item.email)
         .bind(&item.senha_hash)
         .bind(&item.celular)
+        .bind(&item.cpf)
         .bind(&item.classe)
         .bind(&item.modo_de_cadastro)
         .bind(&item.passou_pelo_primeiro_acesso)
@@ -172,7 +185,6 @@ impl Repository<Usuario> for UsuarioRepository {
 
         Ok(item.uuid)
     }
-
 
     async fn atualizar(&self, item: Usuario) -> Result<(), String> {
         let uuid = item.get_uuid();
@@ -271,5 +283,8 @@ impl UsuarioRepositoryPort for UsuarioRepository {
 
     async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64> {
         self.deletar_pendentes_antigos(limite).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn salvar_asaas_customer_id(&self, uuid: Uuid, customer_id: &str) -> DomainResult<()> {
+        self.salvar_asaas_customer_id(uuid, customer_id).await.map_err(|e| DomainError::Internal(e))
     }
 }

@@ -6,6 +6,31 @@ use argon2::{
 use crate::models::{Usuario, ClasseUsuario};
 use crate::ports::UsuarioRepositoryPort;
 
+fn validar_cpf(cpf: &str) -> bool {
+    // Deve ter exatamente 11 dígitos numéricos
+    if cpf.len() != 11 || !cpf.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    // Rejeita sequências repetidas (000...0, 111...1, ...)
+    if cpf.chars().all(|c| c == cpf.chars().next().unwrap()) {
+        return false;
+    }
+    let digits: Vec<u32> = cpf.chars().map(|c| c.to_digit(10).unwrap()).collect();
+
+    // Primeiro dígito verificador
+    let soma: u32 = digits[..9].iter().enumerate().map(|(i, &d)| d * (10 - i as u32)).sum();
+    let resto = soma % 11;
+    let d1 = if resto < 2 { 0 } else { 11 - resto };
+    if digits[9] != d1 {
+        return false;
+    }
+    // Segundo dígito verificador
+    let soma: u32 = digits[..10].iter().enumerate().map(|(i, &d)| d * (11 - i as u32)).sum();
+    let resto = soma % 11;
+    let d2 = if resto < 2 { 0 } else { 11 - resto };
+    digits[10] == d2
+}
+
 pub struct UsuarioService {
     repo: Arc<dyn UsuarioRepositoryPort>,
 }
@@ -20,9 +45,15 @@ impl UsuarioService {
         senha: String,
         email: String,
         celular: String,
+        cpf: String,
         auth_method: String,
         classe: Option<String>,
     ) -> Result<Usuario, String> {
+
+        // Valida CPF (obrigatório para o fluxo de pagamento PIX)
+        if !validar_cpf(&cpf) {
+            return Err("CPF inválido. Informe os 11 dígitos sem pontuação ou verifique os dígitos verificadores.".to_string());
+        }
 
         // Hash the password using argon2id
         let salt = SaltString::generate(&mut rand::thread_rng());
@@ -43,6 +74,7 @@ impl UsuarioService {
             email,
             senha_hash,
             celular,
+            cpf,
             auth_method,
             classe
         );

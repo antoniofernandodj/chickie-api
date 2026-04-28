@@ -82,4 +82,7 @@ impl UsuarioRepositoryPort for UsuarioRepositoryAdapter {
     async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64> {
         self.inner.deletar_pendentes_antigos(limite).await.map_err(|e| DomainError::Internal(e))
     }
+    async fn salvar_asaas_customer_id(&self, uuid: Uuid, customer_id: &str) -> DomainResult<()> {
+        self.inner.salvar_asaas_customer_id(uuid, customer_id).await.map_err(|e| DomainError::Internal(e))
+    }
 }

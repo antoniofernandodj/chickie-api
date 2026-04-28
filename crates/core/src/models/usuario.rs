@@ -58,6 +58,9 @@ pub struct Usuario {
     pub username: String,
     pub email: String,
     pub celular: String,
+    pub cpf: String,
+    #[serde(default)]
+    pub asaas_customer_id: Option<String>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
 
@@ -87,6 +90,7 @@ impl Usuario {
         email: String,
         senha_hash: String,
         celular: String,
+        cpf: String,
         modo_de_cadastro: String,
         classe: ClasseUsuario,
     ) -> Self {
@@ -96,6 +100,8 @@ impl Usuario {
             username,
             email,
             celular,
+            cpf,
+            asaas_customer_id: None,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
             modo_de_cadastro,

@@ -33,6 +33,7 @@ pub struct PedidoComEntregador {
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
     pub contato: Option<String>,
+    pub pago: bool,
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
@@ -256,6 +257,7 @@ impl PedidoRepository {
                 p.desconto,
                 p.forma_pagamento,
                 p.observacoes,
+                p.pago,
                 p.tempo_estimado_min,
                 p.criado_em,
                 p.atualizado_em,
@@ -308,9 +310,9 @@ impl Repository<Pedido> for PedidoRepository {
             INSERT INTO pedidos (
                 uuid, codigo, usuario_uuid, loja_uuid, entregador_uuid, status,
                 total, subtotal, taxa_entrega, desconto, forma_pagamento,
-                observacoes, contato, tempo_estimado_min, itens
+                observacoes, contato, pago, tempo_estimado_min, itens
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16::jsonb)
         ";
 
         sqlx::query(stmt)
@@ -327,6 +329,7 @@ impl Repository<Pedido> for PedidoRepository {
             .bind(&pedido.forma_pagamento)
             .bind(&pedido.observacoes)
             .bind(&pedido.contato)
+            .bind(&pedido.pago)
             .bind(&pedido.tempo_estimado_min)
             .bind(&itens_json)
             .execute(&mut *tx)
@@ -460,6 +463,7 @@ impl PedidoRepositoryPort for PedidoRepository {
                 subtotal: r.subtotal, taxa_entrega: r.taxa_entrega, desconto: r.desconto,
                 forma_pagamento: r.forma_pagamento, observacoes: r.observacoes,
                 contato: r.contato,
+                pago: r.pago,
                 tempo_estimado_min: r.tempo_estimado_min, criado_em: r.criado_em,
                 atualizado_em: r.atualizado_em, itens_json: serde_json::Value::Array(vec![]), itens: vec![],
                 endereco_entrega: None,
@@ -474,5 +478,13 @@ impl PedidoRepositoryPort for PedidoRepository {
     }
     async fn buscar_pedido_com_entrega(&self, pedido_uuid: Uuid, _loja_uuid: Uuid) -> DomainResult<Option<crate::ports::PedidoComEntrega>> {
         self.buscar_pedido_com_entrega(pedido_uuid, _loja_uuid).await.map_err(|e| DomainError::Internal(e.to_string()))
+    }
+    async fn marcar_como_pago(&self, uuid: Uuid) -> DomainResult<()> {
+        sqlx::query("UPDATE pedidos SET pago = TRUE, atualizado_em = NOW() WHERE uuid = $1")
+            .bind(uuid)
+            .execute(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+        Ok(())
     }
 }

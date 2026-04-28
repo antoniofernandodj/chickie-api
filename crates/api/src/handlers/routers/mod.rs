@@ -18,6 +18,7 @@ mod funcionario;
 mod entregador;
 mod usuario;
 mod wipe;
+mod pagamento;
 
 use std::sync::Arc;
 
@@ -45,6 +46,7 @@ pub use funcionario::funcionario_routes;
 pub use entregador::entregador_routes;
 pub use usuario::usuario_routes;
 pub use wipe::wipe_route;
+pub use pagamento::pagamento_routes;
 
 use super::ok_handler;
 
@@ -77,6 +79,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/catalogo", catalogo_public_routes())
         .nest("/produtos", produto_public_routes())
         .nest("/config-pedido", config_pedido_public_routes())
+        .nest("/pagamentos", pagamento_routes(s))
         .route("/ok", get(ok_handler));
 
     let mode = std::env::var("MODE").unwrap_or_default();

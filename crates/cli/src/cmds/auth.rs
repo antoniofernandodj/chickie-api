@@ -11,6 +11,7 @@ pub async fn run_signup(state: &AppState, args: SignupArgs) {
             args.senha,
             args.email,
             args.celular,
+            String::new(),
             args.auth_method,
             Some(args.classe),
         )

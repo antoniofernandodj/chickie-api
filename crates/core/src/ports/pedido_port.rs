@@ -41,4 +41,5 @@ pub trait PedidoRepositoryPort: Send + Sync {
     async fn remover_entregador(&self, pedido_uuid: Uuid) -> DomainResult<()>;
     async fn buscar_com_entregador(&self, uuid: Uuid) -> DomainResult<Option<PedidoComEntregador>>;
     async fn buscar_pedido_com_entrega(&self, pedido_uuid: Uuid, loja_uuid: Uuid) -> DomainResult<Option<PedidoComEntrega>>;
+    async fn marcar_como_pago(&self, uuid: Uuid) -> DomainResult<()>;
 }

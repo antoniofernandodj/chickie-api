@@ -52,6 +52,7 @@ use chickie_core::{
         UsuarioRepository
     },
     services::{
+        AsaasService,
         CatalogoService,
         ConfiguracaoPedidosLojaService,
         EnderecoEntregaService,
@@ -72,6 +73,7 @@ use chickie_core::{
 
 pub struct AppState {
 
+    pub asaas_service: Arc<AsaasService>,
     pub usuario_service: Arc<UsuarioService>,
     pub loja_service: Arc<LojaService>,
     pub catalogo_service: Arc<CatalogoService>,
@@ -267,9 +269,12 @@ impl AppState {
         );
 
 
+        let asaas_service = Arc::new(AsaasService::new());
+
         // 4. Estado compartilhado
         let s = Arc::new(
             AppState {
+                asaas_service,
                 usuario_service: Arc::clone(&usuario_service),
                 loja_service: Arc::clone(&loja_service),
                 catalogo_service: Arc::clone(&catalogo_service),

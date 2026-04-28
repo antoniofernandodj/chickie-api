@@ -172,6 +172,7 @@ impl LojaService {
             email,
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Funcionario,
         );
@@ -216,6 +217,7 @@ impl LojaService {
             email.clone(),
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Cliente,
         );
@@ -255,6 +257,7 @@ impl LojaService {
             email,
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Entregador,
         );

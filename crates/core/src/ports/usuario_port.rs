@@ -26,4 +26,6 @@ pub trait UsuarioRepositoryPort: Send + Sync {
 
     // Deletar permanentemente usuários marcados há mais de 30 dias
     async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64>;
+
+    async fn salvar_asaas_customer_id(&self, uuid: Uuid, customer_id: &str) -> DomainResult<()>;
 }

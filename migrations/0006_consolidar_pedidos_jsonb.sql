@@ -157,3 +157,7 @@ FOREIGN KEY (usuario_uuid) REFERENCES usuarios(uuid) ON DELETE SET NULL;
 -- 7. Campo contato: telefone do cliente (11 dígitos, apenas números)
 ALTER TABLE pedidos
 ADD COLUMN IF NOT EXISTS contato VARCHAR(11);
+
+-- 8. Campo pago: indica se o pedido foi pago digitalmente (false = cobrar na entrega)
+ALTER TABLE pedidos
+ADD COLUMN IF NOT EXISTS pago BOOLEAN NOT NULL DEFAULT FALSE;

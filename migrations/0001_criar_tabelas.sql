@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email TEXT NOT NULL UNIQUE,
     senha_hash TEXT,
     celular TEXT NOT NULL,
+    cpf VARCHAR(11) NOT NULL DEFAULT '',
+    asaas_customer_id VARCHAR,
     modo_de_cadastro TEXT NOT NULL DEFAULT 'email',
     classe TEXT NOT NULL DEFAULT 'cliente' CHECK (classe IN ('cliente', 'administrador', 'funcionario', 'entregador', 'owner')),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,

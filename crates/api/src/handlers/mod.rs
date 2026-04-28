@@ -20,6 +20,7 @@ mod config_pedido;
 mod funcionario;
 mod entregador;
 mod openapi;
+mod pagamento;
 
 use axum::{Json, response::IntoResponse};
 use serde_json::json;
@@ -52,6 +53,8 @@ pub use dto::{
     CreateLojaRequest,
     Claims
 };
+
+pub use pagamento::{criar_pagamento, webhook_asaas};
 
 pub use pedido::{
     criar_pedido,
