@@ -1,0 +1,26 @@
+{
+  "admin": {
+    "nome":     "Admin Chickie",
+    "username": "admin",
+    "email":    "admin@chickie.dev",
+    "senha":    "admin123",
+    "celular":  "11999999999",
+    "cpf":      "00000000000"
+  },
+  "loja": {
+    "nome":      "Chickie Pizzaria",
+    "slug":      "chickie-pizzaria",
+    "descricao": "A melhor pizzaria da cidade",
+    "email":     "contato@chickie.dev",
+    "celular":   "11999999999"
+  },
+  "produtos": [
+    { "nome": "Pizza Margherita",    "descricao": "Molho de tomate, mozzarella e manjericão fresco",      "preco": "39.90", "categoria": "Pizzas"  },
+    { "nome": "Pizza Calabresa",     "descricao": "Molho de tomate, calabresa fatiada e cebola roxa",     "preco": "42.90", "categoria": "Pizzas"  },
+    { "nome": "Pizza Quatro Queijos","descricao": "Mozzarella, provolone, parmesão e gorgonzola",         "preco": "47.90", "categoria": "Pizzas"  },
+    { "nome": "Refrigerante Lata",   "descricao": "Coca-Cola, Guaraná ou Sprite — 350ml",                 "preco": "6.00",  "categoria": "Bebidas" }
+  ],
+  "adicionais": [
+    { "nome": "Borda Recheada", "descricao": "Borda recheada com catupiry", "preco": "8.00" }
+  ]
+}

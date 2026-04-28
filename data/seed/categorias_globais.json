@@ -1,0 +1,13 @@
+[
+  { "nome": "Pizzas",             "descricao": "Pizzas de diversos sabores e tamanhos",                    "pizza_mode": true,  "drink_mode": false },
+  { "nome": "Hambúrgueres",       "descricao": "Hambúrgueres artesanais e clássicos",                      "pizza_mode": false, "drink_mode": false },
+  { "nome": "Bebidas",            "descricao": "Refrigerantes, sucos, cervejas e águas",                   "pizza_mode": false, "drink_mode": true  },
+  { "nome": "Sobremesas",         "descricao": "Doces, bolos e sobremesas variadas",                       "pizza_mode": false, "drink_mode": false },
+  { "nome": "Porções",            "descricao": "Batata frita, calabresa, frango a passarinho e mais",      "pizza_mode": false, "drink_mode": false },
+  { "nome": "Massas",             "descricao": "Macarrão, lasanha e outras massas italianas",              "pizza_mode": false, "drink_mode": false },
+  { "nome": "Saladas",            "descricao": "Saladas frescas e acompanhamentos saudáveis",              "pizza_mode": false, "drink_mode": false },
+  { "nome": "Açaí",               "descricao": "Açaí na tigela com diversos complementos",                 "pizza_mode": false, "drink_mode": false },
+  { "nome": "Pastéis",            "descricao": "Pastéis fritos na hora com recheios variados",             "pizza_mode": false, "drink_mode": false },
+  { "nome": "Quentinhas",         "descricao": "Refeições completas e caseiras para o seu dia a dia",      "pizza_mode": false, "drink_mode": false },
+  { "nome": "Quentinhas Fitness", "descricao": "Refeições balanceadas e saudáveis para manter o foco",    "pizza_mode": false, "drink_mode": false }
+]
