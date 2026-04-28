@@ -42,9 +42,16 @@ struct AdicionalSeed {
 }
 
 #[derive(Deserialize)]
+struct ConfiguracaoPedidoSeed {
+    max_partes: i32,
+    tipo_calculo: String,
+}
+
+#[derive(Deserialize)]
 struct DadosTesteSeed {
     admin: AdminSeed,
     loja: LojaSeed,
+    configuracao_pedido: ConfiguracaoPedidoSeed,
     produtos: Vec<ProdutoSeed>,
     adicionais: Vec<AdicionalSeed>,
 }
@@ -115,6 +122,21 @@ pub(in crate::database) async fn seed_dados_teste(pool: &PgPool) -> Result<(), S
     .map_err(|e| format!("Falha ao criar loja no seed: {}", e))?;
 
     tracing::info!("   ✅ Loja criada: {} ({})", seed.loja.nome, loja_uuid);
+
+    // Configuração de Pedidos
+    sqlx::query(
+        "INSERT INTO configuracoes_pedidos_loja (loja_uuid, max_partes, tipo_calculo)
+         VALUES ($1, $2, $3)",
+    )
+    .bind(loja_uuid)
+    .bind(seed.configuracao_pedido.max_partes)
+    .bind(&seed.configuracao_pedido.tipo_calculo)
+    .execute(pool)
+    .await
+    .map_err(|e| format!("Falha ao criar configuração de pedido no seed: {}", e))?;
+
+    tracing::info!("   ✅ Configuração de pedido criada: {} partes, cálculo {}", 
+        seed.configuracao_pedido.max_partes, seed.configuracao_pedido.tipo_calculo);
 
     // Produtos — resolve categoria por nome
     for p in &seed.produtos {

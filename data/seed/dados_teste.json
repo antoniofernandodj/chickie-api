@@ -14,6 +14,10 @@
     "email":     "contato@chickie.dev",
     "celular":   "11999999999"
   },
+  "configuracao_pedido": {
+    "max_partes": 2,
+    "tipo_calculo": "mais_caro"
+  },
   "produtos": [
     { "nome": "Pizza Margherita",    "descricao": "Molho de tomate, mozzarella e manjericão fresco",      "preco": "39.90", "categoria": "Pizzas"  },
     { "nome": "Pizza Calabresa",     "descricao": "Molho de tomate, calabresa fatiada e cebola roxa",     "preco": "42.90", "categoria": "Pizzas"  },
