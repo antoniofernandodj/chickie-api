@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email TEXT NOT NULL UNIQUE,
     senha_hash TEXT,
     celular TEXT NOT NULL,
+    cpf VARCHAR(11) NOT NULL DEFAULT '',
+    asaas_customer_id VARCHAR,
     modo_de_cadastro TEXT NOT NULL DEFAULT 'email',
     classe TEXT NOT NULL DEFAULT 'cliente' CHECK (classe IN ('cliente', 'administrador', 'funcionario', 'entregador', 'owner')),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -118,7 +120,7 @@ CREATE INDEX IF NOT EXISTS idx_lojas_favoritas_loja ON lojas_favoritas(loja_uuid
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS categorias_produtos (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    loja_uuid UUID NOT NULL,
+    loja_uuid UUID,
     nome TEXT NOT NULL,
     descricao TEXT,
     ordem INTEGER,
@@ -291,6 +293,7 @@ EXECUTE FUNCTION update_updated_at_column();
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS pedidos (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    codigo TEXT NOT NULL CHECK (codigo ~ '^[A-Z0-9]{6}$'),
     loja_uuid UUID NOT NULL,
     usuario_uuid UUID NOT NULL,
     status TEXT NOT NULL DEFAULT 'criado' CHECK (
@@ -299,9 +302,10 @@ CREATE TABLE IF NOT EXISTS pedidos (
             'aguardando_confirmacao_de_loja',
             'confirmado_pela_loja',
             'em_preparo',
-            'pronto_para_retirada',
+            'pronto',
             'saiu_para_entrega',
-            'entregue'
+            'entregue',
+            'cancelado'
         )
     ),
     total NUMERIC(10,2) NOT NULL DEFAULT 0.0,
@@ -321,6 +325,7 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_usuario ON pedidos(usuario_uuid);
 CREATE INDEX IF NOT EXISTS idx_pedidos_loja ON pedidos(loja_uuid);
 CREATE INDEX IF NOT EXISTS idx_pedidos_status ON pedidos(status);
 CREATE INDEX IF NOT EXISTS idx_pedidos_criado_em ON pedidos(criado_em);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_codigo_unique ON pedidos(codigo);
 
 CREATE TRIGGER trigger_pedidos_atualizado
 BEFORE UPDATE ON pedidos
@@ -522,6 +527,19 @@ CREATE INDEX IF NOT EXISTS idx_promocoes_loja ON promocoes(loja_uuid);
 CREATE INDEX IF NOT EXISTS idx_promocoes_status ON promocoes(status);
 CREATE INDEX IF NOT EXISTS idx_promocoes_prioridade ON promocoes(loja_uuid, prioridade);
 
+
+-- ============================================================================
+-- TABELA: pré cadastro
+-- ============================================================================
+CREATE TABLE pre_cadastro (
+    token TEXT PRIMARY KEY,
+    dados JSONB NOT NULL,
+    expira_em TIMESTAMPTZ NOT NULL
+);
+
+CREATE INDEX idx_pre_cadastro_expira_em ON pre_cadastro (expira_em);
+
+
 -- ============================================================================
 -- VIEWS: Views úteis para consultas frequentes
 -- ============================================================================
@@ -554,6 +572,10 @@ JOIN itens_pedido ip ON pip.item_uuid = ip.uuid
 JOIN lojas l ON p.loja_uuid = l.uuid
 GROUP BY p.uuid, l.nome
 ORDER BY vezes_pedido DESC;
+
+
+
+
 
 -- ============================================================================
 -- DADOS INICIAIS: Inserts opcionais para teste

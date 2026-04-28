@@ -7,13 +7,14 @@ use rust_decimal::Decimal;
 use crate::{
     models::{ParteDeItemPedido, Pedido, EstadoDePedido, EnderecoEntrega, Produto, Usuario},
     services::{PedidoService, PedidoComEntrega},
+    ports::PedidoCriado,
     ports::ProdutoRepositoryPort,
 };
 
 pub struct PedidoUsecase {
     pub pedido_service: Arc<PedidoService>,
     pub produto_repo: Arc<dyn ProdutoRepositoryPort>,
-    pub usuario: Usuario,
+    pub usuario: Option<Usuario>,
     pub loja_uuid: Uuid,
 }
 
@@ -22,7 +23,7 @@ impl PedidoUsecase {
     pub fn new(
         pedido_service: Arc<PedidoService>,
         produto_repo: Arc<dyn ProdutoRepositoryPort>,
-        usuario: Usuario,
+        usuario: Option<Usuario>,
         loja_uuid: Uuid,
     ) -> Self {
 
@@ -40,10 +41,18 @@ impl PedidoUsecase {
         taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
+        contato: Option<String>,
         codigo_cupom: Option<String>,
         itens: Vec<ItemPedidoInput>,
-        endereco_entrega: EnderecoEntregaInput,
-    ) -> Result<Uuid, String> {
+        endereco_entrega: Option<EnderecoEntregaInput>,
+    ) -> Result<PedidoCriado, String> {
+
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] criar_pedido iniciado — loja={} usuario={:?}",
+            self.loja_uuid,
+            self.usuario.as_ref().map(|u| u.uuid),
+        );
 
         // 1. Validar produtos e montar partes
         let mut partes_por_item: Vec<Vec<ParteDeItemPedido>> = Vec::new();
@@ -51,12 +60,14 @@ impl PedidoUsecase {
         for item_req in &itens {
             let mut partes_item = Vec::new();
             for parte_req in &item_req.partes {
+                tracing::debug!(target: "pedido", "[USECASE] buscando produto uuid={}", parte_req.produto_uuid);
                 let produto: Produto = self.produto_repo
                     .buscar_por_uuid(parte_req.produto_uuid)
                     .await
                     .map_err(|e| e.to_string())?
                     .ok_or_else(|| format!("Produto {} não encontrado", parte_req.produto_uuid))?;
 
+                tracing::debug!(target: "pedido", "[USECASE] produto encontrado: nome={} preco={}", produto.nome, produto.preco);
                 partes_item.push(ParteDeItemPedido::new(
                     produto.uuid,
                     produto.nome.clone(),
@@ -69,13 +80,22 @@ impl PedidoUsecase {
         }
 
         // 2. Criar pedido base
+        let usuario_uuid = self.usuario.as_ref().map(|u| u.uuid);
+        let contato_filtrado = contato.map(|c| c.chars().filter(|ch| ch.is_ascii_digit()).collect::<String>()).filter(|s| !s.is_empty());
         let mut pedido = Pedido::new(
-            self.usuario.uuid,
+            usuario_uuid,
             self.loja_uuid,
             Decimal::ZERO,
             taxa_entrega,
             forma_pagamento,
             observacoes,
+            contato_filtrado,
+        );
+
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] pedido instanciado uuid={} loja={} usuario={:?}",
+            pedido.uuid, pedido.loja_uuid, pedido.usuario_uuid,
         );
 
         // 3. Adicionar itens com partes
@@ -90,38 +110,58 @@ impl PedidoUsecase {
             }
         }
 
-        // 4. Montar endereço de entrega
-        let endereco: EnderecoEntrega = EnderecoEntrega::new(
-            Uuid::nil(), // Será substituído pelo service
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] itens montados: {} itens no pedido uuid={}",
+            pedido.itens.len(), pedido.uuid,
+        );
+
+        // 4. Montar endereço de entrega (opcional)
+        let endereco: Option<EnderecoEntrega> = endereco_entrega.map(|e| EnderecoEntrega::new(
+            Uuid::nil(),
             self.loja_uuid,
-            endereco_entrega.cep,
-            endereco_entrega.logradouro,
-            endereco_entrega.numero,
-            endereco_entrega.complemento,
-            endereco_entrega.bairro,
-            endereco_entrega.cidade,
-            endereco_entrega.estado,
+            e.cep,
+            e.logradouro,
+            e.numero,
+            e.complemento,
+            e.bairro,
+            e.cidade,
+            e.estado,
+        ));
+
+        tracing::info!(
+            target: "pedido",
+            "[USECASE] chamando service.criar_pedido_com_entrega uuid={} tem_endereco={}",
+            pedido.uuid, endereco.is_some(),
         );
 
         // 5. Salvar via service
-        self.pedido_service
+        let result = self.pedido_service
             .criar_pedido_com_entrega(&mut pedido, endereco, codigo_cupom)
-            .await
+            .await;
+
+        match &result {
+            Ok(criado) => tracing::info!(target: "pedido", "[USECASE] service retornou uuid={} codigo={}", criado.uuid, criado.codigo),
+            Err(e) => tracing::error!(target: "pedido", "[USECASE] service retornou erro: {}", e),
+        }
+
+        result
     }
 
-    // pub async fn processar_e_exibir_precos(
-    //     &self,
-    //     pedido: &mut Pedido,
-    // ) -> Result<(), String> {
-    //     self.pedido_service.processar_e_exibir_precos(pedido, self.loja_uuid).await
-    // }
+    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Pedido, String> {
+        self.pedido_service.buscar_por_codigo(codigo).await
+    }
 
-    pub async fn listar_por_loja(&self) -> Result<Vec<Pedido>, String> {
-        self.pedido_service.listar_por_loja(self.loja_uuid).await
+    pub async fn listar_por_loja(&self, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
+        self.pedido_service.listar_por_loja(self.loja_uuid, status).await
     }
 
     pub async fn listar_por_usuario(&self) -> Result<Vec<Pedido>, String> {
-        self.pedido_service.listar_por_usuario(self.usuario.uuid).await
+        let uuid = self.usuario
+            .as_ref()
+            .map(|u| u.uuid)
+            .ok_or_else(|| "Usuário não autenticado".to_string())?;
+        self.pedido_service.listar_por_usuario(uuid).await
     }
 
     pub async fn buscar_pedido_com_entrega(
@@ -129,6 +169,18 @@ impl PedidoUsecase {
         pedido_uuid: Uuid,
     ) -> Result<PedidoComEntrega, String> {
         self.pedido_service.buscar_pedido_com_entrega(pedido_uuid, self.loja_uuid).await
+    }
+
+    pub async fn cancelar_pedido(&self, pedido_uuid: Uuid) -> Result<Pedido, String> {
+        self.pedido_service.atualizar_status(pedido_uuid, EstadoDePedido::Cancelado).await
+    }
+
+    pub async fn avancar_status_pedido(
+        &self,
+        pedido_uuid: Uuid,
+        is_retirada: bool,
+    ) -> Result<Pedido, String> {
+        self.pedido_service.avancar_status(pedido_uuid, is_retirada).await
     }
 
     pub async fn atualizar_status_pedido(

@@ -8,6 +8,10 @@ use crate::handlers::{
 
 pub fn config_pedido_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
     Router::new()
-        .route("/{loja_uuid}", get(buscar_config_pedido))
         .route("/{loja_uuid}", put(salvar_config_pedido))
+}
+
+pub fn config_pedido_public_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
+    Router::new()
+        .route("/{loja_uuid}", get(buscar_config_pedido))
 }

@@ -1,6 +1,6 @@
 # Pendências — Chickie API
 
-> Lista de tarefas, bugs conhecidos e melhorias identificadas. Última atualização: 2026-04-05.
+> Lista de tarefas, bugs conhecidos e melhorias identificadas. Última atualização: 2026-04-19.
 
 ---
 
@@ -25,6 +25,13 @@ _(nenhum bug conhecido)_
 
 | # | Tarefa | Detalhe | Data |
 |---|--------|---------|------|
+| 33 | **Verificação de email no cadastro** | Signup agora armazena pré-cadastro (JSONB + TTL 1h) em `pre_cadastro` (PostgreSQL). Envia email via MailerSend com template Tera. Novo endpoint `GET /api/auth/confirmar-email?token=...` valida token, cria usuário e retorna JWT. Clean Architecture: `PreCadastroPort` + `EmailServicePort`, `PreCadastroRepository`, `EmailService`, métodos `iniciar_cadastro`/`confirmar_cadastro` em `UsuarioService`. Vars env: `MAILERSEND_API_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. Migration `0012`. | 2026-04-28 |
+| 32 | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos** | Campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (`#[sqlx(skip)]`). Batch hydration via `buscar_por_pedidos` (`ANY($1)`) no repository. Service `PedidoService` hidrata todos os endpoints: `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix no handler `listar_pedidos` (extraia `Path(loja_uuid)` em rota sem parâmetro). | 2026-04-26 |
+| 31 | **Campo `contato` em pedidos** | `contato: Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model, repository (INSERT/UPDATE), usecase, handler. Migration `0006` absorveu `usuario_uuid` nullable + `contato VARCHAR(11)` (migration `0010` removida). | 2026-04-24 |
+| 30 | **Pedido sem usuário obrigatório** | `usuario_uuid` em `pedidos` agora é nullable (absorvida na migration `0006`). `endereco_entrega` no body de `/api/pedidos/criar` é opcional. Endpoint sem auth obrigatória (usa `optional_auth_middleware`). Stack completa atualizada. | 2026-04-19 |
+| 29 | **Celular UNIQUE + endpoint verificar** | Migration `0009` adiciona UNIQUE constraint em `celular`. Handler signup filtra caracteres especiais, mantendo apenas dígitos. Novo endpoint `GET /api/usuarios/verificar-celular/{celular}`. Service `verificar_celular_disponivel` adicionado. | 2026-04-13 |
+| 28 | **OwnerPermission + filtro por classe** | Sistema `OwnerPermission` via env var `OWNER_EMAIL`. `GET /api/usuarios/?classe=...` filtra por classe. Endpoints de soft delete de usuário agora permitem Self/Owner. `/api/wipe` protegido por Owner. Novos extractors: `AdminPermission`, `OwnerPermission`, helper `is_self_or_owner`. | 2026-04-13 |
+| 27 | **Campo bloqueado para usuários e lojas** | Novo campo `bloqueado: bool` adicionado a `usuarios` e `lojas`. Endpoints POST `/api/usuarios/{uuid}/bloqueado` e POST `/api/lojas/{uuid}/bloqueado` para toggle. Usuários bloqueados não podem fazer login (verificado em `autenticar` e `auth_middleware`). Migration `0008` criada. Stack completa: models, ports, adapters, repositories, services, handlers, routes. | 2026-04-13 |
 | 25 | **CRUD completo de cupons** | Novos endpoints padronizados em `/api/cupons/`: POST (criar), GET (listar todos), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Rotas legadas mantidas em `/api/marketing/` para compatibilidade. MarketingService atualizado com `buscar_cupom` e `listar_todos_cupons`. | 2026-04-12 |
 | 26 | **CRUD completo de avaliações** | Novos endpoints para avaliações de loja e produto: GET (listar por loja/produto), GET/{uuid} (buscar), PUT (atualizar), DELETE (deletar). Ports, repositories, service, usecase e handlers atualizados. | 2026-04-12 |
 | 14 | **Timestamps com tipo correto** | Models migrados de `String` para `chrono::DateTime<Utc>` para compatibilidade com PostgreSQL `TIMESTAMPTZ`. INSERT/UPDATE agora omitem `criado_em`/`atualizado_em` (usam defaults/triggers do DB). | 2026-04-05 |
@@ -65,8 +72,8 @@ _(nenhum bug conhecido)_
 | 🔴 Crítico | 2 | 1, 2 |
 | 🟡 Bugs | 0 | — |
 | 🟢 Melhorias | 2 | 3, 4 |
-| ✅ Concluídas | 12 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 |
+| ✅ Concluídas | 16 | 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 32 |
 | 📋 Features | 5 | 7–11 |
 | 📝 Docs | 2 | 12, 13 |
 
-**Total: 11 pendências ativas, 12 concluídas recentemente**
+**Total: 11 pendências ativas, 16 concluídas recentemente**

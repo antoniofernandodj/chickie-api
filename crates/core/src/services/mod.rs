@@ -13,8 +13,12 @@ mod funcionario_service;
 mod entregador_service;
 mod endereco_loja_service;
 mod soft_delete_service;
+mod asaas_service;
+mod email_service;
 
 pub use usuario_service::UsuarioService;
+pub use asaas_service::{AsaasService, PagamentoCriado};
+pub use email_service::EmailService;
 pub use loja_service::LojaService;
 pub use catalogo_service::CatalogoService;
 pub use pedido_service::{PedidoService, PedidoComEntrega};

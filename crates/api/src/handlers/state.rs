@@ -6,6 +6,8 @@ use sqlx::PgPool;
 
 use chickie_core::{
     ports::{
+        PreCadastroPort,
+        EmailServicePort,
         UsuarioRepositoryPort,
         LojaRepositoryPort,
         ProdutoRepositoryPort,
@@ -13,6 +15,7 @@ use chickie_core::{
         CupomRepositoryPort,
         AdicionalRepositoryPort,
         CategoriaRepositoryPort,
+        OrdemCategoriaRepositoryPort,
         PromocaoRepositoryPort,
         AvaliacaoDeLojaRepositoryPort,
         AvaliacaoDeProdutoRepositoryPort,
@@ -28,10 +31,12 @@ use chickie_core::{
         ClienteRepositoryPort,
     },
     repositories::{
+        PreCadastroRepository,
         AdicionalRepository,
         AvaliacaoDeLojaRepository,
         AvaliacaoDeProdutoRepository,
         CategoriaProdutosRepository,
+        CategoriaOrdemRepository,
         ClienteRepository,
         ConfiguracaoPedidosLojaRepository,
         CupomRepository,
@@ -50,6 +55,8 @@ use chickie_core::{
         UsuarioRepository
     },
     services::{
+        AsaasService,
+        EmailService,
         CatalogoService,
         ConfiguracaoPedidosLojaService,
         EnderecoEntregaService,
@@ -70,6 +77,7 @@ use chickie_core::{
 
 pub struct AppState {
 
+    pub asaas_service: Arc<AsaasService>,
     pub usuario_service: Arc<UsuarioService>,
     pub loja_service: Arc<LojaService>,
     pub catalogo_service: Arc<CatalogoService>,
@@ -122,6 +130,8 @@ impl AppState {
             Arc::new(FuncionarioRepository::new(pool.clone()));
         let categorias_de_produtos_repo =
             Arc::new(CategoriaProdutosRepository::new(pool.clone()));
+        let categoria_ordem_repo =
+            Arc::new(CategoriaOrdemRepository::new(pool.clone()));
         let entregador_repo =
             Arc::new(EntregadorRepository::new(pool.clone()));
         let promocao_repo =
@@ -142,9 +152,14 @@ impl AppState {
             Arc::new(LojaFavoritaRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
+        let pre_cadastro_repo = Arc::new(PreCadastroRepository::new(pool.clone()));
+        let email_service = Arc::new(EmailService::new());
+
         let usuario_service = Arc::new(
             UsuarioService::new(
-                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>,
+                Arc::clone(&pre_cadastro_repo) as Arc<dyn PreCadastroPort>,
+                Arc::clone(&email_service) as Arc<dyn EmailServicePort>,
             )
         );
 
@@ -164,7 +179,8 @@ impl AppState {
             CatalogoService::new(
                 Arc::clone(&produto_repo) as Arc<dyn ProdutoRepositoryPort>,
                 Arc::clone(&categorias_de_produtos_repo) as Arc<dyn CategoriaRepositoryPort>,
-                Arc::clone(&adicional_repo) as Arc<dyn AdicionalRepositoryPort>
+                Arc::clone(&adicional_repo) as Arc<dyn AdicionalRepositoryPort>,
+                Arc::clone(&categoria_ordem_repo) as Arc<dyn OrdemCategoriaRepositoryPort>,
             )
         );
 
@@ -262,9 +278,12 @@ impl AppState {
         );
 
 
+        let asaas_service = Arc::new(AsaasService::new());
+
         // 4. Estado compartilhado
         let s = Arc::new(
             AppState {
+                asaas_service,
                 usuario_service: Arc::clone(&usuario_service),
                 loja_service: Arc::clone(&loja_service),
                 catalogo_service: Arc::clone(&catalogo_service),

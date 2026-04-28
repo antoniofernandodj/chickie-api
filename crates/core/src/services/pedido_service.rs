@@ -1,11 +1,26 @@
 use std::sync::Arc;
 
 use chrono::{Datelike, Utc};
+use rand::Rng;
 use uuid::Uuid;
 use rust_decimal::Decimal;
 
-use crate::models::{Pedido, EstadoDePedido, StatusCupom, calcular_preco_por_partes};
-use crate::ports::{ConfiguracaoPedidosLojaRepositoryPort, CupomRepositoryPort, EnderecoEntregaRepositoryPort, PedidoRepositoryPort, PromocaoRepositoryPort, PedidoComEntregador};
+use crate::models::{
+    Pedido,
+    EstadoDePedido,
+    StatusCupom,
+    calcular_preco_por_partes
+};
+
+use crate::ports::{
+    ConfiguracaoPedidosLojaRepositoryPort,
+    CupomRepositoryPort, 
+    EnderecoEntregaRepositoryPort,
+    PedidoRepositoryPort,
+    PromocaoRepositoryPort,
+    PedidoComEntregador,
+    PedidoCriado
+};
 
 
 use crate::models::EnderecoEntrega;
@@ -62,6 +77,9 @@ pub struct PedidoService {
 }
 
 impl PedidoService {
+    const CODIGO_TAMANHO: usize = 6;
+    const CODIGO_MAX_TENTATIVAS: usize = 64;
+
     pub fn new(
         pedido_repo: Arc<dyn PedidoRepositoryPort>,
         config_repo: Arc<dyn ConfiguracaoPedidosLojaRepositoryPort>,
@@ -72,53 +90,70 @@ impl PedidoService {
         Self { pedido_repo, config_repo, cupom_repo, promocao_repo, endereco_entrega_repo }
     }
 
-    pub async fn salvar(&self, pedido: &Pedido) -> Result<Uuid, String> {
-        self.pedido_repo.criar(pedido).await.map_err(|e| e.to_string())
+    pub async fn salvar(&self, pedido: &Pedido) -> Result<PedidoCriado, String> {
+        let mut pedido = pedido.clone();
+        self.salvar_com_codigo_unico(&mut pedido).await
     }
 
-    // TODO: Depois verificar como integrara logica de descontos e cupons
-    // com o tipo de calculo de pedido
+    pub async fn listar_todos(&self) -> Result<Vec<Pedido>, String> {
+        let pedidos = self.pedido_repo.buscar_todos_completos().await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
+    }
 
-    /// Calcula e exibe os preços baseado na configuração da loja
-    // pub async fn processar_e_exibir_precos(
-    //     &self,
-    //     pedido: &mut Pedido,
-    //     loja_uuid: uuid::Uuid
-    // ) -> Result<(), String> {
-    //     let config_loja = self
-    //         .config_repo
-    //         .buscar_por_loja(loja_uuid)
-    //         .await?
-    //         .unwrap();
-
-    //     tracing::info!("--- Processando Pedido {} ---", pedido.uuid);
-    //     for item in &pedido.itens {
-    //         let preco_media = calcular_preco_por_partes(
-    //             &item.partes, &TipoCalculoPedido::MediaPonderada
-    //         );
-    //         let preco_caro = calcular_preco_por_partes(
-    //             &item.partes, &TipoCalculoPedido::MaisCaro
-    //         );
-    //         let preco_loja = calcular_preco_por_partes(
-    //             &item.partes, &config_loja.tipo_calculo
-    //         );
-
-    //         tracing::info!(
-    //             "Item: Média: {:.2} | Mais caro: {:.2} | Loja Config: {:.2}",
-    //             preco_media,
-    //             preco_caro,
-    //             preco_loja
-    //         );
-    //     }
-    //     Ok(())
-    // }
-
-    pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+    pub async fn listar_por_loja(&self, loja_uuid: uuid::Uuid, status: EstadoDePedido) -> Result<Vec<Pedido>, String> {
+        let pedidos = self.pedido_repo.buscar_completos_por_loja(loja_uuid, status.as_str()).await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
     }
 
     pub async fn listar_por_usuario(&self, usuario_uuid: uuid::Uuid) -> Result<Vec<Pedido>, String> {
-        self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())
+        let pedidos = self.pedido_repo.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| e.to_string())?;
+        self.hidratar_com_endereco(pedidos).await
+    }
+
+    pub async fn buscar_por_uuid(&self, pedido_uuid: Uuid) -> Result<Pedido, String> {
+
+        let mut pedido = self.pedido_repo
+            .buscar_completo(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or("Pedido não encontrado".to_string())?;
+
+        pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok(pedido)
+    }
+
+    pub async fn buscar_por_codigo(&self, codigo: &str) -> Result<Pedido, String> {
+        let codigo = codigo.trim().to_uppercase();
+        let mut pedido = self.pedido_repo
+            .buscar_por_codigo(&codigo)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or("Pedido não encontrado".to_string())?;
+        let uuid = pedido.uuid;
+        pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(pedido)
+    }
+
+    async fn hidratar_com_endereco(&self, mut pedidos: Vec<Pedido>) -> Result<Vec<Pedido>, String> {
+        if pedidos.is_empty() {
+            return Ok(pedidos);
+        }
+        let uuids: Vec<Uuid> = pedidos.iter().map(|p| p.uuid).collect();
+        let mut mapa = self.endereco_entrega_repo
+            .buscar_por_pedidos(&uuids)
+            .await
+            .map_err(|e| e.to_string())?;
+        for p in &mut pedidos {
+            p.endereco_entrega = mapa.remove(&p.uuid);
+        }
+        Ok(pedidos)
     }
 
     /// Lógica para verificar promoções ativas da loja
@@ -203,31 +238,52 @@ impl PedidoService {
         Ok((Decimal::ZERO, String::new()))
     }
 
-    /// Método principal para criar pedido COM endereço de entrega
+    /// Método principal para criar pedido, com endereço de entrega opcional
     pub async fn criar_pedido_com_entrega(
         &self,
         pedido: &mut Pedido,
-        mut endereco_entrega: crate::models::EnderecoEntrega,  // <-- Modelo, não Request
+        endereco_entrega: Option<crate::models::EnderecoEntrega>,
         codigo_cupom: Option<String>,
-    ) -> Result<Uuid, String> {
-        
-        // 1. Processar preços e descontos (lógica existente)
+    ) -> Result<PedidoCriado, String> {
+
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] criar_pedido_com_entrega iniciado uuid={} loja={} itens={}",
+            pedido.uuid, pedido.loja_uuid, pedido.itens.len(),
+        );
+
+        self.preencher_codigo_se_necessario(pedido).await?;
+
+        // 1. Processar preços e descontos (ATENÇÃO: também chama self.salvar internamente)
+        tracing::info!(target: "pedido", "[SERVICE] chamando __processar_e_finalizar_pedido uuid={}", pedido.uuid);
         self.__processar_e_finalizar_pedido(pedido, codigo_cupom).await?;
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] __processar_e_finalizar_pedido concluido uuid={} subtotal={} total={} desconto={:?}",
+            pedido.uuid, pedido.subtotal, pedido.total, pedido.desconto,
+        );
 
-        // 2. Salvar o pedido no banco (retorna UUID)
-        let pedido_uuid = self.pedido_repo.criar(pedido).await?;
+        // 2. Salvar o pedido no banco (retorna UUID + codigo)
+        tracing::info!(target: "pedido", "[SERVICE] chamando persistencia do pedido uuid={}", pedido.uuid);
+        let pedido_criado = self.salvar_com_codigo_unico(pedido).await?;
+        tracing::info!(target: "pedido", "[SERVICE] persistencia concluida uuid={} codigo={}", pedido_criado.uuid, pedido_criado.codigo);
 
-        // 3. Atualizar o endereço com os UUIDs reais antes de salvar
-        endereco_entrega.uuid = Uuid::new_v4();
-        endereco_entrega.pedido_uuid = pedido_uuid;
-        endereco_entrega.loja_uuid = pedido.loja_uuid;
-        
-        // 4. Criar endereço de entrega vinculado ao pedido (snapshot imutável)
-        self.endereco_entrega_repo
-            .criar(&endereco_entrega)  // Usa o método padrão do trait Repository
-            .await?;
+        // 3. Criar endereço de entrega se fornecido
+        if let Some(mut endereco) = endereco_entrega {
+            endereco.uuid = Uuid::new_v4();
+            endereco.pedido_uuid = pedido_criado.uuid;
+            endereco.loja_uuid = pedido.loja_uuid;
+            tracing::info!(target: "pedido", "[SERVICE] criando endereco_entrega para pedido uuid={}", pedido_criado.uuid);
+            let result = self.endereco_entrega_repo.criar(&endereco).await;
+            match &result {
+                Ok(_) => tracing::info!(target: "pedido", "[SERVICE] endereco_entrega criado para pedido uuid={}", pedido_criado.uuid),
+                Err(e) => tracing::error!(target: "pedido", "[SERVICE] erro ao criar endereco_entrega para pedido uuid={}: {}", pedido_criado.uuid, e),
+            }
+            result?;
+        }
 
-        Ok(pedido_uuid)
+        tracing::info!(target: "pedido", "[SERVICE] criar_pedido_com_entrega concluido uuid={} codigo={}", pedido_criado.uuid, pedido_criado.codigo);
+        Ok(pedido_criado)
     }
 
 
@@ -238,17 +294,81 @@ impl PedidoService {
         _loja_uuid: uuid::Uuid
     ) -> Result<PedidoComEntrega, String> {
 
-        let pedido = self.pedido_repo.buscar_completo(pedido_uuid).await.map_err(|e| e.to_string())?
+        let mut pedido = self.pedido_repo.buscar_completo(pedido_uuid).await.map_err(|e| e.to_string())?
             .ok_or("Pedido não encontrado")?;
 
         let endereco_entrega = self.endereco_entrega_repo
             .buscar_por_pedido(pedido_uuid)
-            .await?;
+            .await
+            .map_err(|e| e.to_string())?;
+
+        pedido.endereco_entrega = endereco_entrega.clone();
 
         Ok(PedidoComEntrega {
             pedido,
             endereco_entrega,
         })
+    }
+
+    async fn preencher_codigo_se_necessario(&self, pedido: &mut Pedido) -> Result<(), String> {
+        if !pedido.codigo.is_empty() {
+            return Ok(());
+        }
+
+        for _ in 0..Self::CODIGO_MAX_TENTATIVAS {
+            let codigo = Self::gerar_codigo_aleatorio();
+            let existe = self.pedido_repo.codigo_existe(&codigo).await.map_err(|e| e.to_string())?;
+            if !existe {
+                pedido.codigo = codigo;
+                return Ok(());
+            }
+        }
+
+        Err("Não foi possível gerar um código único para o pedido".to_string())
+    }
+
+    async fn salvar_com_codigo_unico(&self, pedido: &mut Pedido) -> Result<PedidoCriado, String> {
+        for _ in 0..Self::CODIGO_MAX_TENTATIVAS {
+            self.preencher_codigo_se_necessario(pedido).await?;
+
+            match self.pedido_repo.criar(pedido).await {
+                Ok(uuid) => {
+                    return Ok(PedidoCriado {
+                        uuid,
+                        codigo: pedido.codigo.clone(),
+                    });
+                }
+                Err(e) => {
+                    let erro = e.to_string();
+                    if Self::is_codigo_duplicado_error(&erro) {
+                        pedido.codigo.clear();
+                        continue;
+                    }
+                    return Err(erro);
+                }
+            }
+        }
+
+        Err("Não foi possível persistir o pedido com um código único".to_string())
+    }
+
+    fn gerar_codigo_aleatorio() -> String {
+        const CHARS: &[u8] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let mut rng = rand::thread_rng();
+        let mut result = String::new();
+        for _ in 0..Self::CODIGO_TAMANHO {
+            let idx = rng.gen_range(0..CHARS.len());
+            let c = CHARS[idx] as char;
+            result.push(c);
+        }
+
+        result
+    }
+
+    fn is_codigo_duplicado_error(erro: &str) -> bool {
+        erro.contains("idx_pedidos_codigo_unique")
+            || erro.contains("pedidos_codigo_unique")
+            || erro.contains("duplicate key value")
     }
 
 
@@ -260,11 +380,19 @@ impl PedidoService {
         codigo_cupom: Option<String>,
     ) -> Result<(), String> {
 
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] __processar_e_finalizar_pedido iniciado uuid={} loja={}",
+            pedido.uuid, pedido.loja_uuid,
+        );
+
         // 1. Buscar configuração da loja (como calcular preço dos sabores)
+        tracing::debug!(target: "pedido", "[SERVICE] buscando config da loja={}", pedido.loja_uuid);
         let config_loja = self.config_repo
             .buscar_por_loja(pedido.loja_uuid)
             .await?
             .ok_or("Configuração da loja não encontrada")?;
+        tracing::debug!(target: "pedido", "[SERVICE] config loja encontrada tipo_calculo={:?}", config_loja.tipo_calculo);
 
         // 2. Calcular Subtotal dos Itens
         // Nota: Em um cenário real, buscaríamos preços atualizados do DB.
@@ -327,18 +455,41 @@ impl PedidoService {
             pedido.observacoes = Some(observacao_desconto);
         }
 
-        tracing::info!("Pedido processado: Subtotal {:.2} | Desconto {:.2} | Total {:.2}",
-            pedido.subtotal,
-            desconto_final,
-            pedido.total
+        tracing::info!(
+            target: "pedido",
+            "[SERVICE] pedido processado uuid={} subtotal={:.2} desconto={:.2} total={:.2}",
+            pedido.uuid, pedido.subtotal, desconto_final, pedido.total,
         );
-
-        self.salvar(pedido).await?;
 
         Ok(())
     }
 
     /// Atualiza o status de um pedido para um novo estado válido
+    pub async fn avancar_status(
+        &self,
+        pedido_uuid: Uuid,
+        is_retirada: bool,
+    ) -> Result<Pedido, String> {
+
+        let mut pedido = self.pedido_repo
+            .buscar_por_uuid(pedido_uuid)
+            .await?
+            .ok_or("Pedido não encontrado")?;
+
+        let status_atual: EstadoDePedido = pedido.status.clone();
+        let novo_status: EstadoDePedido = status_atual.avancar(is_retirada)?;
+
+        pedido.status = novo_status.clone();
+        self.pedido_repo.atualizar(pedido.clone()).await?;
+
+        tracing::info!(
+            "Pedido {} avançado: {:?} -> {:?}",
+            pedido_uuid, status_atual, novo_status
+        );
+
+        Ok(pedido)
+    }
+
     pub async fn atualizar_status(
         &self,
         pedido_uuid: Uuid,
@@ -403,7 +554,17 @@ impl PedidoService {
         &self,
         pedido_uuid: Uuid,
     ) -> Result<PedidoComEntregador, String> {
-        self.pedido_repo.buscar_com_entregador(pedido_uuid).await?
-            .ok_or("Pedido não encontrado".to_string())
+
+        let mut resultado = self.pedido_repo
+            .buscar_com_entregador(pedido_uuid)
+            .await?
+            .ok_or("Pedido não encontrado".to_string())?;
+
+        resultado.pedido.endereco_entrega = self.endereco_entrega_repo
+            .buscar_por_pedido(pedido_uuid)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok(resultado)
     }
 }

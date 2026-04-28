@@ -64,6 +64,7 @@ pub mod loja_repository;
 pub mod cliente_repository;
 pub mod produto_repository;
 pub mod categoria_produtos_repository;
+pub mod categoria_ordem_repository;
 pub mod pedido_repository;
 pub mod adicional_repository;
 pub mod ingrediente_repository;
@@ -81,6 +82,7 @@ pub mod parte_de_item_pedido_repository;
 pub mod endereco_usuario_repository;
 pub mod endereco_entrega_repository;
 pub mod loja_favorita_repository;
+pub mod pre_cadastro_repository;
 
 // Re-export all repository structs
 pub use usuario_repository::UsuarioRepository;
@@ -88,6 +90,7 @@ pub use loja_repository::LojaRepository;
 pub use cliente_repository::ClienteRepository;
 pub use produto_repository::ProdutoRepository;
 pub use categoria_produtos_repository::CategoriaProdutosRepository;
+pub use categoria_ordem_repository::CategoriaOrdemRepository;
 pub use pedido_repository::{PedidoRepository, PedidoComEntregador};
 pub use adicional_repository::AdicionalRepository;
 pub use ingrediente_repository::IngredienteRepository;
@@ -105,3 +108,4 @@ pub use configuracao_pedidos_loja_repository::ConfiguracaoPedidosLojaRepository;
 pub use endereco_usuario_repository::EnderecoUsuarioRepository;
 pub use endereco_entrega_repository::EnderecoEntregaRepository;
 pub use loja_favorita_repository::LojaFavoritaRepository;
+pub use pre_cadastro_repository::PreCadastroRepository;

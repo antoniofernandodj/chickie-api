@@ -172,6 +172,7 @@ impl LojaService {
             email,
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Funcionario,
         );
@@ -216,6 +217,7 @@ impl LojaService {
             email.clone(),
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Cliente,
         );
@@ -255,6 +257,7 @@ impl LojaService {
             email,
             senha_hash,
             celular,
+            String::new(),
             "email".to_string(),
             ClasseUsuario::Entregador,
         );
@@ -336,6 +339,20 @@ impl LojaService {
         }
 
         self.loja_repo.alterar_ativo(uuid, ativo).await.map_err(|e| e.to_string())
+    }
+
+    /// Alterna o status bloqueado da loja (toggle)
+    /// Retorna o novo status de bloqueio
+    pub async fn toggle_bloqueado(&self, uuid: Uuid) -> Result<bool, String> {
+        let loja = self.loja_repo.buscar_por_uuid(uuid).await
+            .map_err(|e| e.to_string())?
+            .ok_or("Loja não encontrada")?;
+
+        if loja.esta_deletada() {
+            return Err("Não é possível bloquear loja deletada".to_string());
+        }
+
+        self.loja_repo.toggle_bloqueado(uuid).await.map_err(|e| e.to_string())
     }
 
     /// Deleta permanentemente todas as lojas marcadas para remoção há mais de 30 dias.

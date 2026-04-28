@@ -48,7 +48,7 @@ A API usa **JWT (JSON Web Token)** para autenticação.
 
 ```
 criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
-       → em_preparo → pronto_para_retirada → saiu_para_entrega → entregue
+       → em_preparo → pronto → saiu_para_entrega → entregue
 ```
 
 ## Estrutura de um Pedido

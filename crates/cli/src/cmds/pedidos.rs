@@ -8,12 +8,13 @@ pub async fn run_create_pedido(state: &AppState, args: CreatePedidoArgs) {
     let subtotal = parse_decimal(args.subtotal);
     let taxa = parse_decimal(args.taxa_entrega);
     let pedido = Pedido::new(
-        args.usuario_uuid,
+        Some(args.usuario_uuid),
         args.loja_uuid,
         subtotal,
         taxa,
         args.forma_pagamento,
         args.observacoes,
+        None,
     );
 
     // TODO: cupom handling - not supported via this CLI path yet
@@ -26,9 +27,10 @@ pub async fn run_create_pedido(state: &AppState, args: CreatePedidoArgs) {
         .salvar(&pedido)
         .await
     {
-        Ok(uuid) => {
+        Ok(criado) => {
             print_ok("Pedido criado");
-            println!("{}", uuid);
+            println!("{}", criado.uuid);
+            println!("codigo: {}", criado.codigo);
         }
         Err(e) => print_err(&format!("{:?}", e)),
     }
@@ -50,7 +52,7 @@ pub async fn run_list_meus_pedidos(state: &AppState, args: ListMeusPedidosArgs) 
 }
 
 pub async fn run_list_pedidos_por_loja(state: &AppState, args: ListPedidosPorLojaArgs) {
-    match state.pedido_service.listar_por_loja(args.loja_uuid).await {
+    match state.pedido_service.listar_por_loja(args.loja_uuid, chickie_core::models::EstadoDePedido::Criado).await {
         Ok(pedidos) => json_print(&pedidos),
         Err(e) => print_err(&format!("{:?}", e)),
     }

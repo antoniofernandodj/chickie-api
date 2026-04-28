@@ -19,10 +19,13 @@ pub trait UsuarioRepositoryPort: Send + Sync {
     async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()>;
     async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()>;
     async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()>;
+    async fn toggle_bloqueado(&self, uuid: Uuid) -> DomainResult<bool>;
 
     // Listar usuários pendentes de remoção (para o scheduler)
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Usuario>>;
 
     // Deletar permanentemente usuários marcados há mais de 30 dias
     async fn deletar_pendentes_antigos(&self, limite: chrono::DateTime<chrono::Utc>) -> DomainResult<u64>;
+
+    async fn salvar_asaas_customer_id(&self, uuid: Uuid, customer_id: &str) -> DomainResult<()>;
 }

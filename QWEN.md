@@ -153,8 +153,8 @@ vai usar na verdade algum usecase, que vai usar algum service, que vai usar
 os repositórios. então sempre que for pedido um endpoint, deve-se observar
 esta pilha.
 - Logo após ser editados documentos de projeto, toda a documentação deve
-ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
-- Sempre que eu mencionar documentação completa estou falando de @API.md,
+ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API/README.md
+- Sempre que eu mencionar documentação completa estou falando de @API/,
 @QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
 
 ### Regra Arquitetural Obrigatória
@@ -309,6 +309,18 @@ pub enum DomainError {
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 | `GET` | `/api/auth/me` | Obter usuário autenticado | 🔒 |
 
+> **Bloqueio de login:** Usuários com `bloqueado = true` são rejeitados no login E no middleware JWT.
+
+#### Sistema de Permissões
+
+| Extractor | Permissão | Uso |
+|-----------|-----------|-----|
+| `AdminPermission` | `classe = "administrador"` | Criar lojas, funcionários, entregadores |
+| `OwnerPermission` | `classe = "owner"` OU `email == OWNER_EMAIL` | God mode — acesso total |
+| `is_self_or_owner` | Próprio usuário OU owner | Marcar/desmarcar remoção |
+
+**Variável de ambiente:** `OWNER_EMAIL=seu@email.com` — define o dono da plataforma sem necessidade de seed no banco.
+
 #### Usuários (auth required)
 
 | Método | Rota | Descrição |
@@ -330,26 +342,27 @@ pub enum DomainError {
 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário |
 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador |
 
-#### Produtos (auth required)
+#### Produtos (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/produtos/` | Criar produto |
-| `GET` | `/api/produtos/` | Listar produtos |
-| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
-| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
-| `PUT` | `/api/produtos/{uuid}` | Atualizar product |
-| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
-| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto (S3) |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/produtos/listar/{loja_uuid}` | — | Listar produtos da loja |
+| `GET` | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | — | Listar produtos por categoria |
+| `GET` | `/api/produtos/{uuid}` | — | Buscar produto por UUID |
+| `POST` | `/api/produtos/` | 🔒 | Criar produto |
+| `PUT` | `/api/produtos/{uuid}` | 🔒 | Atualizar produto |
+| `DELETE` | `/api/produtos/{uuid}` | 🔒 | Deletar produto |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade |
+| `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | Subir imagem do produto (S3) |
 
-#### Horários de Funcionamento (🔒)
+#### Horários de Funcionamento (GET público, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/horarios/{loja_uuid}` | Listar horários |
-| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário |
-| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia |
-| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/horarios/{loja_uuid}` | — | Listar horários |
+| `POST` | `/api/horarios/{loja_uuid}` | 🔒 | Criar ou atualizar horário |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | Ativar/desativar dia |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | Deletar horário do dia |
 
 #### Configurações de Pedido (🔒)
 
@@ -390,18 +403,20 @@ pub enum DomainError {
 | `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
 | `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 
-#### Catálogo (auth required)
+#### Catálogo (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/indisponivel` | Marcar adicional como indisponível |
-| `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
-| `GET` | `/api/catalogo/{loja_uuid}/categorias` | Listar categorias |
-| `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Atualizar categoria |
-| `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Deletar categoria (apenas se vazia) |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
+| `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |
+| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Deletar adicional |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | Criar categoria |
+| `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | Atualizar categoria |
+| `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | Deletar categoria (apenas se vazia) |
 
 #### Pedidos (auth required)
 
@@ -518,7 +533,7 @@ cargo check                      # Verificar compilação sem gerar binário
 
 | Documento | Descrição |
 |-----------|-----------|
-| [`API.md`](./API.md) | Especificação completa de todos os 46 endpoints |
+| [`API/`](./API/README.md) | Especificação completa de todos os endpoints (pasta com 15 arquivos) |
 | [`pendencias.md`](./pendencias.md) | Lista de pendências (bugs, melhorias, features faltando) |
 
 ---
@@ -664,7 +679,7 @@ Cliente → cadastra-se como usuário (classe: "cliente", padrão)
 | `aguardando_confirmacao_de_loja`| Loja ainda não confirmou                       |
 | `confirmado_pela_loja`          | Loja confirmou o pedido                        |
 | `em_preparo`                    | Pedido sendo preparado na cozinha              |
-| `pronto_para_retirada`          | Pedido pronto para o cliente                   |
+| `pronto`                        | Pedido pronto para o cliente                   |
 | `saiu_para_entrega`             | Entregador saiu com o pedido                   |
 | `entregue`                      | Pedido entregue ao cliente                     |
 
@@ -702,6 +717,8 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, não-numéricos filtrados) adicionado ao model `Pedido`, repository INSERT/UPDATE, usecase `criar_pedido`, handler `CriarPedidoRequest`. Migration `0006` consolidada com `usuario_uuid` nullable + `contato VARCHAR(11)` (migration `0010` removida). |
+| 2026-04-20  | **Endpoints públicos de leitura**: GETs de horários, adicionais, categorias e produtos movidos para fora do middleware JWT. Handlers `listar_horarios`, `listar_adicionais`, `listar_adicionais_disponiveis`, `listar_categorias`, `listar_produtos` e `listar_produtos_por_categoria` refatorados para chamar o service diretamente, sem `Extension<Usuario>`. |
 | 2026-04-07  | **Campo pizza_mode na categoria**: `categorias_produtos` ganhou campo `pizza_mode BOOLEAN DEFAULT FALSE`. Migration `0004` criada. Stack completa atualizada: model `CategoriaProdutos`, repository SQL, `CatalogoService`, handlers criar/atualizar categoria com DTOs. |
 | 2026-04-07  | **Listar pedidos por usuário**: Novo endpoint `GET /api/pedidos/meus` retorna todos os pedidos do usuário autenticado com hidratação completa (itens, partes, adicionais). Pipeline: Handler → Usecase → Service → Repository (`buscar_completos_por_usuario`). |
 | 2026-04-07  | **Atribuir entregador ao pedido**: Endpoints `PUT /api/pedidos/{pedido_uuid}/entregador/{loja_uuid}` e `DELETE` para vincular/remover entregador. Migration `0005` adicionou `entregador_uuid UUID FK` à tabela `pedidos`. `Pedido` model, repository (criar/atualizar/novas queries), service, usecase e handlers atualizados. Novo DTO `PedidoComEntregador` com JOIN para dados do entregador. |
@@ -737,4 +754,4 @@ Entregador entrega → pedido status → ENTREGUE
 
 ## AI Added Memories
 - Regra arquitetural obrigatória: TODO endpoint deve seguir a pilha Handler → Usecase → Service → Repository → Database. Handlers NUNCA podem conter lógica de negócio, queries SQL, ou chamadas diretas a repositories. Handlers apenas extraem dados da request, instanciam o usecase, chamam seu método e retornam a response. Isso vale para qualquer novo endpoint criado no projeto Chickie API.
-- O projeto Chickie API usa o comando `make export-docs` para sincronizar API.md, CLAUDE.md e README.md para o projeto chickie-ui em ../../TS/chickie-ui/api_docs/
+- O projeto Chickie API usa o comando `make export-docs` para sincronizar a pasta API/, CLAUDE.md e README.md para o projeto chickie-ui em ../../TS/chickie-ui/api_docs/

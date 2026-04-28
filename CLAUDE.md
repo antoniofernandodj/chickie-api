@@ -103,8 +103,8 @@ vai usar na verdade algum usecase, que vai usar algum service, que vai usar
 os repositórios. então sempre que for pedido um endpoint, deve-se observar
 esta pilha.
 - Logo após ser editados documentos de projeto, toda a documentação deve
-ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API.md
-- Sempre que eu mencionar documentação completa estou falando de @API.md,
+ser atualizada logo em seguida, @QWEN.md, @CLAUDE.md, @pendencias.md e @API/README.md
+- Sempre que eu mencionar documentação completa estou falando de @API/,
 @QWEN.md, @CLAUDE.md, @README.md e @pendencias.md
 
 ## Microserviços (Visão Futura)
@@ -195,8 +195,9 @@ Cada repositório implementa também:
 | Todas sob `/api`                | `POST /api/pedidos`                        |
 | Health check em `/`             | `GET /` → `handler_ok`                     |
 | Fallback 404 genérico           | qualquer rota não mapeada                  |
-| Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/produtos`, `/marketing` (parcial), `/catalogo`, `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin` |
-| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `/wipe` (dev only) |
+| Auth via middleware             | Aplicado em `/pedidos` (parcial), `/usuarios`, `/marketing` (parcial), `/enderecos-entrega`, `/enderecos-usuario`, `/favoritos`, `/admin`; GETs de `/produtos`, `/catalogo`, `/horarios` são públicos |
+| Sem auth                        | `/auth/*`, `/ok`, `GET /api/lojas/`, `GET /api/marketing/cupons/{codigo}`, `GET /api/horarios/{loja_uuid}`, `GET /api/catalogo/{loja_uuid}/adicionais`, `GET /api/catalogo/{loja_uuid}/categorias`, `GET /api/produtos/listar/{loja_uuid}`, `GET /api/produtos/{uuid}`, `GET /api/produtos/categoria/{loja_uuid}/{categoria_uuid}` |
+| Owner only                      | `/api/wipe` (dev only), `/api/usuarios/`, toggle bloqueio usuários |
 
 ### Referência Completa de Endpoints
 
@@ -204,14 +205,27 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/auth/signup` | Cadastro de usuário |
+| `POST` | `/api/auth/signup` | Inicia cadastro — salva pré-cadastro em cache e envia email de verificação (TTL 1h) |
+| `GET` | `/api/auth/confirmar-email?token=` | Confirma cadastro via token do email — cria usuário e retorna JWT |
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 
-#### Usuários (auth required)
+> **Nota:** `celular` é UNIQUE e filtrado no signup — apenas dígitos. Ex: `"(11) 99999-9999"` → `"11999999999"`.
+
+#### Validações de Disponibilidade (sem auth)
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/usuarios/` | Listar usuários |
+| `POST` | `/api/auth/verificar-celular` | Verificar celular disponível |
+
+#### Usuários (auth required, Owner para maioria)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/api/usuarios/?classe=...` | Listar usuários (Owner). Query opcional: `?classe=cliente\|administrador` |
+| `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | Marcar para remoção (Self/Owner) |
+| `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | Desmarcar remoção (Self/Owner) |
+| `PUT` | `/api/usuarios/{uuid}/ativo` | Ativar/desativar (Owner) |
+| `PATCH` | `/api/usuarios/{uuid}/bloqueado` | Toggle bloqueio (Owner) |
 
 #### Lojas Públicas (sem auth para listagem)
 
@@ -228,27 +242,28 @@ Cada repositório implementa também:
 | `POST` | `/api/admin/lojas/{loja_uuid}/funcionarios` | Adicionar funcionário |
 | `POST` | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador |
 
-#### Produtos (auth required)
+#### Produtos (GETs públicos, mutações requerem auth)
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/produtos/` | Criar produto |
-| `GET` | `/api/produtos/` | Listar produtos |
-| `GET` | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria |
-| `GET` | `/api/produtos/{uuid}` | Buscar produto por UUID |
-| `PUT` | `/api/produtos/{uuid}` | Atualizar produto |
-| `DELETE` | `/api/produtos/{uuid}` | Deletar produto |
-| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | Atualizar disponibilidade |
-| `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto |
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/produtos/listar/{loja_uuid}` | — | Listar produtos da loja |
+| `GET`  | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | — | Listar produtos por categoria |
 
-#### Horários de Funcionamento (🔒)
+| `GET` | `/api/produtos/{uuid}` | — | Buscar produto por UUID |
+| `POST` | `/api/produtos/` | 🔒 | Criar produto |
+| `PUT` | `/api/produtos/{uuid}` | 🔒 | Atualizar produto |
+| `DELETE` | `/api/produtos/{uuid}` | 🔒 | Deletar produto |
+| `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade |
+| `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | Subir imagem do produto |
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/horarios/{loja_uuid}` | Listar horários |
-| `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário |
-| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia |
-| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia |
+#### Horários de Funcionamento (GET público, mutações requerem auth)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/horarios/{loja_uuid}` | — | Listar horários |
+| `POST` | `/api/horarios/{loja_uuid}` | 🔒 | Criar ou atualizar horário |
+| `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | Ativar/desativar dia |
+| `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | Deletar horário do dia |
 
 #### Configurações de Pedido (🔒)
 
@@ -287,23 +302,24 @@ Cada repositório implementa também:
 | `PUT` | `/api/entregadores/{loja_uuid}/{uuid}` | Atualizar entregador (inclui campos de usuário opcionais) |
 | `PUT` | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha |
 
-#### Catálogo (auth required)
+#### Catálogo (GETs públicos, mutações requerem auth)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
+| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
+| `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
+| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |
+| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Deletar adicional |
+| `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | Criar categoria |
+
+#### Pedidos
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/catalogo/{loja_uuid}/adicionais` | Criar adicional |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais` | Listar todos os adicionais |
-| `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar adicionais disponíveis |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional |
-| `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | Atualizar disponibilidade (true/false) |
-| `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Deletar adicional |
-| `POST` | `/api/catalogo/{loja_uuid}/categorias` | Criar categoria |
-
-#### Pedidos (auth required)
-
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — sem auth obrigatória; `usuario_uuid`, `endereco_entrega` e `contato` são opcionais |
 | `GET` | `/api/pedidos/listar` | Listar todos pedidos |
 | `GET` | `/api/pedidos/por-loja/{loja_uuid}` | Listar pedidos por loja |
 | `GET` | `/api/pedidos/{uuid}` | Buscar pedido por UUID |
@@ -395,6 +411,9 @@ Injetado via `State(state): State<Arc<AppState>>`.
 | `RUST_LOG`    | `info`  | Nível de log (`debug` em desenvolvimento)       |
 | `JWT_SECRET`  | `secret`| Chave de assinatura JWT (fallback)              |
 | `MODE`        | —       | Se `development`, dropa o banco e reaplica migrações no startup |
+| `MAILERSEND_API_TOKEN` | — | Token da API MailerSend (obrigatório para envio de emails) |
+| `EMAIL_FROM`  | —       | Endereço de origem dos emails (ex: `info@seudominio.com`) |
+| `APP_BASE_URL`| `http://localhost:3000` | URL base usada nos links de verificação de email |
 
 ---
 
@@ -414,7 +433,7 @@ cargo check                      # Verificar compilação sem gerar binário
 
 | Documento | Descrição |
 |-----------|-----------|
-| [`API.md`](./API.md) | Especificação completa de todos os 46 endpoints |
+| [`API/`](./API/README.md) | Especificação completa de todos os endpoints (pasta com 15 arquivos) |
 | [`pendencias.md`](./pendencias.md) | Lista de pendências (bugs, melhorias, features faltando) |
 
 ---
@@ -559,7 +578,7 @@ Cliente → cadastra-se como usuário (classe: "cliente", padrão)
 | `aguardando_confirmacao_de_loja`| Loja ainda não confirmou                       |
 | `confirmado_pela_loja`          | Loja confirmou o pedido                        |
 | `em_preparo`                    | Pedido sendo preparado na cozinha              |
-| `pronto_para_retirada`          | Pedido pronto para o cliente                   |
+| `pronto`                        | Pedido pronto para o cliente                   |
 | `saiu_para_entrega`             | Entregador saiu com o pedido                   |
 | `entregue`                      | Pedido entregue ao cliente                     |
 
@@ -597,6 +616,12 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-28  | **Verificação de email no cadastro**: Signup agora é assíncrono — armazena pré-cadastro (JSONB + TTL 1h) na tabela `pre_cadastro` e envia email via MailerSend com template HTML (Tera). Novo endpoint `GET /api/auth/confirmar-email?token=...` valida token, cria usuário e retorna JWT. Ports: `PreCadastroPort`, `EmailServicePort`. Services: `PreCadastroRepository`, `EmailService`. `UsuarioService` ganhou `iniciar_cadastro` e `confirmar_cadastro`. Migration `0012`. Vars env: `MAILERSEND_API_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. |
+| 2026-04-26  | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos**: campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (com `#[sqlx(skip)]`). Port `EnderecoEntregaRepositoryPort` ganhou `buscar_por_pedidos(&[Uuid]) -> HashMap<Uuid, EnderecoEntrega>` para batch hydration sem N+1. Service `PedidoService` ganhou `hidratar_com_endereco` e atualiza `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix em `listar_pedidos` handler (extraia `Path(loja_uuid)` em rota sem parâmetro). |
+| 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model `Pedido`, repository (INSERT + UPDATE), usecase (`criar_pedido`), handler (`CriarPedidoRequest`). Migration `0006` absorveu as mudanças de `usuario_uuid` nullable e o novo campo (migration `0010` removida). |
+| 2026-04-21  | **Ordem de categorias desacoplada**: campo `ordem` removido de `categorias_produtos`. Nova tabela `ordem_categorias_de_produtos (loja_uuid, categoria_uuid, ordem)` permite que cada loja defina sua própria ordem para qualquer categoria (própria ou global). Migration `0012` criada. Stack completa atualizada: model (`CategoriaProdutosOrdenada`, `OrdemCategoriaProdutos`), port (`OrdemCategoriaRepositoryPort`), repository (`CategoriaOrdemRepository`), service (`reordenar_categorias` → novo repo), handlers (`listar_categorias` retorna `CategoriaProdutosOrdenada`), CLI (args sem `ordem`), seed (INSERT sem `ordem`). |
+| 2026-04-20  | **Endpoints públicos de leitura**: GETs de `/api/horarios/{loja_uuid}`, `/api/catalogo/{loja_uuid}/adicionais`, `/api/catalogo/{loja_uuid}/adicionais/disponiveis`, `/api/catalogo/{loja_uuid}/categorias`, `/api/produtos/listar/{loja_uuid}`, `/api/produtos/{uuid}` e `/api/produtos/categoria/{uuid}` movidos para fora do middleware de auth. Apenas POST, PUT e DELETE permanecem protegidos. Handlers refatorados para chamar o service diretamente, removendo `Extension<Usuario>` que causava 500 em rotas públicas. |
+| 2026-04-19  | **Pedido sem usuário obrigatório**: `usuario_uuid` em `pedidos` agora é nullable (migration `0010`). `endereco_entrega` no body de criação de pedido agora é opcional. Endpoint `POST /api/pedidos/criar` não exige mais auth (usa `optional_auth_middleware`). Middleware `optional_auth_middleware` criado. Stack completa atualizada: model, repository, port, service, usecase, handlers, router. |
 | 2026-04-05  | **NUMERIC com tipo correto**: Todos os campos `f64`/`Option<f64>` mapeados para `NUMERIC` migrados para `rust_decimal::Decimal`. |
 | 2026-04-05  | **Endpoint minhas lojas**: `GET /api/admin/minhas-lojas` lista lojas criadas pelo admin logado. Tabela `lojas` ganhou campo `criado_por UUID` (FK para `usuarios`). Migration `0003` criada. |
 | 2026-04-05  | **Campos TIME corrigidos**: `horario_abertura`, `horario_fechamento` (`loja`) e `abertura`, `fechamento` (`horarios_funcionamento`) migrados de `String` para `chrono::NaiveTime`. `loja_service` agora converte `String → NaiveTime::parse_from_str("%H:%M")`. |

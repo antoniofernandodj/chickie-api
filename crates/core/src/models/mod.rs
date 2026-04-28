@@ -27,7 +27,9 @@ pub use avaliacao::{
 };
 
 pub use categoria::{
-    CategoriaProdutos
+    CategoriaProdutos,
+    CategoriaProdutosOrdenada,
+    OrdemCategoriaProdutos,
 };
 
 pub use cliente::Cliente;

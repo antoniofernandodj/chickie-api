@@ -7,7 +7,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::handlers::{auth::AdminPermission, dto::AppError, AppState};
+use crate::handlers::{auth::{AdminPermission, OwnerPermission}, dto::AppError, AppState};
 
 // ============================================================================
 // Marcar loja para remoção (soft delete)
@@ -73,5 +73,28 @@ pub async fn alternar_loja_ativo(
     Ok(Json(serde_json::json!({
         "message": format!("Loja {} com sucesso", acao),
         "ativo": body.ativo
+    })))
+}
+
+// ============================================================================
+// Toggle bloqueado da loja (bloquear/desbloquear operação)
+// ============================================================================
+
+pub async fn toggle_loja_bloqueado(
+    State(state): State<Arc<AppState>>,
+    OwnerPermission(_owner): OwnerPermission,
+    Path(loja_uuid): Path<Uuid>,
+) -> Result<impl IntoResponse, AppError> {
+    let bloqueado = state.loja_service
+        .toggle_bloqueado(loja_uuid)
+        .await
+        .map_err(|e| AppError::BadRequest(e))?;
+
+    let acao = if bloqueado { "bloqueada" } else { "desbloqueada" };
+    tracing::info!("Loja {} {} (bloqueado={})", loja_uuid, acao, bloqueado);
+
+    Ok(Json(serde_json::json!({
+        "message": format!("Loja {} com sucesso", acao),
+        "bloqueado": bloqueado
     })))
 }

@@ -26,4 +26,5 @@ pub use soft_delete::{
     marcar_loja_remocao,
     desmarcar_loja_remocao,
     alternar_loja_ativo,
+    toggle_loja_bloqueado,
 };

@@ -10,9 +10,10 @@ use crate::handlers::{AppState, dto::AppError};
 pub struct UpdateCategoriaRequest {
     pub nome: String,
     pub descricao: Option<String>,
-    pub ordem: Option<i32>,
     #[serde(default)]
     pub pizza_mode: bool,
+    #[serde(default)]
+    pub drink_mode: bool,
 }
 
 pub async fn atualizar_categoria(
@@ -22,13 +23,17 @@ pub async fn atualizar_categoria(
     Json(p): Json<UpdateCategoriaRequest>,
 ) -> Result<impl IntoResponse, AppError> {
 
+    if p.pizza_mode && p.drink_mode {
+        return Err(AppError::BadRequest("Uma categoria não pode ter pizza_mode e drink_mode ativos ao mesmo tempo".to_string()));
+    }
+
     let categoria = state.catalogo_service.atualizar_categoria(
         uuid,
         loja_uuid,
         p.nome,
         p.descricao,
-        p.ordem,
         p.pizza_mode,
+        p.drink_mode,
     ).await?;
 
     Ok(Json(categoria))

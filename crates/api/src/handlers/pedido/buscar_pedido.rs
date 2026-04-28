@@ -11,15 +11,12 @@ use crate::handlers::AppState;
 pub async fn buscar_pedido(
     State(state): State<Arc<AppState>>,
     Path(uuid): Path<Uuid>,
-    Path(loja_uuid): Path<Uuid>,
 ) -> Result<impl IntoResponse, AppError> {
-
     let pedido = state
-        .pedido_repo
-        .buscar_completo(uuid, loja_uuid)
+        .pedido_service
+        .buscar_por_uuid(uuid)
         .await
-        .map_err(|e| AppError::Internal(e.to_string()))?
-        .ok_or_else(|| AppError::NotFound("Pedido não encontrado".to_string()))?;
+        .map_err(AppError::Internal)?;
 
     Ok(Json(pedido))
 }

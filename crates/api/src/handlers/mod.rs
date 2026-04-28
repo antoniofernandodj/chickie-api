@@ -20,6 +20,7 @@ mod config_pedido;
 mod funcionario;
 mod entregador;
 mod openapi;
+mod pagamento;
 
 use axum::{Json, response::IntoResponse};
 use serde_json::json;
@@ -39,7 +40,10 @@ pub use openapi::swagger_router;
 
 pub use auth::{
     auth_middleware,
-    create_jwt
+    optional_auth_middleware,
+    create_jwt,
+    validar_token,
+    OwnerPermission,
 };
 
 pub use state::{AppState};
@@ -50,13 +54,20 @@ pub use dto::{
     Claims
 };
 
+pub use pagamento::{criar_pagamento, webhook_asaas};
+
 pub use pedido::{
     criar_pedido,
     listar_pedidos,
     buscar_pedido,
-    listar_por_loja,
+    // buscar_pedido_por_codigo,
+    // listar_por_loja,
+    ws_listar_por_loja,
+    ws_buscar_por_codigo,
     buscar_pedido_com_entrega,
     atualizar_status,
+    avancar_status,
+    cancelar_pedido,
     listar_meus_pedidos,
     atribuir_entregador,
     remover_entregador,
@@ -65,13 +76,16 @@ pub use pedido::{
 
 pub use usuario::{
     criar_usuario,
+    confirmar_cadastro,
     listar_usuarios, // buscar_usuario
     me,
     verificar_email,
     verificar_username,
+    verificar_celular,
     marcar_usuario_remocao,
     desmarcar_usuario_remocao,
     alternar_usuario_ativo,
+    toggle_usuario_bloqueado,
 };
 
 pub use loja::{
@@ -89,6 +103,7 @@ pub use loja::{
     marcar_loja_remocao,
     desmarcar_loja_remocao,
     alternar_loja_ativo,
+    toggle_loja_bloqueado,
 };
 
 pub use produto::{
@@ -179,11 +194,16 @@ pub use catalogo::{
     deletar_adicional,
     atualizar_disponibilidade,
     criar_categoria,
+    criar_categoria_global,
     atualizar_categoria,
+    atualizar_categoria_global,
     deletar_categoria,
+    deletar_categoria_global,
     listar_adicionais,
     listar_adicionais_disponiveis,
     listar_categorias,
+    listar_categorias_globais,
+    reordenar_categorias,
 };
 
 pub use endereco_entrega::{

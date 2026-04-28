@@ -17,6 +17,7 @@ pub trait LojaRepositoryPort: Send + Sync {
     async fn desmarcar_remocao(&self, uuid: Uuid) -> DomainResult<()>;
     async fn marcar_como_deletado(&self, uuid: Uuid) -> DomainResult<()>;
     async fn alterar_ativo(&self, uuid: Uuid, ativo: bool) -> DomainResult<()>;
+    async fn toggle_bloqueado(&self, uuid: Uuid) -> DomainResult<bool>;
 
     // Listar lojas pendentes de remoção (para o scheduler)
     async fn listar_pendentes_remocao(&self) -> DomainResult<Vec<Loja>>;

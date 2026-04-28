@@ -11,7 +11,7 @@ pub async fn me(
     Extension(usuario): Extension<Usuario>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     // Buscar o usuário completo no banco para garantir dados atualizados
-    let usuario_completo = state.usuario_repo
+    let mut usuario_completo = state.usuario_repo
         .buscar_por_uuid(usuario.uuid)
         .await
         .map_err(|e| {
@@ -19,6 +19,12 @@ pub async fn me(
             AppError::Internal("Erro ao buscar dados do usuário".to_string())
         })?
         .ok_or_else(|| AppError::NotFound("Usuário não encontrado".to_string()))?;
+
+    // Se o email corresponde ao OWNER_EMAIL, sobrescrever a classe para "owner"
+    let owner_email = std::env::var("OWNER_EMAIL").unwrap_or_default();
+    if !owner_email.is_empty() && usuario_completo.email == owner_email {
+        usuario_completo.classe = "owner".to_string();
+    }
 
     Ok(Json(json!({
         "uuid": usuario_completo.uuid,
@@ -28,6 +34,7 @@ pub async fn me(
         "celular": usuario_completo.celular,
         "classe": usuario_completo.classe,
         "ativo": usuario_completo.ativo,
+        "bloqueado": usuario_completo.bloqueado,
         "passou_pelo_primeiro_acesso": usuario_completo.passou_pelo_primeiro_acesso,
         "criado_em": usuario_completo.criado_em,
         "atualizado_em": usuario_completo.atualizado_em,

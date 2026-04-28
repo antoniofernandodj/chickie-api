@@ -18,6 +18,7 @@ mod funcionario;
 mod entregador;
 mod usuario;
 mod wipe;
+mod pagamento;
 
 use std::sync::Arc;
 
@@ -29,28 +30,28 @@ pub use auth::auth_routes;
 pub use loja::loja_routes;
 pub use loja_admin::loja_admin_routes;
 pub use pedido::pedido_routes;
-pub use produto::produto_routes;
-pub use catalogo::catalogo_routes;
+pub use produto::{produto_routes, produto_public_routes};
+pub use catalogo::{catalogo_routes, catalogo_public_routes};
 pub use endereco_entrega::endereco_entrega_routes;
 pub use endereco_usuario::endereco_usuario_routes;
 pub use loja_favorita::loja_favorita_routes;
 pub use marketing::marketing_routes;
 pub use ingrediente::ingrediente_routes;
-pub use horario::horario_routes;
+pub use horario::{horario_routes, horario_public_routes};
 pub use endereco_loja::endereco_loja_routes;
-pub use config_pedido::config_pedido_routes;
+pub use config_pedido::{config_pedido_routes, config_pedido_public_routes};
 pub use cupom::cupom_routes;
 pub use cupom_admin::cupom_admin_routes;
 pub use funcionario::funcionario_routes;
 pub use entregador::entregador_routes;
 pub use usuario::usuario_routes;
 pub use wipe::wipe_route;
+pub use pagamento::pagamento_routes;
 
 use super::ok_handler;
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
-    let mut router = Router::new()
-        .nest("/pedidos", pedido_routes(s))
+    let protected = Router::new()
         .nest("/usuarios", usuario_routes())
         .nest("/produtos", produto_routes())
         .nest("/marketing", marketing_routes(s))
@@ -67,9 +68,18 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/funcionarios", funcionario_routes())
         .nest("/entregadores", entregador_routes())
         .nest("/admin", loja_admin_routes())
-            .layer(from_fn_with_state(s.clone(), auth_middleware))
+        .layer(from_fn_with_state(s.clone(), auth_middleware));
+
+    let mut router = Router::new()
+        .merge(protected)
+        .nest("/pedidos", pedido_routes(s))
         .nest("/lojas", loja_routes())
         .nest("/auth", auth_routes(s))
+        .nest("/horarios", horario_public_routes())
+        .nest("/catalogo", catalogo_public_routes())
+        .nest("/produtos", produto_public_routes())
+        .nest("/config-pedido", config_pedido_public_routes())
+        .nest("/pagamentos", pagamento_routes(s))
         .route("/ok", get(ok_handler));
 
     let mode = std::env::var("MODE").unwrap_or_default();

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::collections::HashMap;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
@@ -20,6 +21,21 @@ impl EnderecoEntregaRepository {
         .fetch_optional(self.pool())
         .await
         .map_err(|e| e.to_string())
+    }
+
+    /// Busca endereços de entrega para múltiplos pedidos em uma única query (evita N+1)
+    pub async fn buscar_por_pedidos(&self, pedido_uuids: &[Uuid]) -> Result<HashMap<Uuid, EnderecoEntrega>, String> {
+        if pedido_uuids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let enderecos = sqlx::query_as::<_, EnderecoEntrega>(
+            "SELECT * FROM enderecos_entrega WHERE pedido_uuid = ANY($1)"
+        )
+        .bind(pedido_uuids)
+        .fetch_all(self.pool())
+        .await
+        .map_err(|e| e.to_string())?;
+        Ok(enderecos.into_iter().map(|e| (e.pedido_uuid, e)).collect())
     }
 
     /// Busca enderecos de entrega por loja (util para relatorios/auditoria)
@@ -142,6 +158,9 @@ impl EnderecoEntregaRepositoryPort for EnderecoEntregaRepository {
     }
     async fn buscar_por_pedido(&self, pedido_uuid: Uuid) -> DomainResult<Option<EnderecoEntrega>> {
         self.buscar_por_pedido(pedido_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
+    async fn buscar_por_pedidos(&self, pedido_uuids: &[Uuid]) -> DomainResult<HashMap<Uuid, EnderecoEntrega>> {
+        self.buscar_por_pedidos(pedido_uuids).await.map_err(|e| DomainError::Internal(e))
     }
     async fn listar_por_loja(&self, loja_uuid: Uuid) -> DomainResult<Vec<EnderecoEntrega>> {
         self.buscar_por_loja(loja_uuid).await.map_err(|e| DomainError::Internal(e))

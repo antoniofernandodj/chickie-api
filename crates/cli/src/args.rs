@@ -264,10 +264,10 @@ pub struct CreateCategoriaArgs {
     pub nome: String,
     #[arg(long)]
     pub descricao: Option<String>,
-    #[arg(long)]
-    pub ordem: i32,
     #[arg(long, default_value = "false")]
     pub pizza_mode: bool,
+    #[arg(long, default_value = "false")]
+    pub drink_mode: bool,
 }
 
 #[derive(clap::Args)]
@@ -275,7 +275,6 @@ pub struct ListCategoriasArgs {
     #[arg(long)]
     pub loja_uuid: Uuid,
 }
-
 #[derive(clap::Args)]
 pub struct UpdateCategoriaArgs {
     #[arg(long)]
@@ -287,9 +286,9 @@ pub struct UpdateCategoriaArgs {
     #[arg(long)]
     pub descricao: Option<String>,
     #[arg(long)]
-    pub ordem: i32,
-    #[arg(long)]
     pub pizza_mode: bool,
+    #[arg(long)]
+    pub drink_mode: bool,
 }
 
 #[derive(clap::Args)]
@@ -951,6 +950,8 @@ pub struct ListAdicionaisDisponiveisArgs {
 
 #[derive(clap::Args)]
 pub struct ListProdutosPorCategoriaArgs {
+    #[arg(long)]
+    pub loja_uuid: Uuid,
     pub categoria_uuid: Uuid,
 }
 

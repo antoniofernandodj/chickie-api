@@ -84,7 +84,7 @@ pub async fn run_delete_produto(state: &AppState, args: DeleteProdutoArgs) {
 pub async fn run_create_categoria(state: &AppState, args: CreateCategoriaArgs) {
     match state
         .catalogo_service
-        .criar_categoria(args.nome, args.descricao, args.loja_uuid, Some(args.ordem), args.pizza_mode)
+        .criar_categoria(args.nome, args.descricao, Some(args.loja_uuid), args.pizza_mode, args.drink_mode)
         .await
     {
         Ok(c) => {
@@ -114,8 +114,8 @@ pub async fn run_update_categoria(state: &AppState, args: UpdateCategoriaArgs) {
             args.loja_uuid,
             args.nome,
             args.descricao,
-            Some(args.ordem),
             args.pizza_mode,
+            args.drink_mode,
         )
         .await
     {
@@ -130,7 +130,7 @@ pub async fn run_update_categoria(state: &AppState, args: UpdateCategoriaArgs) {
 pub async fn run_delete_categoria(state: &AppState, args: DeleteCategoriaArgs) {
     match state
         .catalogo_service
-        .deletar_categoria(args.loja_uuid, args.uuid)
+        .deletar_categoria(args.uuid, args.loja_uuid)
         .await
     {
         Ok(()) => print_ok("Categoria deletada"),
@@ -206,7 +206,7 @@ pub async fn run_list_adicionais_disponiveis(state: &AppState, args: ListAdicion
 pub async fn run_list_produtos_por_categoria(state: &AppState, args: ListProdutosPorCategoriaArgs) {
     match state
         .catalogo_service
-        .listar_produtos_por_categoria(args.categoria_uuid)
+        .listar_produtos_por_categoria(args.loja_uuid, args.categoria_uuid)
         .await
     {
         Ok(prods) => json_print(&prods),

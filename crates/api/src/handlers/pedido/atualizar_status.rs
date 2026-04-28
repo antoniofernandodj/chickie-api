@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use chickie_core::{
     models::{EstadoDePedido, Usuario},
+    ports::PedidoRepositoryPort,
     usecases::PedidoUsecase
 };
 use crate::handlers::{dto::AppError, AppState};
@@ -18,7 +19,7 @@ pub struct AtualizarStatusRequest {
 
 pub async fn atualizar_status(
     State(state): State<Arc<AppState>>,
-    Path((loja_uuid, pedido_uuid)): Path<(Uuid, Uuid)>,
+    Path(pedido_uuid): Path<Uuid>,
     Extension(usuario): Extension<Usuario>,
     Json(p): Json<AtualizarStatusRequest>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -26,10 +27,16 @@ pub async fn atualizar_status(
     let novo_status = EstadoDePedido::from_str(&p.novo_status)
         .map_err(|e| AppError::BadRequest(e))?;
 
+    let loja_uuid = state.pedido_repo
+        .buscar_por_uuid(pedido_uuid).await
+        .map_err(|e| AppError::Internal(e.to_string()))?
+        .ok_or_else(|| AppError::NotFound("Pedido não encontrado".into()))?
+        .loja_uuid;
+
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
         Arc::clone(&state.produto_repo),
-        usuario,
+        Some(usuario),
         loja_uuid,
     );
 

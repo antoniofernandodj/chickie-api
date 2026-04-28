@@ -4,4 +4,5 @@
 -- ============================================================================
 
 ALTER TABLE categorias_produtos
-ADD COLUMN IF NOT EXISTS pizza_mode BOOLEAN NOT NULL DEFAULT FALSE;
+ADD COLUMN IF NOT EXISTS pizza_mode BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS drink_mode BOOLEAN NOT NULL DEFAULT FALSE;

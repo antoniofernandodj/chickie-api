@@ -1,25 +1,17 @@
 use crate::handlers::dto::AppError;
 use crate::handlers::AppState;
-use axum::{Extension, Json, extract::{Path, State}};
+use axum::{Json, extract::{Path, State}};
 use uuid::Uuid;
 use std::sync::Arc;
-use chickie_core::{models::{self, Usuario}, usecases::CatalogoUsecase};
-
+use chickie_core::models;
 
 pub async fn listar_produtos(
     State(state): State<Arc<AppState>>,
-    Extension(usuario_logado): Extension<Usuario>,
     Path(loja_uuid): Path<Uuid>,
 ) -> Result<Json<Vec<models::Produto>>, AppError> {
-
-    let service = state.catalogo_service.clone();
-    let usecase: CatalogoUsecase =
-        CatalogoUsecase::new(service, loja_uuid, usuario_logado);
-    
-    let produtos = usecase
-        .listar_produtos()
+    let produtos = state.catalogo_service
+        .listar_produtos_de_loja(loja_uuid)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
-
     Ok(Json(produtos))
 }

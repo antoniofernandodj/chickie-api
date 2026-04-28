@@ -27,7 +27,7 @@ pub async fn buscar_pedido_com_entrega(
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
         Arc::clone(&state.produto_repo),
-        usuario,
+        Some(usuario),
         loja_uuid,
     );
 

@@ -10,6 +10,7 @@ pub struct CreateUsuarioRequest {
     pub senha: String,
     pub email: String,
     pub celular: String,
+    pub cpf: String,
     pub auth_method: String,
     #[schema(example = "cliente")]
     pub classe: Option<String>,  // "cliente" (default) | "administrador"
@@ -46,7 +47,6 @@ pub struct CreatePedidoRequest {
     // === NOVO: Endereço de entrega para o pedido ===
     pub endereco_entrega: DadosEnderecoEntregaRequest,
 }
-
 
 /// Dados de entrada para o endereço de entrega (snapshot no momento do pedido)
 #[allow(dead_code)]
@@ -86,7 +86,6 @@ impl DadosEnderecoEntregaRequest {
         )
     }
 }
-
 
 #[allow(dead_code)]
 #[derive(Deserialize, ToSchema)]
@@ -149,19 +148,31 @@ impl From<DomainError> for AppError {
     fn from(err: DomainError) -> Self {
         match err {
             DomainError::NotFound { entity, id } => {
-                AppError::NotFound(format!("{} not found: {}", entity, id))
-            }
+                AppError::NotFound(
+                    format!(
+                        "{} not found: {}",
+                        entity, id
+                    )
+                )
+            },
+            DomainError::Conflict { entity, field } => {
+                AppError::Conflict(
+                    format!(
+                        "{} conflict on field '{}'",
+                        entity, field
+                    )
+                )
+            },
+            DomainError::InvalidState { current, attempted, allowed } => {
+                AppError::InvalidState(
+                    format!(
+                        "Invalid state transition: {} -> {}. Allowed: {:?}",
+                        current, attempted, allowed
+                    )
+                )
+            },
             DomainError::BusinessRule(msg) => AppError::BadRequest(msg),
             DomainError::Validation(msg) => AppError::BadRequest(msg),
-            DomainError::Conflict { entity, field } => {
-                AppError::Conflict(format!("{} conflict on field '{}'", entity, field))
-            }
-            DomainError::InvalidState { current, attempted, allowed } => {
-                AppError::InvalidState(format!(
-                    "Invalid state transition: {} -> {}. Allowed: {:?}",
-                    current, attempted, allowed
-                ))
-            }
             DomainError::Internal(msg) => AppError::Internal(msg),
         }
     }
@@ -181,7 +192,6 @@ impl From<&str> for AppError {
         AppError::BadRequest(error.to_string())
     }
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone, ToSchema)]
 pub struct Claims {
@@ -238,4 +248,3 @@ pub struct VerificarUsernameRequest {
 pub struct DisponivelResponse {
     pub disponivel: bool,
 }
-

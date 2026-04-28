@@ -101,11 +101,27 @@ Todos os endpoints vivem sob `/api`.
 | `POST` | `/api/auth/login` | Login (gera JWT)    | ❌  | — |
 | `GET`  | `/api/auth/me`    | Usuário autenticado | ✅  | — |
 
-### Usuários (auth required)
+> **Bloqueio:** Usuários com `bloqueado = true` são rejeitados no login e no middleware JWT.
+> **Celular:** Campo UNIQUE, filtrado para apenas dígitos no signup. Ex: `"(11) 99999-9999"` → `"11999999999"`. Novo endpoint: `POST /api/auth/verificar-celular`.
+
+### Sistema de Permissões
+
+| Extractor | Permissão | Uso |
+|-----------|-----------|-----|
+| `AdminPermission` | `classe = "administrador"` | Criar lojas, funcionários, entregadores |
+| `OwnerPermission` | `classe = "owner"` OU `email == OWNER_EMAIL` | God mode — acesso total |
+
+**Variável de ambiente:** `OWNER_EMAIL=seu@email.com`
+
+### Usuários (auth required, Owner para maioria)
 
 | Método  | Rota            | Descrição        | Auth |
 |---------|-----------------|------------------|------|
-| `GET`   | `/api/usuarios/`| Listar usuários  | ✅   |
+| `GET`   | `/api/usuarios/?classe=...` | Listar usuários (Owner). Query opcional: `?classe=cliente\|administrador` | ✅ Owner |
+| `PATCH` | `/api/usuarios/{uuid}/marcar-remocao` | Marcar para remoção | ✅ Self/Owner |
+| `PATCH` | `/api/usuarios/{uuid}/desmarcar-remocao` | Desmarcar remoção | ✅ Self/Owner |
+| `PUT`   | `/api/usuarios/{uuid}/ativo` | Ativar/desativar | ✅ Owner |
+| `PATCH` | `/api/usuarios/{uuid}/bloqueado` | Toggle bloqueio | ✅ Owner |
 
 ### Lojas Públicas
 
@@ -127,24 +143,24 @@ Todos os endpoints vivem sob `/api`.
 | `POST`  | `/api/admin/lojas/{loja_uuid}/entregadores` | Adicionar entregador | ✅  | Admin  |
 | `POST`  | `/api/admin/lojas/{loja_uuid}/clientes`  | Adicionar cliente    | ✅   | Admin  |
 
-### Produtos (auth required)
+### Produtos (GETs públicos, mutações requerem auth)
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
+| `GET`  | `/api/produtos/listar/{loja_uuid}` | Listar produtos da loja | ❌ |
+| `GET`  | `/api/produtos/categoria/{loja_uuid}/{categoria_uuid}` | Listar produtos por categoria | ❌ |
+| `GET`  | `/api/produtos/{uuid}` | Buscar produto por UUID | ❌ |
 | `POST` | `/api/produtos/`    | Criar produto       | ✅   |
-| `GET`  | `/api/produtos/`    | Listar produtos     | ✅   |
-| `GET`  | `/api/produtos/categoria/{categoria_uuid}` | Listar produtos por categoria | ✅ |
-| `GET`  | `/api/produtos/{uuid}` | Buscar produto por UUID | ✅ |
 | `PUT`  | `/api/produtos/{uuid}` | Atualizar produto | ✅   |
 | `DELETE` | `/api/produtos/{uuid}` | Deletar produto | ✅ |
 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | Atualizar disponibilidade | ✅ |
 | `POST` | `/api/produtos/{uuid}/imagem` | Subir imagem do produto (S3) | ✅ |
 
-### Horários de Funcionamento (auth required)
+### Horários de Funcionamento (GET público, mutações requerem auth)
 
 | Método | Rota | Descrição | Auth |
 |--------|------|-----------|------|
-| `GET` | `/api/horarios/{loja_uuid}` | Listar horários | ✅ |
+| `GET` | `/api/horarios/{loja_uuid}` | Listar horários | ❌ |
 | `POST` | `/api/horarios/{loja_uuid}` | Criar ou atualizar horário | ✅ |
 | `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | Ativar/desativar dia | ✅ |
 | `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | Deletar horário do dia | ✅ |
@@ -188,18 +204,18 @@ Todos os endpoints vivem sob `/api`.
 | `PUT`  | `/api/entregadores/{loja_uuid}/{uuid}`                  | Atualizar entregador     | ✅   |
 | `PUT`  | `/api/entregadores/{loja_uuid}/usuarios/{usuario_uuid}/credenciais` | Trocar email/senha | ✅   |
 
-### Catálogo (auth required)
+### Catálogo (GETs públicos, mutações requerem auth)
 
 | Método | Rota                                     | Descrição              | Auth |
 |--------|------------------------------------------|------------------------|------|
+| `GET`  | `/api/catalogo/{loja_uuid}/adicionais`   | Listar todos adicionais| ❌   |
+| `GET`  | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar disponíveis | ❌ |
+| `GET`  | `/api/catalogo/{loja_uuid}/categorias`   | Listar categorias      | ❌   |
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais`   | Criar adicional        | ✅   |
-| `GET`  | `/api/catalogo/{loja_uuid}/adicionais`   | Listar todos adicionais| ✅   |
-| `GET`  | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | Listar disponíveis | ✅ |
 | `PUT`  | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Atualizar adicional | ✅ |
 | `PUT`  | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | Atualizar disponibilidade | ✅ |
 | `DELETE` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | Deletar adicional | ✅ |
 | `POST` | `/api/catalogo/{loja_uuid}/categorias`   | Criar categoria        | ✅   |
-| `GET`  | `/api/catalogo/{loja_uuid}/categorias`   | Listar categorias      | ✅   |
 | `PUT`  | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Atualizar categoria | ✅ |
 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | Deletar categoria (só se vazia) | ✅ |
 
@@ -207,7 +223,7 @@ Todos os endpoints vivem sob `/api`.
 
 | Método | Rota                | Descrição           | Auth |
 |--------|---------------------|---------------------|------|
-| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) | ✅ |
+| `POST` | `/api/pedidos/criar` | Criar pedido (`loja_uuid` no body) — `contato`, `endereco_entrega` opcionais; auth opcional | — |
 | `GET`  | `/api/pedidos/listar` | Listar todos pedidos | ✅   |
 | `GET`  | `/api/pedidos/meus` | Listar meus pedidos | ✅ |
 | `GET`  | `/api/pedidos/por-loja/{loja_uuid}` | Listar por loja | ✅ |
@@ -425,7 +441,7 @@ Pedido
 
 ```
 criado → aguardando_confirmacao → confirmado → em_preparo
-       → pronto_para_retirada → saiu_para_entrega → entregue
+       → pronto → saiu_para_entrega → entregue
 ```
 
 ---

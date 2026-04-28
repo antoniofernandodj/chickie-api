@@ -1,5 +1,5 @@
 export-docs:
-	cp API.md ../../TS/chickie-ui/api_docs/API.md
+	cp -r API/ ../../TS/chickie-ui/api_docs/API/
 	cp CLAUDE.md ../../TS/chickie-ui/api_docs/CLAUDE.md
 	cp README.md ../../TS/chickie-ui/api_docs/README.md
 
@@ -15,3 +15,10 @@ sync:
 
 test:
 	export DATABASE_URL="postgres://myuser:mypassword@localhost:5432/mydatabase" && clurl tests/00-tests.clurl
+
+surreal:
+	docker compose run --rm surreal sql --namespace chickie --db development
+
+surrealdb:
+	docker compose up -d surreal
+	docker compose logs -f surreal

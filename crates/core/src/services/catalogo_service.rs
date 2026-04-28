@@ -4,13 +4,14 @@ use uuid::Uuid;
 use rust_decimal::Decimal;
 
 use crate::models::{
-    Adicional, CategoriaProdutos, Produto
+    Adicional, CategoriaProdutos, CategoriaProdutosOrdenada, Produto
 };
 
 use crate::ports::{
     ProdutoRepositoryPort,
     CategoriaRepositoryPort,
     AdicionalRepositoryPort,
+    OrdemCategoriaRepositoryPort,
 };
 
 #[derive(Clone)]
@@ -18,6 +19,7 @@ pub struct CatalogoService {
     produto_repo: Arc<dyn ProdutoRepositoryPort>,
     categoria_repo: Arc<dyn CategoriaRepositoryPort>,
     adicional_repo: Arc<dyn AdicionalRepositoryPort>,
+    ordem_categoria_repo: Arc<dyn OrdemCategoriaRepositoryPort>,
 }
 
 impl CatalogoService {
@@ -25,8 +27,9 @@ impl CatalogoService {
         produto_repo: Arc<dyn ProdutoRepositoryPort>,
         categoria_repo: Arc<dyn CategoriaRepositoryPort>,
         adicional_repo: Arc<dyn AdicionalRepositoryPort>,
+        ordem_categoria_repo: Arc<dyn OrdemCategoriaRepositoryPort>,
     ) -> Self {
-        Self { produto_repo, categoria_repo, adicional_repo }
+        Self { produto_repo, categoria_repo, adicional_repo, ordem_categoria_repo }
     }
 
     pub async fn criar_adicional(
@@ -53,17 +56,17 @@ impl CatalogoService {
         &self,
         nome: String,
         descricao: Option<String>,
-        loja_uuid: Uuid,
-        ordem: Option<i32>,
+        loja_uuid: Option<Uuid>,
         pizza_mode: bool,
+        drink_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
 
-        let categoria: CategoriaProdutos = CategoriaProdutos::new(
+        let categoria = CategoriaProdutos::new(
             nome,
             descricao,
             loja_uuid,
-            ordem,
-            pizza_mode
+            pizza_mode,
+            drink_mode
         );
 
         self.categoria_repo.criar(&categoria).await?;
@@ -94,7 +97,7 @@ impl CatalogoService {
 
         Ok(produto)
     }
-    
+
     pub async fn listar_produtos_de_loja(
         &self,
         loja_uuid: Uuid
@@ -111,7 +114,6 @@ impl CatalogoService {
         categoria_uuid: Uuid,
         tempo_preparo_min: Option<i32>,
     ) -> Result<Produto, String> {
-
 
         let produto_antigo_busca =
             self.produto_repo.buscar_por_uuid(produto_uuid)
@@ -209,8 +211,14 @@ impl CatalogoService {
     pub async fn listar_categorias(
         &self,
         loja_uuid: Uuid,
+    ) -> Result<Vec<CategoriaProdutosOrdenada>, String> {
+        self.categoria_repo.listar_por_loja_com_ordem(loja_uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn listar_categorias_globais(
+        &self,
     ) -> Result<Vec<CategoriaProdutos>, String> {
-        self.categoria_repo.listar_por_loja(loja_uuid).await.map_err(|e| e.to_string())
+        self.categoria_repo.listar_globais().await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_categoria(
@@ -219,23 +227,31 @@ impl CatalogoService {
         loja_uuid: Uuid,
         nome: String,
         descricao: Option<String>,
-        ordem: Option<i32>,
         pizza_mode: bool,
+        drink_mode: bool,
     ) -> Result<CategoriaProdutos, String> {
         let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
             .ok_or("Categoria não encontrada")?;
 
-        if categoria.loja_uuid != loja_uuid {
+        if categoria.loja_uuid != Some(loja_uuid) {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 
         categoria.nome = nome;
         categoria.descricao = descricao;
-        categoria.ordem = ordem;
         categoria.pizza_mode = pizza_mode;
+        categoria.drink_mode = drink_mode;
 
         self.categoria_repo.atualizar(categoria.clone()).await?;
         Ok(categoria)
+    }
+
+    pub async fn reordenar_categorias(
+        &self,
+        loja_uuid: Uuid,
+        reordenacoes: Vec<(Uuid, i32)>,
+    ) -> Result<(), String> {
+        self.ordem_categoria_repo.definir_ordens(loja_uuid, reordenacoes).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_categoria(
@@ -246,16 +262,61 @@ impl CatalogoService {
         let categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
             .ok_or("Categoria não encontrada")?;
 
-        if categoria.loja_uuid != loja_uuid {
+        if categoria.loja_uuid != Some(loja_uuid) {
             return Err("Categoria não pertence a esta loja".to_string());
         }
 
-        // Verificar se a categoria está vazia (sem produtos)
-        let produtos = self.produto_repo.listar_por_categoria(uuid).await.map_err(|e| e.to_string())?;
-        if !produtos.is_empty() {
+        let total_produtos = self.categoria_repo.contar_produtos(uuid).await.map_err(|e| e.to_string())?;
+        if total_produtos > 0 {
             return Err(format!(
                 "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
-                produtos.len()
+                total_produtos
+            ));
+        }
+
+        self.categoria_repo.deletar(uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn atualizar_categoria_global(
+        &self,
+        uuid: Uuid,
+        nome: String,
+        descricao: Option<String>,
+        pizza_mode: bool,
+        drink_mode: bool,
+    ) -> Result<CategoriaProdutos, String> {
+        let mut categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid.is_some() {
+            return Err("Categoria não é global".to_string());
+        }
+
+        categoria.nome = nome;
+        categoria.descricao = descricao;
+        categoria.pizza_mode = pizza_mode;
+        categoria.drink_mode = drink_mode;
+
+        self.categoria_repo.atualizar(categoria.clone()).await?;
+        Ok(categoria)
+    }
+
+    pub async fn deletar_categoria_global(
+        &self,
+        uuid: Uuid,
+    ) -> Result<(), String> {
+        let categoria = self.categoria_repo.buscar_por_uuid(uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid.is_some() {
+            return Err("Categoria não é global".to_string());
+        }
+
+        let total_produtos = self.categoria_repo.contar_produtos(uuid).await.map_err(|e| e.to_string())?;
+        if total_produtos > 0 {
+            return Err(format!(
+                "Não é possível deletar categoria com {} produto(s). Remova os produtos primeiro.",
+                total_produtos
             ));
         }
 
@@ -272,9 +333,10 @@ impl CatalogoService {
 
     pub async fn listar_produtos_por_categoria(
         &self,
+        loja_uuid: Uuid,
         categoria_uuid: Uuid,
     ) -> Result<Vec<Produto>, String> {
-        self.produto_repo.listar_por_categoria(categoria_uuid).await.map_err(|e| e.to_string())
+        self.produto_repo.listar_por_categoria(loja_uuid, categoria_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn deletar_produto(

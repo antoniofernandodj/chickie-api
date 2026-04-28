@@ -23,9 +23,10 @@ pub struct CriarPedidoRequest {
     pub taxa_entrega: Decimal,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
+    pub contato: Option<String>,
     pub codigo_cupom: Option<String>,
     pub itens: Vec<ItemPedidoRequest>,
-    pub endereco_entrega: EnderecoEntregaRequest,
+    pub endereco_entrega: Option<EnderecoEntregaRequest>,
 }
 
 #[derive(Deserialize)]
@@ -54,9 +55,22 @@ pub struct EnderecoEntregaRequest {
 
 pub async fn criar_pedido(
     State(state): State<Arc<AppState>>,
-    Extension(usuario): Extension<Usuario>,
+    usuario_ext: Option<Extension<Usuario>>,
     Json(p): Json<CriarPedidoRequest>,
 ) -> Result<impl IntoResponse, AppError> {
+
+    let usuario = usuario_ext.map(|Extension(u)| u);
+
+    let usuario_uuid = usuario.as_ref().map(|u| u.uuid);
+    tracing::info!(
+        target: "pedido",
+        "[HANDLER] criar_pedido — loja={} usuario={:?} itens={} tem_endereco={} tem_cupom={}",
+        p.loja_uuid,
+        usuario_uuid,
+        p.itens.len(),
+        p.endereco_entrega.is_some(),
+        p.codigo_cupom.is_some(),
+    );
 
     let usecase = PedidoUsecase::new(
         state.pedido_service.clone(),
@@ -74,22 +88,33 @@ pub async fn criar_pedido(
         }).collect(),
     }).collect();
 
-    let pedido_uuid = usecase.criar_pedido(
+    let endereco = p.endereco_entrega.map(|e| EnderecoEntregaInput {
+        cep: e.cep,
+        logradouro: e.logradouro,
+        numero: e.numero,
+        complemento: e.complemento,
+        bairro: e.bairro,
+        cidade: e.cidade,
+        estado: e.estado,
+    });
+
+    tracing::info!(target: "pedido", "[HANDLER] chamando usecase.criar_pedido");
+
+    let result = usecase.criar_pedido(
         p.taxa_entrega,
         p.forma_pagamento,
         p.observacoes,
+        p.contato,
         p.codigo_cupom,
         itens,
-        EnderecoEntregaInput {
-            cep: p.endereco_entrega.cep,
-            logradouro: p.endereco_entrega.logradouro,
-            numero: p.endereco_entrega.numero,
-            complemento: p.endereco_entrega.complemento,
-            bairro: p.endereco_entrega.bairro,
-            cidade: p.endereco_entrega.cidade,
-            estado: p.endereco_entrega.estado,
-        },
-    ).await?;
+        endereco,
+    ).await;
 
-    Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido_uuid }))))
+    match &result {
+        Ok(criado) => tracing::info!(target: "pedido", "[HANDLER] pedido criado com sucesso uuid={} codigo={}", criado.uuid, criado.codigo),
+        Err(e) => tracing::error!(target: "pedido", "[HANDLER] erro ao criar pedido: {}", e),
+    }
+
+    let pedido = result?;
+    Ok((StatusCode::CREATED, Json(serde_json::json!({ "uuid": pedido.uuid, "codigo": pedido.codigo }))))
 }

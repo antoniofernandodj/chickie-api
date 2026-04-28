@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use uuid::Uuid;
-use crate::models::Model;
+use crate::models::{Model, EnderecoEntrega};
 use chrono::Utc;
 use sqlx::FromRow;
 use rust_decimal::Decimal;
@@ -85,8 +84,6 @@ pub struct ItemPedido {
     pub observacoes: Option<String>,
     #[serde(default)]
     pub partes: Vec<ParteDeItemPedido>,
-    #[serde(default)]
-    pub adicionais: Vec<AdicionalDeItemDePedido>,
 }
 
 impl ItemPedido {
@@ -104,7 +101,6 @@ impl ItemPedido {
             quantidade,
             observacoes,
             partes,
-            adicionais: Vec::new(),
         }
     }
 }
@@ -112,14 +108,16 @@ impl ItemPedido {
 // --- EstadoDePedido ---
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "snake_case")]
 pub enum EstadoDePedido {
     Criado,
     AguardandoConfirmacaoDeLoja,
     ConfirmadoPelaLoja,
     EmPreparo,
-    ProntoParaRetirada,
+    Pronto,
     SaiuParaEntrega,
     Entregue,
+    Cancelado
 }
 
 impl std::fmt::Display for EstadoDePedido {
@@ -136,9 +134,10 @@ impl EstadoDePedido {
             Self::AguardandoConfirmacaoDeLoja => "aguardando_confirmacao_de_loja",
             Self::ConfirmadoPelaLoja          => "confirmado_pela_loja",
             Self::EmPreparo                   => "em_preparo",
-            Self::ProntoParaRetirada          => "pronto_para_retirada",
+            Self::Pronto                      => "pronto",
             Self::SaiuParaEntrega             => "saiu_para_entrega",
             Self::Entregue                    => "entregue",
+            Self::Cancelado                   => "cancelado"
         }
     }
 
@@ -148,37 +147,46 @@ impl EstadoDePedido {
             "aguardando_confirmacao_de_loja" => Ok(Self::AguardandoConfirmacaoDeLoja),
             "confirmado_pela_loja"           => Ok(Self::ConfirmadoPelaLoja),
             "em_preparo"                     => Ok(Self::EmPreparo),
-            "pronto_para_retirada"           => Ok(Self::ProntoParaRetirada),
+            "pronto"                         => Ok(Self::Pronto),
             "saiu_para_entrega"              => Ok(Self::SaiuParaEntrega),
             "entregue"                       => Ok(Self::Entregue),
+            "cancelado"                      => Ok(Self::Cancelado),
             other => Err(format!("Estado inválido: {}", other)),
         }
     }
 
     /// Retorna o próximo estado válido a partir do estado atual.
     /// Retorna `Err` se o estado já for terminal ou se não houver transição.
-    pub fn avancar(&self) -> Result<Self, String> {
+    pub fn avancar(&self, is_retirada: bool) -> Result<Self, String> {
         match self {
             Self::Criado => Ok(Self::AguardandoConfirmacaoDeLoja),
             Self::AguardandoConfirmacaoDeLoja => Ok(Self::ConfirmadoPelaLoja),
             Self::ConfirmadoPelaLoja => Ok(Self::EmPreparo),
-            Self::EmPreparo => Ok(Self::ProntoParaRetirada),
-            Self::ProntoParaRetirada => Ok(Self::SaiuParaEntrega),
+            Self::EmPreparo => Ok(Self::Pronto),
+            Self::Pronto => {
+                if is_retirada {
+                    Ok(Self::Entregue)
+                } else {
+                    Ok(Self::SaiuParaEntrega)
+                }
+            },
             Self::SaiuParaEntrega => Ok(Self::Entregue),
             Self::Entregue => Err("Pedido já foi entregue — estado terminal".to_string()),
+            Self::Cancelado => Err("Pedido já foi cancelado — estado terminal".to_string()),
         }
     }
 
     /// Transições permitidas para um estado (incluindo avançar e retrocesso controlado)
     pub fn transicoes_permitidas(&self) -> Vec<Self> {
         match self {
-            Self::Criado => vec![Self::AguardandoConfirmacaoDeLoja],
-            Self::AguardandoConfirmacaoDeLoja => vec![Self::ConfirmadoPelaLoja, Self::Criado],
-            Self::ConfirmadoPelaLoja => vec![Self::EmPreparo, Self::AguardandoConfirmacaoDeLoja],
-            Self::EmPreparo => vec![Self::ProntoParaRetirada, Self::ConfirmadoPelaLoja],
-            Self::ProntoParaRetirada => vec![Self::SaiuParaEntrega, Self::EmPreparo],
-            Self::SaiuParaEntrega => vec![Self::Entregue, Self::ProntoParaRetirada],
-            Self::Entregue => vec![],
+            Self::Criado                        => vec![Self::Cancelado, Self::AguardandoConfirmacaoDeLoja],
+            Self::AguardandoConfirmacaoDeLoja   => vec![Self::Cancelado, Self::ConfirmadoPelaLoja],
+            Self::ConfirmadoPelaLoja            => vec![Self::Cancelado, Self::EmPreparo],
+            Self::EmPreparo                     => vec![Self::Cancelado, Self::Pronto],
+            Self::Pronto                        => vec![Self::Cancelado, Self::SaiuParaEntrega, Self::Entregue],
+            Self::SaiuParaEntrega               => vec![Self::Cancelado, Self::Entregue],
+            Self::Entregue                      => vec![],
+            Self::Cancelado                     => vec![]
         }
     }
 
@@ -227,7 +235,8 @@ impl<'q> sqlx::Encode<'q, sqlx::Postgres> for EstadoDePedido {
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct Pedido {
     pub uuid: Uuid,
-    pub usuario_uuid: Uuid,
+    pub codigo: String,
+    pub usuario_uuid: Option<Uuid>,
     pub loja_uuid: Uuid,
     pub entregador_uuid: Option<Uuid>,
     pub status: EstadoDePedido,
@@ -237,35 +246,38 @@ pub struct Pedido {
     pub desconto: Option<Decimal>,
     pub forma_pagamento: String,
     pub observacoes: Option<String>,
+    pub contato: Option<String>,
+    pub pago: bool,
     pub tempo_estimado_min: Option<i32>,
     pub criado_em: chrono::DateTime<chrono::Utc>,
     pub atualizado_em: chrono::DateTime<chrono::Utc>,
-    /// Campo JSONB que armazena itens/partes/adicionais (NÃO mapeado pelo sqlx - campo computado)
-    #[sqlx(skip)]
-    #[serde(default)]
-    pub itens_json: Vec<JsonValue>,
-    /// Itens parseados (não mapeado pelo sqlx)
+    /// Coluna JSONB do banco — mapeada pelo sqlx, parseada para `itens`
+    #[sqlx(rename = "itens")]
+    #[serde(skip)]
+    pub itens_json: serde_json::Value,
+    /// Itens parseados a partir de `itens_json` (não mapeado pelo sqlx)
     #[sqlx(skip)]
     #[serde(default)]
     pub itens: Vec<ItemPedido>,
-    /// Legacy: partes agora estão dentro de cada item
+    /// Endereço de entrega — hidratado após a query, não mapeado pelo sqlx
     #[sqlx(skip)]
-    #[serde(skip_serializing, skip_deserializing)]
-    pub partes: Vec<ParteDeItemPedido>
+    pub endereco_entrega: Option<EnderecoEntrega>,
 }
 
 #[allow(dead_code)]
 impl Pedido {
     pub fn new(
-        usuario_uuid: Uuid,
+        usuario_uuid: Option<Uuid>,
         loja_uuid: Uuid,
         subtotal: Decimal,
         taxa_entrega: Decimal,
         forma_pagamento: String,
         observacoes: Option<String>,
+        contato: Option<String>,
     ) -> Self {
         Self {
             uuid: Uuid::new_v4(),
+            codigo: String::new(),
             usuario_uuid,
             loja_uuid,
             entregador_uuid: None,
@@ -276,12 +288,14 @@ impl Pedido {
             desconto: None,
             forma_pagamento,
             observacoes,
+            contato,
+            pago: false,
             tempo_estimado_min: None,
             criado_em: Utc::now(),
             atualizado_em: Utc::now(),
-            itens_json: vec![],
+            itens_json: serde_json::Value::Array(vec![]),
             itens: Vec::new(),
-            partes: Vec::new()
+            endereco_entrega: None,
         }
     }
 

@@ -1,5 +1,6 @@
 pub mod catalogo;
 pub mod pedido;
+pub mod pagamento;
 pub mod marketing;
 pub mod endereco_entrega;
 pub mod loja_favorita;
@@ -25,3 +26,4 @@ pub use pedido::{
 pub use admin::AdminUsecase;
 pub use loja::LojaUsecase;
 pub use upload_imagem::UploadImagemUsecase;
+pub use pagamento::{PagamentoUsecase, PagadorInput, PagamentoOutput};

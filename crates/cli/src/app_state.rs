@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chickie_core::{
+    ports::{EmailServicePort, PreCadastroPort},
     repositories::*,
     services::*,
 };
@@ -43,6 +44,7 @@ impl AppState {
         let avaliacoes_de_loja_repo = Arc::new(AvaliacaoDeLojaRepository::new(pool.clone()));
         let funcionario_repo = Arc::new(FuncionarioRepository::new(pool.clone()));
         let categorias_de_produtos_repo = Arc::new(CategoriaProdutosRepository::new(pool.clone()));
+        let categoria_ordem_repo = Arc::new(CategoriaOrdemRepository::new(pool.clone()));
         let entregador_repo = Arc::new(EntregadorRepository::new(pool.clone()));
         let promocao_repo = Arc::new(PromocaoRepository::new(pool.clone()));
         let horario_repo = Arc::new(HorarioFuncionamentoRepository::new(pool.clone()));
@@ -53,10 +55,16 @@ impl AppState {
         let endereco_loja_repo = Arc::new(EnderecoLojaRepository::new(pool.clone()));
         let favorito_repo = Arc::new(LojaFavoritaRepository::new(pool.clone()));
         let ingrediente_repo = Arc::new(IngredienteRepository::new(pool.clone()));
+        let pre_cadastro_repo = Arc::new(PreCadastroRepository::new(pool.clone()));
+        let email_service = Arc::new(EmailService::new());
 
         Self {
             pool,
-            usuario_service: Arc::new(UsuarioService::new(usuario_repo.clone())),
+            usuario_service: Arc::new(UsuarioService::new(
+                usuario_repo.clone(),
+                Arc::clone(&pre_cadastro_repo) as Arc<dyn PreCadastroPort>,
+                Arc::clone(&email_service) as Arc<dyn EmailServicePort>,
+            )),
             loja_service: Arc::new(LojaService::new(
                 loja_repo,
                 config_partes_repo.clone(),
@@ -70,6 +78,7 @@ impl AppState {
                 produto_repo,
                 categorias_de_produtos_repo,
                 adicional_repo,
+                categoria_ordem_repo,
             )),
             pedido_service: Arc::new(PedidoService::new(
                 pedido_repo.clone(),

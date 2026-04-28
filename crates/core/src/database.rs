@@ -54,6 +54,50 @@ pub async fn aplicar_migrations(pool: &PgPool) -> Result<(), String> {
     run_migrations(pool).await?;
     tracing::info!("✅ Migrações aplicadas com sucesso");
 
+    tracing::info!("🌱 Semeando categorias globais...");
+    seed_categorias_globais(pool).await?;
+
+    Ok(())
+}
+
+/// Seeds global categories (loja_uuid IS NULL) if they don't exist
+async fn seed_categorias_globais(pool: &PgPool) -> Result<(), String> {
+    let categorias = vec![
+        ("Pizzas", "Pizzas de diversos sabores e tamanhos", true, false),
+        ("Hambúrgueres", "Hambúrgueres artesanais e clássicos", false, false),
+        ("Bebidas", "Refrigerantes, sucos, cervejas e águas", false, true),
+        ("Sobremesas", "Doces, bolos e sobremesas variadas", false, false),
+        ("Porções", "Batata frita, calabresa, frango a passarinho e mais", false, false),
+        ("Massas", "Macarrão, lasanha e outras massas italianas", false, false),
+        ("Saladas", "Saladas frescas e acompanhamentos saudáveis", false, false),
+        ("Açaí", "Açaí na tigela com diversos complementos", false, false),
+        ("Pastéis", "Pastéis fritos na hora com recheios variados", false, false),
+        ("Quentinhas", "Refeições completas e caseiras para o seu dia a dia", false, false),
+        ("Quentinhas Fitness", "Refeições balanceadas e saudáveis para manter o foco", false, false),
+    ];
+
+    for (nome, descricao, pizza_mode, drink_mode) in categorias {
+        let exists: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM categorias_produtos WHERE loja_uuid IS NULL AND nome = $1)")
+            .bind(nome)
+            .fetch_one(pool)
+            .await
+            .map_err(|e| format!("Falha ao verificar categoria {}: {}", nome, e))?;
+
+        if !exists {
+            sqlx::query("INSERT INTO categorias_produtos (nome, descricao, pizza_mode, drink_mode, loja_uuid) VALUES ($1, $2, $3, $4, NULL)")
+                .bind(nome)
+                .bind(descricao)
+                .bind(pizza_mode)
+                .bind(drink_mode)
+                .execute(pool)
+                .await
+                .map_err(|e| format!("Falha ao semear categoria {}: {}", nome, e))?;
+            tracing::info!("   ✅ Categoria global criada: {}", nome);
+        } else {
+            tracing::debug!("   ⏭️  Categoria global já existe: {}", nome);
+        }
+    }
+
     Ok(())
 }
 
