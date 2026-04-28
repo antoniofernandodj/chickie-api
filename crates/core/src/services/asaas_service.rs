@@ -98,7 +98,7 @@ impl AsaasService {
         let url = format!("{}/customers?cpfCnpj={}", self.base_url, cpf);
         let resp = self.client
             .get(&url)
-            .header("asaas-access-token", &self.api_key)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .send()
             .await
@@ -125,7 +125,7 @@ impl AsaasService {
 
         let resp = self.client
             .post(&url)
-            .header("asaas-access-token", &self.api_key)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
@@ -175,7 +175,7 @@ impl AsaasService {
 
         let resp = self.client
             .post(&url)
-            .header("asaas-access-token", &self.api_key)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
@@ -200,7 +200,7 @@ impl AsaasService {
         let qr_url = format!("{}/payments/{}/pixQrCode", self.base_url, cobranca.id);
         let qr_resp = self.client
             .get(&qr_url)
-            .header("asaas-access-token", &self.api_key)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .send()
             .await
