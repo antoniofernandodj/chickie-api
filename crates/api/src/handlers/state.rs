@@ -6,6 +6,8 @@ use sqlx::PgPool;
 
 use chickie_core::{
     ports::{
+        PreCadastroPort,
+        EmailServicePort,
         UsuarioRepositoryPort,
         LojaRepositoryPort,
         ProdutoRepositoryPort,
@@ -29,6 +31,7 @@ use chickie_core::{
         ClienteRepositoryPort,
     },
     repositories::{
+        PreCadastroRepository,
         AdicionalRepository,
         AvaliacaoDeLojaRepository,
         AvaliacaoDeProdutoRepository,
@@ -53,6 +56,7 @@ use chickie_core::{
     },
     services::{
         AsaasService,
+        EmailService,
         CatalogoService,
         ConfiguracaoPedidosLojaService,
         EnderecoEntregaService,
@@ -148,9 +152,14 @@ impl AppState {
             Arc::new(LojaFavoritaRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
+        let pre_cadastro_repo = Arc::new(PreCadastroRepository::new(pool.clone()));
+        let email_service = Arc::new(EmailService::new());
+
         let usuario_service = Arc::new(
             UsuarioService::new(
-                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>,
+                Arc::clone(&pre_cadastro_repo) as Arc<dyn PreCadastroPort>,
+                Arc::clone(&email_service) as Arc<dyn EmailServicePort>,
             )
         );
 

@@ -205,7 +205,8 @@ Cada repositório implementa também:
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `POST` | `/api/auth/signup` | Cadastro de usuário |
+| `POST` | `/api/auth/signup` | Inicia cadastro — salva pré-cadastro em cache e envia email de verificação (TTL 1h) |
+| `GET` | `/api/auth/confirmar-email?token=` | Confirma cadastro via token do email — cria usuário e retorna JWT |
 | `POST` | `/api/auth/login` | Login (gera JWT) |
 
 > **Nota:** `celular` é UNIQUE e filtrado no signup — apenas dígitos. Ex: `"(11) 99999-9999"` → `"11999999999"`.
@@ -410,6 +411,9 @@ Injetado via `State(state): State<Arc<AppState>>`.
 | `RUST_LOG`    | `info`  | Nível de log (`debug` em desenvolvimento)       |
 | `JWT_SECRET`  | `secret`| Chave de assinatura JWT (fallback)              |
 | `MODE`        | —       | Se `development`, dropa o banco e reaplica migrações no startup |
+| `MAILERSEND_API_TOKEN` | — | Token da API MailerSend (obrigatório para envio de emails) |
+| `EMAIL_FROM`  | —       | Endereço de origem dos emails (ex: `info@seudominio.com`) |
+| `APP_BASE_URL`| `http://localhost:3000` | URL base usada nos links de verificação de email |
 
 ---
 
@@ -612,6 +616,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-28  | **Verificação de email no cadastro**: Signup agora é assíncrono — armazena pré-cadastro (JSONB + TTL 1h) na tabela `pre_cadastro` e envia email via MailerSend com template HTML (Tera). Novo endpoint `GET /api/auth/confirmar-email?token=...` valida token, cria usuário e retorna JWT. Ports: `PreCadastroPort`, `EmailServicePort`. Services: `PreCadastroRepository`, `EmailService`. `UsuarioService` ganhou `iniciar_cadastro` e `confirmar_cadastro`. Migration `0012`. Vars env: `MAILERSEND_API_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. |
 | 2026-04-26  | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos**: campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (com `#[sqlx(skip)]`). Port `EnderecoEntregaRepositoryPort` ganhou `buscar_por_pedidos(&[Uuid]) -> HashMap<Uuid, EnderecoEntrega>` para batch hydration sem N+1. Service `PedidoService` ganhou `hidratar_com_endereco` e atualiza `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix em `listar_pedidos` handler (extraia `Path(loja_uuid)` em rota sem parâmetro). |
 | 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model `Pedido`, repository (INSERT + UPDATE), usecase (`criar_pedido`), handler (`CriarPedidoRequest`). Migration `0006` absorveu as mudanças de `usuario_uuid` nullable e o novo campo (migration `0010` removida). |
 | 2026-04-21  | **Ordem de categorias desacoplada**: campo `ordem` removido de `categorias_produtos`. Nova tabela `ordem_categorias_de_produtos (loja_uuid, categoria_uuid, ordem)` permite que cada loja defina sua própria ordem para qualquer categoria (própria ou global). Migration `0012` criada. Stack completa atualizada: model (`CategoriaProdutosOrdenada`, `OrdemCategoriaProdutos`), port (`OrdemCategoriaRepositoryPort`), repository (`CategoriaOrdemRepository`), service (`reordenar_categorias` → novo repo), handlers (`listar_categorias` retorna `CategoriaProdutosOrdenada`), CLI (args sem `ordem`), seed (INSERT sem `ordem`). |

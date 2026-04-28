@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chickie_core::{
+    ports::{EmailServicePort, PreCadastroPort},
     repositories::*,
     services::*,
 };
@@ -54,10 +55,16 @@ impl AppState {
         let endereco_loja_repo = Arc::new(EnderecoLojaRepository::new(pool.clone()));
         let favorito_repo = Arc::new(LojaFavoritaRepository::new(pool.clone()));
         let ingrediente_repo = Arc::new(IngredienteRepository::new(pool.clone()));
+        let pre_cadastro_repo = Arc::new(PreCadastroRepository::new(pool.clone()));
+        let email_service = Arc::new(EmailService::new());
 
         Self {
             pool,
-            usuario_service: Arc::new(UsuarioService::new(usuario_repo.clone())),
+            usuario_service: Arc::new(UsuarioService::new(
+                usuario_repo.clone(),
+                Arc::clone(&pre_cadastro_repo) as Arc<dyn PreCadastroPort>,
+                Arc::clone(&email_service) as Arc<dyn EmailServicePort>,
+            )),
             loja_service: Arc::new(LojaService::new(
                 loja_repo,
                 config_partes_repo.clone(),

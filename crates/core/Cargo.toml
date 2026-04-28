@@ -21,3 +21,4 @@ utoipa.workspace = true
 rand.workspace = true
 dotenvy.workspace = true
 reqwest.workspace = true
+tera.workspace = true

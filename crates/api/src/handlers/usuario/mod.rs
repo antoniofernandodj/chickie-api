@@ -1,4 +1,5 @@
 mod criar_usuario;
+mod confirmar_cadastro;
 mod listar_usuarios;
 mod login;
 mod me;
@@ -8,6 +9,7 @@ mod verificar_celular;
 mod soft_delete;
 
 pub use criar_usuario::criar_usuario;
+pub use confirmar_cadastro::confirmar_cadastro;
 pub use listar_usuarios::listar_usuarios;
 pub use login::login;
 pub use me::me;

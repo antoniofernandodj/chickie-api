@@ -4,7 +4,7 @@ use argon2::{
     Argon2,
 };
 use crate::models::{Usuario, ClasseUsuario};
-use crate::ports::UsuarioRepositoryPort;
+use crate::ports::{EmailServicePort, PreCadastroPort, UsuarioRepositoryPort};
 
 fn validar_cpf(cpf: &str) -> bool {
     // Deve ter exatamente 11 dígitos numéricos
@@ -33,11 +33,19 @@ fn validar_cpf(cpf: &str) -> bool {
 
 pub struct UsuarioService {
     repo: Arc<dyn UsuarioRepositoryPort>,
+    pre_cadastro: Arc<dyn PreCadastroPort>,
+    email: Arc<dyn EmailServicePort>,
 }
 
 #[allow(dead_code)]
 impl UsuarioService {
-    pub fn new(repo: Arc<dyn UsuarioRepositoryPort>) -> Self { Self { repo } }
+    pub fn new(
+        repo: Arc<dyn UsuarioRepositoryPort>,
+        pre_cadastro: Arc<dyn PreCadastroPort>,
+        email: Arc<dyn EmailServicePort>,
+    ) -> Self {
+        Self { repo, pre_cadastro, email }
+    }
     pub async fn registrar(
         &self,
         nome: String,
@@ -226,5 +234,107 @@ impl UsuarioService {
     pub async fn deletar_pendentes_antigos(&self) -> Result<u64, String> {
         let thirty_days_ago = chrono::Utc::now() - chrono::Duration::days(30);
         self.repo.deletar_pendentes_antigos(thirty_days_ago).await.map_err(|e| e.to_string())
+    }
+
+    // ===========================================================================
+    // Fluxo de verificação de email no cadastro
+    // ===========================================================================
+
+    /// Valida os dados do usuário, armazena um pré-cadastro em cache e envia o email
+    /// de verificação. O usuário só é criado em banco após confirmar o link.
+    pub async fn iniciar_cadastro(
+        &self,
+        nome: String,
+        username: String,
+        senha: String,
+        email: String,
+        celular: String,
+        cpf: String,
+        auth_method: String,
+        classe: Option<String>,
+    ) -> Result<(), String> {
+        if !validar_cpf(&cpf) {
+            return Err("CPF inválido. Informe os 11 dígitos sem pontuação ou verifique os dígitos verificadores.".into());
+        }
+
+        if self.repo.buscar_por_email(&email).await.map_err(|e| e.to_string())?.is_some() {
+            return Err("Email já cadastrado.".into());
+        }
+        if self.repo.buscar_por_username(&username).await.map_err(|e| e.to_string())?.is_some() {
+            return Err("Username já cadastrado.".into());
+        }
+        if self.repo.buscar_por_celular(&celular).await.map_err(|e| e.to_string())?.is_some() {
+            return Err("Celular já cadastrado.".into());
+        }
+
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let senha_hash = Argon2::default()
+            .hash_password(senha.as_bytes(), &salt)
+            .map_err(|e| format!("Erro ao criptografar senha: {}", e))?
+            .to_string();
+
+        let classe_str = classe.as_deref().unwrap_or("cliente");
+        ClasseUsuario::from_str(classe_str)
+            .map_err(|e| format!("Classe de usuário inválida: {}", e))?;
+
+        let token = uuid::Uuid::new_v4().to_string().replace('-', "");
+
+        let dados = serde_json::json!({
+            "nome": nome,
+            "username": username,
+            "senha_hash": senha_hash,
+            "email": email,
+            "celular": celular,
+            "cpf": cpf,
+            "auth_method": auth_method,
+            "classe": classe_str,
+        });
+
+        let expira_em = chrono::Utc::now() + chrono::Duration::hours(1);
+
+        self.pre_cadastro
+            .salvar(&token, dados, expira_em)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        self.email
+            .enviar_verificacao_cadastro(&email, &nome, &token)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    /// Valida o token de verificação, cria o usuário em banco e remove o pré-cadastro do cache.
+    pub async fn confirmar_cadastro(&self, token: &str) -> Result<Usuario, String> {
+        let dados = self.pre_cadastro
+            .buscar(token)
+            .await
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Token inválido ou expirado. Faça o cadastro novamente.".to_string())?;
+
+        let get_str = |key: &str| -> String {
+            dados[key].as_str().unwrap_or_default().to_string()
+        };
+
+        let classe = ClasseUsuario::from_str(&get_str("classe"))
+            .map_err(|e| format!("Classe inválida no pré-cadastro: {}", e))?;
+
+        let usuario = Usuario::new(
+            get_str("nome"),
+            get_str("username"),
+            get_str("email"),
+            get_str("senha_hash"),
+            get_str("celular"),
+            get_str("cpf"),
+            get_str("auth_method"),
+            classe,
+        );
+
+        self.repo.criar(&usuario).await.map_err(|e| e.to_string())?;
+        self.pre_cadastro.remover(token).await.map_err(|e| e.to_string())?;
+
+        tracing::info!("Cadastro confirmado: {} ({})", usuario.nome, usuario.email);
+        Ok(usuario)
     }
 }

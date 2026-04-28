@@ -76,6 +76,7 @@ pub use pedido::{
 
 pub use usuario::{
     criar_usuario,
+    confirmar_cadastro,
     listar_usuarios, // buscar_usuario
     me,
     verificar_email,

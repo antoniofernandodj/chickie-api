@@ -1,5 +1,7 @@
 pub mod repository;
 pub mod storage;
+pub mod pre_cadastro_port;
+pub mod email_port;
 pub mod usuario_port;
 pub mod loja_port;
 pub mod pedido_port;
@@ -25,6 +27,8 @@ pub mod loja_favorita_port;
 // Re-export all traits and types
 pub use repository::{RepositoryPort, Entity};
 pub use storage::ImageStoragePort;
+pub use pre_cadastro_port::PreCadastroPort;
+pub use email_port::EmailServicePort;
 pub use usuario_port::UsuarioRepositoryPort;
 pub use loja_port::LojaRepositoryPort;
 pub use pedido_port::{PedidoRepositoryPort, PedidoComEntrega, PedidoComEntregador, PedidoCriado};

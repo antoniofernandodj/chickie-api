@@ -106,6 +106,7 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 |---|--------|------|------|-------|
 | 1 | `GET` | `/` | — | — |
 | 2 | `POST` | `/api/auth/signup` | — | — |
+| 2.1 | `GET` | `/api/auth/confirmar-email?token=` | — | — |
 | 3 | `POST` | `/api/auth/login` | — | — |
 | 3.1 | `GET` | `/api/auth/me` | 🔒 | — |
 | 3.2 | `POST` | `/api/auth/verificar-celular` | — | — |
