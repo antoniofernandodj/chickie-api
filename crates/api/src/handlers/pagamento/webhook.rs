@@ -1,4 +1,4 @@
-use axum::{extract::State, response::IntoResponse, http::StatusCode};
+use axum::{extract::State, response::IntoResponse, http::{StatusCode, HeaderMap}};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -29,9 +29,30 @@ pub struct WebhookPayment {
 
 pub async fn webhook_asaas(
     State(state): State<Arc<AppState>>,
+    headers: HeaderMap,
     raw: String,
 ) -> impl IntoResponse {
-    tracing::info!(payload = %raw, "webhook_asaas: body bruto recebido");
+    // Logar todos os headers recebidos para diagnóstico
+    for (name, value) in headers.iter() {
+        tracing::debug!(
+            header_name = %name,
+            header_value = %value.to_str().unwrap_or("<não-utf8>"),
+            "webhook_asaas: header recebido"
+        );
+    }
+
+    let access_token = headers
+        .get("asaas-access-token")
+        .and_then(|v| v.to_str().ok());
+
+    tracing::info!(
+        tem_access_token = access_token.is_some(),
+        "webhook_asaas: body bruto recebido"
+    );
+
+    let token_valido = access_token
+        .map(|t| state.asaas_service.verificar_webhook_token(t))
+        .unwrap_or(false);
 
     let body: WebhookPayload = match serde_json::from_str(&raw) {
         Ok(v) => v,
@@ -42,19 +63,25 @@ pub async fn webhook_asaas(
     };
 
     let account_id = body.account.as_ref().and_then(|a| a.id.as_deref()).unwrap_or("desconhecido");
-    tracing::info!(event = %body.event, account_id = %account_id, "webhook_asaas: requisição recebida");
 
-    let account_valida = state.asaas_service.verificar_account_id(account_id);
-    if !account_valida {
+    tracing::info!(
+        event = %body.event,
+        account_id = %account_id,
+        token_valido = token_valido,
+        "webhook_asaas: requisição recebida"
+    );
+
+    if !token_valido {
         tracing::warn!(
             event = %body.event,
             account_id = %account_id,
-            "webhook_asaas: account.id não reconhecido — requisição rejeitada"
+            tem_access_token = access_token.is_some(),
+            "webhook_asaas: header asaas-access-token inválido ou ausente — rejeitando"
         );
         return StatusCode::UNAUTHORIZED;
     }
 
-    tracing::debug!(event = %body.event, account_id = %account_id, "webhook_asaas: account válida");
+    tracing::debug!(event = %body.event, "webhook_asaas: token válido — processando evento");
 
     let confirmar = matches!(
         body.event.as_str(),
@@ -71,7 +98,7 @@ pub async fn webhook_asaas(
         .and_then(|p| p.external_reference)
         .unwrap_or_default();
 
-    tracing::info!(event = %body.event, external_reference = %pedido_uuid_str, "webhook_asaas: evento de pagamento recebido");
+    tracing::info!(event = %body.event, external_reference = %pedido_uuid_str, "webhook_asaas: processando confirmação de pagamento");
 
     let pedido_uuid = match Uuid::parse_str(&pedido_uuid_str) {
         Ok(id) => id,

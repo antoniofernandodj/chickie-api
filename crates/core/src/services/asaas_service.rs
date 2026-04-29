@@ -99,9 +99,9 @@ impl AsaasService {
         Self { client, auth_token, api_key, base_url, account_id }
     }
 
-    /// Verifica se o account.id do webhook corresponde ao ID da conta Asaas configurada.
-    pub fn verificar_account_id(&self, id: &str) -> bool {
-        self.account_id == id
+    /// Verifica se o header asaas-access-token corresponde ao token configurado.
+    pub fn verificar_webhook_token(&self, token: &str) -> bool {
+        self.auth_token == token
     }
 
     /// Busca customer no Asaas pelo CPF; cria um novo se não existir.
