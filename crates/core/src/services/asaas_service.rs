@@ -7,6 +7,7 @@ use chrono::{Duration, Utc};
 #[derive(Clone)]
 pub struct AsaasService {
     client: Client,
+    auth_token: String,
     api_key: String,
     base_url: String,
 }
@@ -76,15 +77,19 @@ pub struct PagamentoCriado {
 
 impl AsaasService {
     pub fn new() -> Self {
-        let api_key = std::env::var("TOKEN_DE_AUTENTICACAO_ASAAS")
+        let auth_token = std::env::var("TOKEN_DE_AUTENTICACAO_ASAAS")
             .expect("Variável de ambiente TOKEN_DE_AUTENTICACAO_ASAAS não definida");
+
+        let api_key = std::env::var("ASAAS_API_KEY")
+            .expect("Variável de ambiente ASAAS_API_KEY não definida");
+
         let base_url = std::env::var("ASAAS_BASE_URL")
             .unwrap_or_else(|_| "https://api-sandbox.asaas.com/v3".to_string());
         let client = Client::builder()
             .user_agent("chickie-api/1.0")
             .build()
             .expect("Falha ao criar cliente HTTP");
-        Self { client, api_key, base_url }
+        Self { client, auth_token, api_key, base_url }
     }
 
     /// Busca customer no Asaas pelo CPF; cria um novo se não existir.
@@ -98,7 +103,7 @@ impl AsaasService {
         let url = format!("{}/customers?cpfCnpj={}", self.base_url, cpf);
         let resp = self.client
             .get(&url)
-            .header("access_token", &self.api_key)
+            .header("access_token", &self.auth_token)
             .header("accept", "application/json")
             .send()
             .await
@@ -125,7 +130,7 @@ impl AsaasService {
 
         let resp = self.client
             .post(&url)
-            .header("access_token", &self.api_key)
+            .header("access_token", &self.auth_token)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
@@ -175,7 +180,7 @@ impl AsaasService {
 
         let resp = self.client
             .post(&url)
-            .header("access_token", &self.api_key)
+            .header("access_token", &self.auth_token)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
@@ -200,7 +205,7 @@ impl AsaasService {
         let qr_url = format!("{}/payments/{}/pixQrCode", self.base_url, cobranca.id);
         let qr_resp = self.client
             .get(&qr_url)
-            .header("access_token", &self.api_key)
+            .header("access_token", &self.auth_token)
             .header("accept", "application/json")
             .send()
             .await
