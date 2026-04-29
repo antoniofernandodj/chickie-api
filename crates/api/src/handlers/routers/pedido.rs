@@ -13,7 +13,7 @@ use crate::handlers::{
     ws_listar_por_loja,
     ws_buscar_por_codigo,
     buscar_pedido,
-    // buscar_pedido_por_codigo,
+    buscar_pedido_por_codigo,
     buscar_pedido_com_entrega,
     atualizar_status,
     avancar_status,
@@ -28,7 +28,7 @@ pub fn pedido_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     // Rota sem auth obrigatória (usuário pode ser anônimo)
     let public_routes = Router::new()
         .route("/criar", post(criar_pedido))
-        // .route("/codigo/{codigo}", get(buscar_pedido_por_codigo))
+        .route("/codigo/{codigo}", get(buscar_pedido_por_codigo))
         .layer(from_fn_with_state(s.clone(), optional_auth_middleware));
 
     // Rotas que exigem autenticação via header Authorization
