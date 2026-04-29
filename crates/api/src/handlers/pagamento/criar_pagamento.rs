@@ -29,15 +29,33 @@ pub async fn criar_pagamento(
 ) -> Result<impl IntoResponse, AppError> {
     let usuario = usuario_ext.map(|Extension(u)| u);
 
-    // Validar dados do pagador anônimo antes de instanciar o usecase
+    tracing::info!(
+        pedido_uuid = %pedido_uuid,
+        autenticado = usuario.is_some(),
+        usuario_uuid = usuario.as_ref().map(|u| u.uuid.to_string()).as_deref().unwrap_or("anonimo"),
+        "criar_pagamento: requisição recebida"
+    );
+
     let pagador = if usuario.is_none() {
+        tracing::debug!(pedido_uuid = %pedido_uuid, "criar_pagamento: fluxo anonimo — validando campos de pagador");
+
         let p = body.pagador.ok_or_else(|| {
+            tracing::warn!(pedido_uuid = %pedido_uuid, "criar_pagamento: campo 'pagador' ausente para usuario anonimo");
             AppError::BadRequest("Usuário não autenticado — forneça 'pagador' com nome e CPF".to_string())
         })?;
-        let nome = p.nome.ok_or_else(|| AppError::BadRequest("Campo 'pagador.nome' é obrigatório".to_string()))?;
-        let cpf = p.cpf.ok_or_else(|| AppError::BadRequest("Campo 'pagador.cpf' é obrigatório".to_string()))?;
+        let nome = p.nome.ok_or_else(|| {
+            tracing::warn!(pedido_uuid = %pedido_uuid, "criar_pagamento: campo 'pagador.nome' ausente");
+            AppError::BadRequest("Campo 'pagador.nome' é obrigatório".to_string())
+        })?;
+        let cpf = p.cpf.ok_or_else(|| {
+            tracing::warn!(pedido_uuid = %pedido_uuid, "criar_pagamento: campo 'pagador.cpf' ausente");
+            AppError::BadRequest("Campo 'pagador.cpf' é obrigatório".to_string())
+        })?;
+
+        tracing::debug!(pedido_uuid = %pedido_uuid, nome = %nome, "criar_pagamento: pagador anonimo validado");
         Some(PagadorInput { nome, cpf })
     } else {
+        tracing::debug!(pedido_uuid = %pedido_uuid, "criar_pagamento: fluxo autenticado — pagador resolvido via usuario");
         None
     };
 
@@ -47,10 +65,22 @@ pub async fn criar_pagamento(
         Arc::clone(&state.usuario_repo) as Arc<dyn UsuarioRepositoryPort>,
     );
 
+    tracing::debug!(pedido_uuid = %pedido_uuid, "criar_pagamento: chamando usecase");
+
     let output = usecase
         .criar_pagamento_pix(pedido_uuid, usuario.as_ref(), pagador)
         .await
-        .map_err(AppError::BadRequest)?;
+        .map_err(|e| {
+            tracing::error!(pedido_uuid = %pedido_uuid, erro = %e, "criar_pagamento: usecase retornou erro");
+            AppError::BadRequest(e)
+        })?;
+
+    tracing::info!(
+        pedido_uuid = %pedido_uuid,
+        payment_id = %output.payment_id,
+        vencimento = %output.vencimento,
+        "criar_pagamento: pagamento PIX criado com sucesso"
+    );
 
     Ok(Json(output))
 }

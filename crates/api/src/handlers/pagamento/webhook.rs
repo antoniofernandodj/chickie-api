@@ -13,6 +13,8 @@ use crate::handlers::AppState;
 pub struct WebhookPayload {
     pub event: String,
     pub payment: Option<WebhookPayment>,
+    #[serde(rename = "authToken")]
+    pub auth_token: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -25,12 +27,32 @@ pub async fn webhook_asaas(
     State(state): State<Arc<AppState>>,
     Json(body): Json<WebhookPayload>,
 ) -> impl IntoResponse {
+    tracing::info!(event = %body.event, tem_auth_token = body.auth_token.is_some(), "webhook_asaas: requisição recebida");
+
+    let token_valido = body
+        .auth_token
+        .as_deref()
+        .map(|t| state.asaas_service.verificar_webhook_token(t))
+        .unwrap_or(false);
+
+    if !token_valido {
+        tracing::warn!(
+            event = %body.event,
+            auth_token_presente = body.auth_token.is_some(),
+            "webhook_asaas: authToken inválido ou ausente — requisição rejeitada"
+        );
+        return StatusCode::UNAUTHORIZED;
+    }
+
+    tracing::debug!(event = %body.event, "webhook_asaas: authToken válido");
+
     let confirmar = matches!(
         body.event.as_str(),
         "PAYMENT_CONFIRMED" | "PAYMENT_RECEIVED"
     );
 
     if !confirmar {
+        tracing::info!(event = %body.event, "webhook_asaas: evento ignorado — não é confirmação de pagamento");
         return StatusCode::OK;
     }
 
@@ -39,13 +61,21 @@ pub async fn webhook_asaas(
         .and_then(|p| p.external_reference)
         .unwrap_or_default();
 
+    tracing::info!(event = %body.event, external_reference = %pedido_uuid_str, "webhook_asaas: evento de pagamento recebido");
+
     let pedido_uuid = match Uuid::parse_str(&pedido_uuid_str) {
         Ok(id) => id,
-        Err(_) => {
-            tracing::warn!("webhook_asaas: externalReference inválido '{}'", pedido_uuid_str);
+        Err(e) => {
+            tracing::warn!(
+                external_reference = %pedido_uuid_str,
+                erro = %e,
+                "webhook_asaas: externalReference inválido — não é um UUID válido"
+            );
             return StatusCode::OK;
         }
     };
+
+    tracing::debug!(pedido_uuid = %pedido_uuid, "webhook_asaas: chamando usecase confirmar_pagamento");
 
     let usecase = PagamentoUsecase::new(
         Arc::clone(&state.asaas_service),
@@ -54,9 +84,9 @@ pub async fn webhook_asaas(
     );
 
     if let Err(e) = usecase.confirmar_pagamento(pedido_uuid).await {
-        tracing::error!("webhook_asaas: falha ao marcar pedido={} como pago: {}", pedido_uuid, e);
+        tracing::error!(pedido_uuid = %pedido_uuid, event = %body.event, erro = %e, "webhook_asaas: falha ao confirmar pagamento");
     } else {
-        tracing::info!("webhook_asaas: pedido={} marcado como pago", pedido_uuid);
+        tracing::info!(pedido_uuid = %pedido_uuid, event = %body.event, "webhook_asaas: pagamento confirmado com sucesso");
     }
 
     StatusCode::OK

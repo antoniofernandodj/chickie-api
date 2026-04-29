@@ -85,11 +85,19 @@ impl AsaasService {
 
         let base_url = std::env::var("ASAAS_BASE_URL")
             .unwrap_or_else(|_| "https://api-sandbox.asaas.com/v3".to_string());
+
+        tracing::info!(base_url = %base_url, "asaas_service: inicializado");
+
         let client = Client::builder()
             .user_agent("chickie-api/1.0")
             .build()
             .expect("Falha ao criar cliente HTTP");
         Self { client, auth_token, api_key, base_url }
+    }
+
+    /// Verifica se o authToken recebido no webhook corresponde ao token configurado.
+    pub fn verificar_webhook_token(&self, token: &str) -> bool {
+        self.auth_token == token
     }
 
     /// Busca customer no Asaas pelo CPF; cria um novo se não existir.
@@ -101,23 +109,42 @@ impl AsaasService {
     ) -> Result<String, String> {
         // 1. Buscar por CPF
         let url = format!("{}/customers?cpfCnpj={}", self.base_url, cpf);
+        tracing::debug!(url = %url, cpf = %cpf, "asaas_service: GET customers — buscando cliente por CPF");
+
         let resp = self.client
             .get(&url)
-            .header("access_token", &self.auth_token)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .send()
             .await
-            .map_err(|e| format!("Erro ao buscar cliente no Asaas: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(url = %url, erro = %e, "asaas_service: falha na requisição GET customers");
+                format!("Erro ao buscar cliente no Asaas: {}", e)
+            })?;
+
+        let status = resp.status();
+        tracing::debug!(url = %url, status = %status, "asaas_service: resposta GET customers");
 
         if resp.status().is_success() {
             let body: AsaasListagem<AsaasCliente> = resp
                 .json()
                 .await
-                .map_err(|e| format!("Erro ao deserializar listagem Asaas: {}", e))?;
+                .map_err(|e| {
+                    tracing::error!(erro = %e, "asaas_service: falha ao deserializar listagem de clientes");
+                    format!("Erro ao deserializar listagem Asaas: {}", e)
+                })?;
+
+            tracing::debug!(cpf = %cpf, total = body.total_count, "asaas_service: listagem de clientes recebida");
+
             if let Some(cliente) = body.data.into_iter().next() {
-                tracing::info!("Asaas: cliente encontrado para CPF={}", cpf);
+                tracing::info!(cpf = %cpf, asaas_customer_id = %cliente.id, "asaas_service: cliente encontrado por CPF");
                 return Ok(cliente.id);
             }
+
+            tracing::info!(cpf = %cpf, "asaas_service: nenhum cliente encontrado para CPF — criando novo");
+        } else {
+            let body = resp.text().await.unwrap_or_default();
+            tracing::warn!(status = %status, body = %body, cpf = %cpf, "asaas_service: GET customers retornou erro — tentando criar cliente mesmo assim");
         }
 
         // 2. Criar novo customer
@@ -128,28 +155,39 @@ impl AsaasService {
             external_reference: None,
         };
 
+        tracing::debug!(url = %url, nome = %nome, cpf = %cpf, "asaas_service: POST customers — criando novo cliente");
+
         let resp = self.client
             .post(&url)
-            .header("access_token", &self.auth_token)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
             .send()
             .await
-            .map_err(|e| format!("Erro ao criar cliente no Asaas: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(url = %url, nome = %nome, erro = %e, "asaas_service: falha na requisição POST customers");
+                format!("Erro ao criar cliente no Asaas: {}", e)
+            })?;
+
+        let status = resp.status();
+        tracing::debug!(url = %url, status = %status, "asaas_service: resposta POST customers");
 
         if !resp.status().is_success() {
-            let status = resp.status();
             let body = resp.text().await.unwrap_or_default();
+            tracing::error!(status = %status, body = %body, nome = %nome, cpf = %cpf, "asaas_service: falha ao criar cliente no Asaas");
             return Err(format!("Asaas retornou {} ao criar cliente: {}", status, body));
         }
 
         let cliente: AsaasCliente = resp
             .json()
             .await
-            .map_err(|e| format!("Erro ao deserializar cliente criado: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(erro = %e, "asaas_service: falha ao deserializar cliente criado");
+                format!("Erro ao deserializar cliente criado: {}", e)
+            })?;
 
-        tracing::info!("Asaas: cliente criado id={}", cliente.id);
+        tracing::info!(asaas_customer_id = %cliente.id, nome = %nome, cpf = %cpf, "asaas_service: cliente criado com sucesso");
         Ok(cliente.id)
     }
 
@@ -167,7 +205,10 @@ impl AsaasService {
         let valor_f64: f64 = valor
             .to_string()
             .parse()
-            .map_err(|_| "Erro ao converter valor para f64".to_string())?;
+            .map_err(|_| {
+                tracing::error!(valor = %valor, "asaas_service: falha ao converter Decimal para f64");
+                "Erro ao converter valor para f64".to_string()
+            })?;
 
         let url = format!("{}/payments", self.base_url);
         let payload = CriarCobrancaPayload {
@@ -178,49 +219,101 @@ impl AsaasService {
             external_reference: pedido_uuid.to_string(),
         };
 
+        tracing::info!(
+            url = %url,
+            asaas_customer_id = %asaas_customer_id,
+            valor = valor_f64,
+            due_date = %due_date,
+            pedido_uuid = %pedido_uuid,
+            "asaas_service: POST payments — criando cobrança PIX"
+        );
+
         let resp = self.client
             .post(&url)
-            .header("access_token", &self.auth_token)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .header("content-type", "application/json")
             .json(&payload)
             .send()
             .await
-            .map_err(|e| format!("Erro ao criar cobrança PIX: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(url = %url, pedido_uuid = %pedido_uuid, erro = %e, "asaas_service: falha na requisição POST payments");
+                format!("Erro ao criar cobrança PIX: {}", e)
+            })?;
+
+        let status = resp.status();
+        tracing::debug!(url = %url, status = %status, pedido_uuid = %pedido_uuid, "asaas_service: resposta POST payments");
 
         if !resp.status().is_success() {
-            let status = resp.status();
             let body = resp.text().await.unwrap_or_default();
+            tracing::error!(
+                status = %status,
+                body = %body,
+                pedido_uuid = %pedido_uuid,
+                asaas_customer_id = %asaas_customer_id,
+                "asaas_service: falha ao criar cobrança PIX"
+            );
             return Err(format!("Asaas retornou {} ao criar cobrança: {}", status, body));
         }
 
         let cobranca: AsaasCobranca = resp
             .json()
             .await
-            .map_err(|e| format!("Erro ao deserializar cobrança: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(pedido_uuid = %pedido_uuid, erro = %e, "asaas_service: falha ao deserializar cobrança criada");
+                format!("Erro ao deserializar cobrança: {}", e)
+            })?;
 
-        tracing::info!("Asaas: cobrança criada id={} pedido={}", cobranca.id, pedido_uuid);
+        tracing::info!(
+            payment_id = %cobranca.id,
+            pedido_uuid = %pedido_uuid,
+            "asaas_service: cobrança criada — buscando QR Code PIX"
+        );
 
         // Buscar QR Code PIX
         let qr_url = format!("{}/payments/{}/pixQrCode", self.base_url, cobranca.id);
+        tracing::debug!(url = %qr_url, payment_id = %cobranca.id, "asaas_service: GET pixQrCode");
+
         let qr_resp = self.client
             .get(&qr_url)
-            .header("access_token", &self.auth_token)
+            .header("access_token", &self.api_key)
             .header("accept", "application/json")
             .send()
             .await
-            .map_err(|e| format!("Erro ao buscar QR Code PIX: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(url = %qr_url, payment_id = %cobranca.id, erro = %e, "asaas_service: falha na requisição GET pixQrCode");
+                format!("Erro ao buscar QR Code PIX: {}", e)
+            })?;
+
+        let qr_status = qr_resp.status();
+        tracing::debug!(url = %qr_url, status = %qr_status, payment_id = %cobranca.id, "asaas_service: resposta GET pixQrCode");
 
         if !qr_resp.status().is_success() {
-            let status = qr_resp.status();
             let body = qr_resp.text().await.unwrap_or_default();
-            return Err(format!("Asaas retornou {} ao buscar QR code: {}", status, body));
+            tracing::error!(
+                status = %qr_status,
+                body = %body,
+                payment_id = %cobranca.id,
+                pedido_uuid = %pedido_uuid,
+                "asaas_service: falha ao buscar QR Code PIX"
+            );
+            return Err(format!("Asaas retornou {} ao buscar QR code: {}", qr_status, body));
         }
 
         let qr: AsaasPixQrCode = qr_resp
             .json()
             .await
-            .map_err(|e| format!("Erro ao deserializar QR Code: {}", e))?;
+            .map_err(|e| {
+                tracing::error!(payment_id = %cobranca.id, erro = %e, "asaas_service: falha ao deserializar QR Code");
+                format!("Erro ao deserializar QR Code: {}", e)
+            })?;
+
+        tracing::info!(
+            payment_id = %cobranca.id,
+            pedido_uuid = %pedido_uuid,
+            vencimento = qr.expiration_date.as_deref().unwrap_or(&due_date),
+            "asaas_service: QR Code PIX obtido com sucesso"
+        );
 
         Ok(PagamentoCriado {
             payment_id: cobranca.id,
