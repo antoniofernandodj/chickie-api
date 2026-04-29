@@ -1,4 +1,4 @@
-use axum::{Json, extract::State, response::IntoResponse, http::StatusCode};
+use axum::{extract::State, response::IntoResponse, http::StatusCode};
 use serde::Deserialize;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -25,8 +25,18 @@ pub struct WebhookPayment {
 
 pub async fn webhook_asaas(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<WebhookPayload>,
+    raw: String,
 ) -> impl IntoResponse {
+    tracing::info!(payload = %raw, "webhook_asaas: body bruto recebido");
+
+    let body: WebhookPayload = match serde_json::from_str(&raw) {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::error!(erro = %e, payload = %raw, "webhook_asaas: falha ao parsear payload");
+            return StatusCode::BAD_REQUEST;
+        }
+    };
+
     tracing::info!(event = %body.event, tem_auth_token = body.auth_token.is_some(), "webhook_asaas: requisição recebida");
 
     let token_valido = body
