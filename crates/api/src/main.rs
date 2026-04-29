@@ -28,6 +28,12 @@ async fn main() {
     info!("🚀 [MAIN] Chickie starting...");
     info!("🚀 [MAIN] PID: {}", std::process::id());
 
+    if std::path::Path::new("settings.toml").exists() {
+        info!("✅ [PATCH] settings.toml encontrado — patch funcionou");
+    } else {
+        info!("❌ [PATCH] settings.toml não encontrado — patch falhou");
+    }
+
     let port = env::var("APP_PORT")
         .unwrap_or_else(|_| String::from("3000"));
 
