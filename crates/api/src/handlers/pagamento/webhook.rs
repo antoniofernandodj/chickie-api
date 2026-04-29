@@ -13,8 +13,12 @@ use crate::handlers::AppState;
 pub struct WebhookPayload {
     pub event: String,
     pub payment: Option<WebhookPayment>,
-    #[serde(rename = "authToken")]
-    pub auth_token: Option<String>,
+    pub account: Option<WebhookAccount>,
+}
+
+#[derive(Deserialize)]
+pub struct WebhookAccount {
+    pub id: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -37,24 +41,20 @@ pub async fn webhook_asaas(
         }
     };
 
-    tracing::info!(event = %body.event, tem_auth_token = body.auth_token.is_some(), "webhook_asaas: requisição recebida");
+    let account_id = body.account.as_ref().and_then(|a| a.id.as_deref()).unwrap_or("desconhecido");
+    tracing::info!(event = %body.event, account_id = %account_id, "webhook_asaas: requisição recebida");
 
-    let token_valido = body
-        .auth_token
-        .as_deref()
-        .map(|t| state.asaas_service.verificar_webhook_token(t))
-        .unwrap_or(false);
-
-    if !token_valido {
+    let account_valida = state.asaas_service.verificar_account_id(account_id);
+    if !account_valida {
         tracing::warn!(
             event = %body.event,
-            auth_token_presente = body.auth_token.is_some(),
-            "webhook_asaas: authToken inválido ou ausente — requisição rejeitada"
+            account_id = %account_id,
+            "webhook_asaas: account.id não reconhecido — requisição rejeitada"
         );
         return StatusCode::UNAUTHORIZED;
     }
 
-    tracing::debug!(event = %body.event, "webhook_asaas: authToken válido");
+    tracing::debug!(event = %body.event, account_id = %account_id, "webhook_asaas: account válida");
 
     let confirmar = matches!(
         body.event.as_str(),

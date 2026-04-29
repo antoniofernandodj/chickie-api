@@ -10,6 +10,7 @@ pub struct AsaasService {
     auth_token: String,
     api_key: String,
     base_url: String,
+    account_id: String,
 }
 
 // ─── Payloads de saída ────────────────────────────────────────────────────────
@@ -86,18 +87,21 @@ impl AsaasService {
         let base_url = std::env::var("ASAAS_BASE_URL")
             .unwrap_or_else(|_| "https://api-sandbox.asaas.com/v3".to_string());
 
-        tracing::info!(base_url = %base_url, "asaas_service: inicializado");
+        let account_id = std::env::var("ASAAS_ACCOUNT_ID")
+            .expect("Variável de ambiente ASAAS_ACCOUNT_ID não definida");
+
+        tracing::info!(base_url = %base_url, account_id = %account_id, "asaas_service: inicializado");
 
         let client = Client::builder()
             .user_agent("chickie-api/1.0")
             .build()
             .expect("Falha ao criar cliente HTTP");
-        Self { client, auth_token, api_key, base_url }
+        Self { client, auth_token, api_key, base_url, account_id }
     }
 
-    /// Verifica se o authToken recebido no webhook corresponde ao token configurado.
-    pub fn verificar_webhook_token(&self, token: &str) -> bool {
-        self.auth_token == token
+    /// Verifica se o account.id do webhook corresponde ao ID da conta Asaas configurada.
+    pub fn verificar_account_id(&self, id: &str) -> bool {
+        self.account_id == id
     }
 
     /// Busca customer no Asaas pelo CPF; cria um novo se não existir.
