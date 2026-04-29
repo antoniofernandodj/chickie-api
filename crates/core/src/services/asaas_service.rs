@@ -10,7 +10,6 @@ pub struct AsaasService {
     auth_token: String,
     api_key: String,
     base_url: String,
-    account_id: String,
 }
 
 // ─── Payloads de saída ────────────────────────────────────────────────────────
@@ -87,16 +86,13 @@ impl AsaasService {
         let base_url = std::env::var("ASAAS_BASE_URL")
             .unwrap_or_else(|_| "https://api-sandbox.asaas.com/v3".to_string());
 
-        let account_id = std::env::var("ASAAS_ACCOUNT_ID")
-            .expect("Variável de ambiente ASAAS_ACCOUNT_ID não definida");
-
-        tracing::info!(base_url = %base_url, account_id = %account_id, "asaas_service: inicializado");
+        tracing::info!(base_url = %base_url, "asaas_service: inicializado");
 
         let client = Client::builder()
             .user_agent("chickie-api/1.0")
             .build()
             .expect("Falha ao criar cliente HTTP");
-        Self { client, auth_token, api_key, base_url, account_id }
+        Self { client, auth_token, api_key, base_url }
     }
 
     /// Verifica se o header asaas-access-token corresponde ao token configurado.
