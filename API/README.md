@@ -201,12 +201,13 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 | 71 | `PUT` | `/api/produtos/{loja_uuid}/{produto_uuid}/disponibilidade` | 🔒 | — |
 | 72 | `POST` | `/api/produtos/{uuid}/imagem` | 🔒 | — |
 | 73 | `GET` | `/api/horarios/{loja_uuid}` | — | — |
+| 73.1 | `GET` | `/api/horarios/{loja_uuid}/status` | — | — |
 | 74 | `POST` | `/api/horarios/{loja_uuid}` | 🔒 | — |
 | 75 | `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | — |
 | 76 | `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | — |
 | 77 | `GET` | `/api/ok` | — | — |
 | 78 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
 
-**Total: 97 endpoints**
+**Total: 98 endpoints**
 
 > **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner

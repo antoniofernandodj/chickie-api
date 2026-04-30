@@ -261,6 +261,7 @@ Cada repositório implementa também:
 | Método | Rota | Auth | Descrição |
 |--------|------|------|-----------|
 | `GET` | `/api/horarios/{loja_uuid}` | — | Listar horários |
+| `GET` | `/api/horarios/{loja_uuid}/status` | — | Verificar se a loja está aberta agora (horário de Brasília) |
 | `POST` | `/api/horarios/{loja_uuid}` | 🔒 | Criar ou atualizar horário |
 | `PUT` | `/api/horarios/{loja_uuid}/dia/{dia_semana}/ativo` | 🔒 | Ativar/desativar dia |
 | `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | Deletar horário do dia |
@@ -616,6 +617,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-29  | **Endpoint `GET /api/horarios/{loja_uuid}/status`**: Verifica se a loja está aberta agora com base nos horários de funcionamento. Usa `FixedOffset::west_opt(3h)` para UTC-3 (Brasília, sem DST). Método `verificar_aberta_agora` adicionado ao `HorarioFuncionamentoService`. Retorna `{ aberta, hora_atual, dia_semana, abertura, fechamento }`. |
 | 2026-04-28  | **Verificação de email no cadastro**: Signup agora é assíncrono — armazena pré-cadastro (JSONB + TTL 1h) na tabela `pre_cadastro` e envia email via MailerSend com template HTML (Tera). Novo endpoint `GET /api/auth/confirmar-email?token=...` valida token, cria usuário e retorna JWT. Ports: `PreCadastroPort`, `EmailServicePort`. Services: `PreCadastroRepository`, `EmailService`. `UsuarioService` ganhou `iniciar_cadastro` e `confirmar_cadastro`. Migration `0012`. Vars env: `MAILERSEND_API_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. |
 | 2026-04-26  | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos**: campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (com `#[sqlx(skip)]`). Port `EnderecoEntregaRepositoryPort` ganhou `buscar_por_pedidos(&[Uuid]) -> HashMap<Uuid, EnderecoEntrega>` para batch hydration sem N+1. Service `PedidoService` ganhou `hidratar_com_endereco` e atualiza `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix em `listar_pedidos` handler (extraia `Path(loja_uuid)` em rota sem parâmetro). |
 | 2026-04-24  | **Campo `contato` em pedidos**: `Option<String>` (11 dígitos, filtrado de não-numéricos) adicionado ao model `Pedido`, repository (INSERT + UPDATE), usecase (`criar_pedido`), handler (`CriarPedidoRequest`). Migration `0006` absorveu as mudanças de `usuario_uuid` nullable e o novo campo (migration `0010` removida). |

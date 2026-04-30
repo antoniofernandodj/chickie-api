@@ -27,7 +27,7 @@ pub use endereco_usuario_service::EnderecoUsuarioService;
 pub use endereco_entrega_service::EnderecoEntregaService;
 pub use loja_favorita_service::LojaFavoritaService;
 pub use ingrediente_service::IngredienteService;
-pub use horario_funcionamento_service::HorarioFuncionamentoService;
+pub use horario_funcionamento_service::{HorarioFuncionamentoService, StatusLoja};
 pub use configuracao_pedidos_loja_service::ConfiguracaoPedidosLojaService;
 pub use funcionario_service::FuncionarioService;
 pub use entregador_service::EntregadorService;

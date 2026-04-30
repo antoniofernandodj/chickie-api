@@ -160,7 +160,8 @@ pub use horario::{
     listar_horarios,
     criar_ou_atualizar_horario,
     definir_ativo,
-    deletar_horario_dia
+    deletar_horario_dia,
+    verificar_loja_aberta,
 };
 
 pub use endereco_loja::{

@@ -6,6 +6,7 @@ use crate::handlers::{
     criar_ou_atualizar_horario,
     definir_ativo,
     deletar_horario_dia,
+    verificar_loja_aberta,
 };
 
 pub fn horario_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
@@ -18,4 +19,5 @@ pub fn horario_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
 pub fn horario_public_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
     Router::new()
         .route("/{loja_uuid}", get(listar_horarios))
+        .route("/{loja_uuid}/status", get(verificar_loja_aberta))
 }
