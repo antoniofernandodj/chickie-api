@@ -21,6 +21,7 @@ mod funcionario;
 mod entregador;
 mod openapi;
 mod pagamento;
+mod chat;
 
 use axum::{Json, response::IntoResponse};
 use serde_json::json;
@@ -55,6 +56,13 @@ pub use dto::{
 };
 
 pub use pagamento::{criar_pagamento, webhook_asaas};
+
+pub use chat::{
+    ws_chat_handler,
+    listar_historico_pedido,
+    listar_historico_loja_usuario,
+    marcar_lida
+};
 
 pub use pedido::{
     criar_pedido,

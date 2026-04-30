@@ -7,6 +7,7 @@ pub mod loja_favorita;
 pub mod admin;
 pub mod loja;
 pub mod upload_imagem;
+pub mod chat;
 
 pub use catalogo::{CatalogoUsecase, AtualizarProdutoRequest, CreateProdutoRequest};
 pub use marketing::MarketingUsecase;
@@ -27,3 +28,4 @@ pub use admin::AdminUsecase;
 pub use loja::LojaUsecase;
 pub use upload_imagem::UploadImagemUsecase;
 pub use pagamento::{PagamentoUsecase, PagadorInput, PagamentoOutput};
+pub use chat::ChatUsecase;

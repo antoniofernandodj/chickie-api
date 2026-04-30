@@ -23,6 +23,7 @@ pub mod entregador_port;
 pub mod cliente_port;
 pub mod ingrediente_port;
 pub mod loja_favorita_port;
+pub mod chat_port;
 
 // Re-export all traits and types
 pub use repository::{RepositoryPort, Entity};
@@ -50,3 +51,4 @@ pub use entregador_port::EntregadorRepositoryPort;
 pub use cliente_port::ClienteRepositoryPort;
 pub use ingrediente_port::IngredienteRepositoryPort;
 pub use loja_favorita_port::LojaFavoritaRepositoryPort;
+pub use chat_port::{ChatRepositoryPort, ChatPublisherPort};

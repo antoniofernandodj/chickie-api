@@ -19,6 +19,7 @@ mod entregador;
 mod usuario;
 mod wipe;
 mod pagamento;
+mod chat;
 
 use std::sync::Arc;
 
@@ -47,11 +48,13 @@ pub use entregador::entregador_routes;
 pub use usuario::usuario_routes;
 pub use wipe::wipe_route;
 pub use pagamento::pagamento_routes;
+pub use chat::chat_routes;
 
 use super::ok_handler;
 
 pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
     let protected = Router::new()
+        .nest("/chat", chat_routes())
         .nest("/usuarios", usuario_routes())
         .nest("/produtos", produto_routes())
         .nest("/marketing", marketing_routes(s))

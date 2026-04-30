@@ -97,6 +97,7 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 | [13-produtos.md](./13-produtos.md) | Produtos | `/api/produtos/` |
 | [14-horarios.md](./14-horarios.md) | Horários de funcionamento | `/api/horarios/` |
 | [15-utilitarios.md](./15-utilitarios.md) | Utilitários (health, wipe) | `/api/ok`, `/api/wipe` |
+| [16-chat.md](./16-chat.md) | Chat real-time | `/api/chat/` |
 
 ---
 
@@ -209,7 +210,11 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 | 76 | `DELETE` | `/api/horarios/{loja_uuid}/dia/{dia_semana}` | 🔒 | — |
 | 77 | `GET` | `/api/ok` | — | — |
 | 78 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
+| 79 | `GET` | `/api/chat/ws?token=` | 🔒 | — |
+| 80 | `GET` | `/api/chat/historico/pedido/{pedido_uuid}` | 🔒 | — |
+| 81 | `GET` | `/api/chat/historico/loja/{loja_uuid}/usuario/{usuario_uuid}` | 🔒 | — |
+| 82 | `PUT` | `/api/chat/mensagens/{mensagem_uuid}/lida` | 🔒 | — |
 
-**Total: 100 endpoints**
+**Total: 104 endpoints**
 
 > **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner

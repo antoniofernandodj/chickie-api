@@ -44,4 +44,5 @@ rand = "0.8"
 reqwest = { version = "0.12", features = ["json"] }
 tera = "1"
 lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls", "builder"] }
+redis = { version = "0.29", features = ["tokio-comp", "connection-manager", "tokio-native-tls-comp"] }
 chickie-core = { path = "crates/core" }

@@ -16,6 +16,7 @@ mod promocoes;
 mod horarios_de_funcionamento;
 mod parte_de_pedido;
 mod loja_favorita;
+mod chat;
 
 pub use model::Model;
 
@@ -61,3 +62,4 @@ pub use horarios_de_funcionamento::{
 };
 
 pub use loja_favorita::LojaFavorita;
+pub use chat::{MensagemChat, CreateMensagemRequest};
