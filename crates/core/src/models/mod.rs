@@ -30,6 +30,7 @@ pub use categoria::{
     CategoriaProdutos,
     CategoriaProdutosOrdenada,
     OrdemCategoriaProdutos,
+    StatusCategoriaGlobal,
 };
 
 pub use cliente::Cliente;

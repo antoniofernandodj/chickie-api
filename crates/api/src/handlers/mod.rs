@@ -204,7 +204,9 @@ pub use catalogo::{
     listar_adicionais_disponiveis,
     listar_categorias,
     listar_categorias_globais,
+    listar_produtos_por_categoria_global,
     reordenar_categorias,
+    verificar_cobertura_categorias_globais,
 };
 
 pub use endereco_entrega::{

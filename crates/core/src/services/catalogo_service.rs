@@ -221,6 +221,12 @@ impl CatalogoService {
         self.categoria_repo.listar_globais().await.map_err(|e| e.to_string())
     }
 
+    pub async fn verificar_cobertura_categorias_globais(
+        &self,
+    ) -> Result<Vec<crate::models::StatusCategoriaGlobal>, String> {
+        self.categoria_repo.verificar_cobertura_globais().await.map_err(|e| e.to_string())
+    }
+
     pub async fn atualizar_categoria(
         &self,
         uuid: Uuid,
@@ -344,6 +350,20 @@ impl CatalogoService {
         uuid: Uuid,
     ) -> Result<(), String> {
         self.produto_repo.deletar(uuid).await.map_err(|e| e.to_string())
+    }
+
+    pub async fn listar_produtos_por_categoria_global(
+        &self,
+        categoria_uuid: Uuid,
+    ) -> Result<Vec<Produto>, String> {
+        let categoria = self.categoria_repo.buscar_por_uuid(categoria_uuid).await?
+            .ok_or("Categoria não encontrada")?;
+
+        if categoria.loja_uuid.is_some() {
+            return Err("Categoria não é global".to_string());
+        }
+
+        self.produto_repo.listar_por_categoria_global(categoria_uuid).await.map_err(|e| e.to_string())
     }
 
     pub async fn atualizar_disponibilidade_produto(

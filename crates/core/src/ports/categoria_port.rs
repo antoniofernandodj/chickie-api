@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use uuid::Uuid;
-use crate::models::{CategoriaProdutos, CategoriaProdutosOrdenada};
+use crate::models::{CategoriaProdutos, CategoriaProdutosOrdenada, StatusCategoriaGlobal};
 use crate::domain::errors::DomainResult;
 
 #[async_trait]
@@ -14,4 +14,5 @@ pub trait CategoriaRepositoryPort: Send + Sync {
     async fn atualizar(&self, categoria: CategoriaProdutos) -> DomainResult<()>;
     async fn deletar(&self, uuid: Uuid) -> DomainResult<()>;
     async fn contar_produtos(&self, categoria_uuid: Uuid) -> DomainResult<i64>;
+    async fn verificar_cobertura_globais(&self) -> DomainResult<Vec<StatusCategoriaGlobal>>;
 }

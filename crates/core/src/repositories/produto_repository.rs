@@ -159,4 +159,11 @@ impl ProdutoRepositoryPort for ProdutoRepository {
             .await.map_err(|e| DomainError::Internal(e.to_string()))?;
         Ok(())
     }
+    async fn listar_por_categoria_global(&self, categoria_uuid: Uuid) -> DomainResult<Vec<Produto>> {
+        sqlx::query_as::<_, Produto>("SELECT * FROM produtos WHERE categoria_uuid = $1 AND disponivel = true ORDER BY loja_uuid, nome")
+            .bind(categoria_uuid)
+            .fetch_all(&*self.pool)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))
+    }
 }

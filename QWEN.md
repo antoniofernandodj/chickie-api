@@ -410,6 +410,9 @@ pub enum DomainError {
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `GET` | `/api/catalogo/categorias/globais` | — | Listar categorias globais |
+| `GET` | `/api/catalogo/categorias/globais/cobertura` | — | Verificar se cada categoria global tem ao menos um produto |
+| `GET` | `/api/catalogo/categorias/globais/{categoria_uuid}/produtos` | — | Produtos disponíveis de todas as lojas para uma categoria global, agrupados por loja |
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |

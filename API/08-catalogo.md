@@ -103,6 +103,59 @@
 
 ---
 
+### GET /api/catalogo/categorias/globais/cobertura
+
+Retorna todas as categorias globais indicando se ao menos um produto está cadastrado em cada uma (query única com `EXISTS`, sem N+1).
+
+**Response `200`:**
+```json
+[
+  { "uuid": "uuid", "nome": "Pizzas",      "tem_produto": true  },
+  { "uuid": "uuid", "nome": "Hambúrguers", "tem_produto": false },
+  { "uuid": "uuid", "nome": "Bebidas",     "tem_produto": true  }
+]
+```
+
+---
+
+### GET /api/catalogo/categorias/globais/{categoria_uuid}/produtos
+
+Retorna os produtos disponíveis de todas as lojas para uma categoria global, agrupados por loja. Retorna `400` se a categoria informada não for global (`loja_uuid IS NOT NULL`).
+
+**Response `200`:**
+```json
+{
+  "categoria_uuid": "uuid",
+  "lojas": [
+    {
+      "uuid": "loja-uuid-1",
+      "produtos": [
+        {
+          "uuid": "uuid",
+          "loja_uuid": "uuid",
+          "categoria_uuid": "uuid",
+          "nome": "Pizza Margherita",
+          "descricao": "...",
+          "preco": "29.90",
+          "imagem_url": null,
+          "disponivel": true,
+          "tempo_preparo_min": 20,
+          "destaque": false,
+          "criado_em": "2026-04-30T00:00:00Z",
+          "atualizado_em": "2026-04-30T00:00:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Response `400`:** `{ "error": "Categoria não é global" }`
+
+**Response `404`:** `{ "error": "Categoria não encontrada" }`
+
+---
+
 ### GET /api/catalogo/categorias/globais
 
 Retorna categorias sem vínculo com loja.

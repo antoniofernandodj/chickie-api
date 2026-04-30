@@ -11,8 +11,10 @@ mod listar_adicionais;
 mod listar_adicionais_disponiveis;
 mod listar_categorias;
 mod listar_categorias_globais;
+mod listar_produtos_por_categoria_global;
 mod marcar_indisponivel;
 mod reordenar_categorias;
+mod verificar_cobertura_categorias_globais;
 
 pub use atualizar_adicional::atualizar_adicional;
 pub use atualizar_categoria::atualizar_categoria;
@@ -27,5 +29,7 @@ pub use listar_adicionais::listar_adicionais;
 pub use listar_adicionais_disponiveis::listar_adicionais_disponiveis;
 pub use listar_categorias::listar_categorias;
 pub use listar_categorias_globais::listar_categorias_globais;
+pub use listar_produtos_por_categoria_global::listar_produtos_por_categoria_global;
 pub use marcar_indisponivel::atualizar_disponibilidade;
 pub use reordenar_categorias::reordenar_categorias;
+pub use verificar_cobertura_categorias_globais::verificar_cobertura_categorias_globais;

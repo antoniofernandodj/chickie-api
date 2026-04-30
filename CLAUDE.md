@@ -310,6 +310,9 @@ Cada repositório implementa também:
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais` | — | Listar todos os adicionais |
 | `GET` | `/api/catalogo/{loja_uuid}/adicionais/disponiveis` | — | Listar adicionais disponíveis |
 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | Listar categorias |
+| `GET` | `/api/catalogo/categorias/globais` | — | Listar categorias globais |
+| `GET` | `/api/catalogo/categorias/globais/cobertura` | — | Verificar se cada categoria global tem ao menos um produto |
+| `GET` | `/api/catalogo/categorias/globais/{categoria_uuid}/produtos` | — | Produtos disponíveis de todas as lojas para uma categoria global, agrupados por loja |
 | `POST` | `/api/catalogo/{loja_uuid}/adicionais` | 🔒 | Criar adicional |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}` | 🔒 | Atualizar adicional |
 | `PUT` | `/api/catalogo/{loja_uuid}/adicionais/{adicional_uuid}/disponibilidade` | 🔒 | Atualizar disponibilidade (true/false) |
@@ -617,6 +620,7 @@ Entregador entrega → pedido status → ENTREGUE
 
 | Data        | Mudança                                            |
 |-------------|----------------------------------------------------|
+| 2026-04-30  | **Endpoints de categorias globais por produtos**: `GET /api/catalogo/categorias/globais/{categoria_uuid}/produtos` retorna produtos disponíveis de todas as lojas para uma categoria global, agrupados por loja (`{ categoria_uuid, lojas: [{ uuid, produtos }] }`). `GET /api/catalogo/categorias/globais/cobertura` retorna todas as categorias globais com flag `tem_produto: bool` usando única query SQL com `EXISTS`. Novo model `StatusCategoriaGlobal`. Port `CategoriaRepositoryPort` ganhou `verificar_cobertura_globais`. Port `ProdutoRepositoryPort` ganhou `listar_por_categoria_global`. |
 | 2026-04-29  | **Endpoint `GET /api/horarios/{loja_uuid}/status`**: Verifica se a loja está aberta agora com base nos horários de funcionamento. Usa `FixedOffset::west_opt(3h)` para UTC-3 (Brasília, sem DST). Método `verificar_aberta_agora` adicionado ao `HorarioFuncionamentoService`. Retorna `{ aberta, hora_atual, dia_semana, abertura, fechamento }`. |
 | 2026-04-28  | **Verificação de email no cadastro**: Signup agora é assíncrono — armazena pré-cadastro (JSONB + TTL 1h) na tabela `pre_cadastro` e envia email via MailerSend com template HTML (Tera). Novo endpoint `GET /api/auth/confirmar-email?token=...` valida token, cria usuário e retorna JWT. Ports: `PreCadastroPort`, `EmailServicePort`. Services: `PreCadastroRepository`, `EmailService`. `UsuarioService` ganhou `iniciar_cadastro` e `confirmar_cadastro`. Migration `0012`. Vars env: `MAILERSEND_API_TOKEN`, `EMAIL_FROM`, `APP_BASE_URL`. |
 | 2026-04-26  | **`contato` e `endereco_entrega` em todos os endpoints de leitura de pedidos**: campo `endereco_entrega: Option<EnderecoEntrega>` adicionado ao model `Pedido` (com `#[sqlx(skip)]`). Port `EnderecoEntregaRepositoryPort` ganhou `buscar_por_pedidos(&[Uuid]) -> HashMap<Uuid, EnderecoEntrega>` para batch hydration sem N+1. Service `PedidoService` ganhou `hidratar_com_endereco` e atualiza `listar_todos`, `listar_por_loja`, `listar_por_usuario`, `buscar_por_uuid`, `buscar_por_codigo`, `buscar_pedido_com_entrega`, `buscar_pedido_com_entregador`. Bug fix em `listar_pedidos` handler (extraia `Path(loja_uuid)` em rota sem parâmetro). |

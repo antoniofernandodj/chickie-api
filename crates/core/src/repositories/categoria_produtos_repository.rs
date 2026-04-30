@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use sqlx::postgres::PgPool;
 use uuid::Uuid;
-use crate::{models::{CategoriaProdutos, CategoriaProdutosOrdenada, Model}, repositories::Repository};
+use crate::{models::{CategoriaProdutos, CategoriaProdutosOrdenada, StatusCategoriaGlobal, Model}, repositories::Repository};
 use crate::ports::CategoriaRepositoryPort;
 use crate::domain::errors::{DomainError, DomainResult};
 
@@ -160,5 +160,17 @@ impl CategoriaRepositoryPort for CategoriaProdutosRepository {
             .bind(categoria_uuid)
             .fetch_one(&*self.pool)
             .await.map_err(|e| DomainError::Internal(e.to_string()))
+    }
+    async fn verificar_cobertura_globais(&self) -> DomainResult<Vec<StatusCategoriaGlobal>> {
+        sqlx::query_as::<_, StatusCategoriaGlobal>("
+            SELECT cp.uuid, cp.nome,
+                   EXISTS(SELECT 1 FROM produtos p WHERE p.categoria_uuid = cp.uuid) AS tem_produto
+            FROM categorias_produtos cp
+            WHERE cp.loja_uuid IS NULL
+            ORDER BY cp.criado_em ASC
+        ")
+        .fetch_all(&*self.pool)
+        .await
+        .map_err(|e| DomainError::Internal(e.to_string()))
     }
 }

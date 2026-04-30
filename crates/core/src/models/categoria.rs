@@ -56,6 +56,13 @@ pub struct CategoriaProdutosOrdenada {
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
+pub struct StatusCategoriaGlobal {
+    pub uuid: Uuid,
+    pub nome: String,
+    pub tem_produto: bool,
+}
+
+#[derive(Debug, Clone, FromRow, Serialize, Deserialize, ToSchema)]
 pub struct OrdemCategoriaProdutos {
     pub uuid: Uuid,
     pub loja_uuid: Uuid,

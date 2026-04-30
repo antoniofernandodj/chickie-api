@@ -14,4 +14,5 @@ pub trait ProdutoRepositoryPort: Send + Sync {
     async fn deletar(&self, uuid: Uuid) -> DomainResult<()>;
     async fn atualizar_disponibilidade(&self, uuid: Uuid, disponivel: bool) -> DomainResult<()>;
     async fn atualizar_imagem_url(&self, uuid: Uuid, imagem_url: &str) -> DomainResult<()>;
+    async fn listar_por_categoria_global(&self, categoria_uuid: Uuid) -> DomainResult<Vec<Produto>>;
 }

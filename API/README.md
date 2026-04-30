@@ -174,6 +174,8 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 | 45 | `POST` | `/api/catalogo/{loja_uuid}/categorias` | 🔒 | — |
 | 46 | `GET` | `/api/catalogo/{loja_uuid}/categorias` | — | — |
 | 46.1 | `GET` | `/api/catalogo/categorias/globais` | — | — |
+| 46.2 | `GET` | `/api/catalogo/categorias/globais/cobertura` | — | — |
+| 46.3 | `GET` | `/api/catalogo/categorias/globais/{categoria_uuid}/produtos` | — | — |
 | 47 | `PUT` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
 | 48 | `DELETE` | `/api/catalogo/{loja_uuid}/categorias/{uuid}` | 🔒 | — |
 | 49 | `POST` | `/api/enderecos-entrega/{pedido_uuid}/{loja_uuid}` | 🔒 | — |
@@ -208,6 +210,6 @@ criado → aguardando_confirmacao_de_loja → confirmado_pela_loja
 | 77 | `GET` | `/api/ok` | — | — |
 | 78 | `DELETE` | `/api/wipe` ⚠️ | 🔒 + 👑 Owner | — |
 
-**Total: 98 endpoints**
+**Total: 100 endpoints**
 
 > **Legenda:** 🔒 = JWT required, 👑 Owner = apenas dono da plataforma (OWNER_EMAIL), 👑 Admin = administrador, (Self/Owner) = próprio usuário ou owner

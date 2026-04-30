@@ -14,6 +14,8 @@ use crate::handlers::{
     deletar_categoria,
     reordenar_categorias,
     listar_categorias_globais,
+    listar_produtos_por_categoria_global,
+    verificar_cobertura_categorias_globais,
 };
 
 pub fn catalogo_routes() -> Router<std::sync::Arc<crate::handlers::AppState>> {
@@ -34,4 +36,6 @@ pub fn catalogo_public_routes() -> Router<std::sync::Arc<crate::handlers::AppSta
         .route("/{loja_uuid}/adicionais/disponiveis", get(listar_adicionais_disponiveis))
         .route("/{loja_uuid}/categorias", get(listar_categorias))
         .route("/categorias/globais", get(listar_categorias_globais))
+        .route("/categorias/globais/{categoria_uuid}/produtos", get(listar_produtos_por_categoria_global))
+        .route("/categorias/globais/cobertura", get(verificar_cobertura_categorias_globais))
 }
