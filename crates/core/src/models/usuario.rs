@@ -146,6 +146,45 @@ impl Usuario {
     pub fn esta_bloqueado(&self) -> bool {
         self.bloqueado
     }
+
+    pub async fn buscar_canais_notificacao(&self, db: &sqlx::PgPool) -> Vec<String> {
+        let mut canais = vec![format!("chat:usuario:{}", self.uuid)];
+        
+        let lojas_ids = self.get_lojas_vinculadas(db).await;
+        for id in lojas_ids {
+            canais.push(format!("chat:loja:{}", id));
+        }
+        
+        canais
+    }
+
+    async fn get_lojas_vinculadas(&self, db: &sqlx::PgPool) -> Vec<Uuid> {
+        let mut lojas = Vec::new();
+        let uid = self.uuid;
+
+        // Admin ou Owner
+        if self.classe == "administrador" || self.classe == "owner" {
+            let q = "SELECT uuid FROM lojas WHERE criado_por = $1";
+            if let Ok(rows) = sqlx::query_as::<_, (Uuid,)>(q).bind(uid).fetch_all(db).await {
+                lojas.extend(rows.into_iter().map(|(id,)| id));
+            }
+        }
+
+        // Funcionário
+        let q_func = "SELECT loja_uuid FROM funcionarios WHERE usuario_uuid = $1";
+        if let Ok(rows) = sqlx::query_as::<_, (Uuid,)>(q_func).bind(uid).fetch_all(db).await {
+            lojas.extend(rows.into_iter().map(|(id,)| id));
+        }
+
+        // Entregador
+        let q_ent = "SELECT loja_uuid FROM entregadores WHERE usuario_uuid = $1";
+        if let Ok(rows) = sqlx::query_as::<_, (Uuid,)>(q_ent).bind(uid).fetch_all(db).await {
+            lojas.extend(rows.into_iter().map(|(id,)| id));
+        }
+
+        lojas
+    }
+
 }
 
 impl Model for Usuario {
