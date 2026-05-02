@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use tracing::{info, debug, warn, error};
 use crate::ports::{
     WhatsAppRepositoryPort, 
     WhatsAppConversationPort, 
@@ -32,24 +33,27 @@ impl WhatsAppService {
     }
 
     pub async fn resolver_identidade(&self, phone_number: &str, message_body: &str) -> DomainResult<(WhatsAppIdentityType, Option<Uuid>)> {
+        debug!("Resolvendo identidade para WhatsApp: {}", phone_number);
+
         // 1. Verificar vínculo permanente
         if let Some(binding) = self.whatsapp_repo.buscar_binding_por_phone(phone_number).await? {
             if binding.verified {
+                info!("Usuário autenticado via vínculo permanente: user_id={}", binding.user_id);
                 return Ok((WhatsAppIdentityType::Authenticated, Some(binding.user_id)));
             }
         }
 
         // 2. Verificar estado de conversa (Redis)
         if let Some(state) = self.conv_repo.get_state(phone_number).await? {
+            info!("Estado de conversa encontrado (Redis): type={:?}, id={:?}", state.identity_type, state.identifier);
             return Ok((state.identity_type, state.identifier));
         }
 
         // 3. Verificar se há um código de pedido na mensagem (ex: "status ABC123")
-        for codigo in self.extrair_codigo_pedido(message_body) {
+        let codigos = self.extrair_codigo_pedido(message_body);
+        for codigo in codigos {
             if let Some(pedido) = self.pedido_repo.buscar_por_codigo(&codigo).await? {
-                // Se o pedido tem usuário, resolvemos como Authenticated (embora sem vínculo verificado ainda?)
-                // Na verdade, se o usuário fornece o código de um pedido dele, podemos tratar como Guest daquele pedido
-                // ou Authenticated se o usuario_uuid bater.
+                info!("Identidade resolvida via código de pedido: {}", codigo);
                 if let Some(user_id) = pedido.usuario_uuid {
                      return Ok((WhatsAppIdentityType::Authenticated, Some(user_id)));
                 } else {
@@ -58,19 +62,21 @@ impl WhatsAppService {
             }
         }
 
+        debug!("Identidade não reconhecida, tratando como Anonymous");
         Ok((WhatsAppIdentityType::Anonymous, None))
     }
 
     fn extrair_codigo_pedido(&self, body: &str) -> Vec<String> {
         // Regex simples para código de 6 caracteres alfanuméricos
         let body_upper = body.to_uppercase();
-        // Procurar por padrão de 6 caracteres que pareçam um código
-        // Exemplo: "status ABC123"
         let mut result = Vec::<String>::new();
         for word in body_upper.split_whitespace() {
             if word.len() == 6 && word.chars().all(|c| c.is_alphanumeric()) {
                 result.push(word.to_string());
             }
+        }
+        if !result.is_empty() {
+            debug!("Códigos de pedido extraídos: {:?}", result);
         }
         result
     }
@@ -78,8 +84,11 @@ impl WhatsAppService {
     pub async fn processar_mensagem(&self, phone_number: &str, message_sid: &str, body: &str) -> DomainResult<String> {
         // Idempotência
         if self.whatsapp_repo.ja_processada(message_sid).await? {
+            info!("Mensagem {} já processada, ignorando (idempotência)", message_sid);
             return Ok("".to_string()); // Já processada
         }
+
+        info!("WhatsAppService: Processando mensagem de {}: '{}'", phone_number, body);
 
         let (identity, identifier) = self
             .resolver_identidade(
@@ -93,9 +102,18 @@ impl WhatsAppService {
 
         // Lógica de comando simples (MVP)
         let response = match body.to_lowercase().trim() {
-            "ajuda" | "help" | "/start" => self.get_help_message(),
-            b if b.contains("status") || b.contains("pedido") => self.handle_status_command(phone_number, identity, identifier, body).await?,
-            _ => "Olá! Digite 'ajuda' para ver o que posso fazer por você.".to_string(),
+            "ajuda" | "help" | "/start" => {
+                debug!("Comando de ajuda detectado");
+                self.get_help_message()
+            },
+            b if b.contains("status") || b.contains("pedido") => {
+                info!("Comando de status detectado");
+                self.handle_status_command(phone_number, identity, identifier, body).await?
+            },
+            _ => {
+                debug!("Comando não reconhecido: {}", body);
+                "Olá! Digite 'ajuda' para ver o que posso fazer por você.".to_string()
+            },
         };
 
         Ok(response)
@@ -111,10 +129,12 @@ impl WhatsAppService {
 
     async fn handle_status_command(&self, _phone_number: &str, identity: WhatsAppIdentityType, identifier: Option<Uuid>, body: &str) -> DomainResult<String> {
         let codigos = self.extrair_codigo_pedido(body);
+        info!("Executando handle_status_command. Codigos extraídos: {:?}", codigos);
         
         let mut pedido_encontrado = None;
         for c in &codigos {
             if let Some(p) = self.pedido_repo.buscar_por_codigo(c).await? {
+                info!("Pedido encontrado via código informado: #{}", c);
                 pedido_encontrado = Some(p);
                 break;
             }
@@ -123,6 +143,7 @@ impl WhatsAppService {
         let pedido = if let Some(p) = pedido_encontrado {
             Some(p)
         } else if let Some(id) = identifier {
+            info!("Buscando pedido via identificador da sessão: {:?}", id);
             // Se for Guest, identifier é o UUID do pedido
             if matches!(identity, WhatsAppIdentityType::Guest) {
                 self.pedido_repo.buscar_por_uuid(id).await?
@@ -132,15 +153,20 @@ impl WhatsAppService {
                 pedidos.first().cloned()
             }
         } else {
+            warn!("Nenhum pedido encontrado e nenhum identificador de sessão disponível");
             None
         };
 
         match pedido {
             Some(p) => {
                 let status_str = p.status.as_str().replace("_", " ");
+                info!("Retornando status para pedido #{}: {}", p.codigo, status_str);
                 Ok(format!("Seu pedido #{} está no status: *{}*.", p.codigo, status_str))
             },
-            None => Ok("Não encontrei nenhum pedido. Por favor, digite 'status' seguido do código de 6 dígitos.".to_string())
+            None => {
+                info!("Nenhum pedido localizado para informar status");
+                Ok("Não encontrei nenhum pedido. Por favor, digite 'status' seguido do código de 6 dígitos.".to_string())
+            }
         }
     }
 }

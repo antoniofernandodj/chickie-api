@@ -21,6 +21,8 @@ pub async fn handler(
     State(state): State<Arc<AppState>>,
     Form(payload): Form<TwilioWebhookPayload>,
 ) -> Result<impl IntoResponse, AppError> {
+    tracing::info!("Recebendo webhook do WhatsApp: From={}, SID={}, Body={}", payload.from, payload.message_sid, payload.body);
+
     let usecase = WhatsAppUsecase::new(state.whatsapp_service.clone());
 
     let response_text = usecase
@@ -29,16 +31,18 @@ pub async fn handler(
             &payload.message_sid,
             &payload.body
         )
-        .await?;
+        .await
+        .map_err(|e| {
+            tracing::error!("Erro ao processar webhook do WhatsApp: {:?}", e);
+            e
+        })?;
 
     if response_text.is_empty() {
+        tracing::debug!("Resposta do WhatsApp vazia (idempotência ou sem comando)");
         return Ok(axum::http::StatusCode::OK.into_response());
     }
 
-    // Retorna TwiML para responder diretamente se desejado, 
-    // ou apenas OK se formos enviar via API separadamente.
-    // A especificação diz que podemos responder via API Twilio.
-    // Mas responder com TwiML é mais rápido para webhooks síncronos.
+    tracing::info!("Enviando resposta para WhatsApp: {}", response_text);
     
     let twiml = format!(
         r#"<?xml version="1.0" encoding="UTF-8"?><Response><Message>{}</Message></Response>"#,
