@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::PgPool;
 use uuid::Uuid;
 use std::sync::Arc;
-use crate::models::{MensagemChat, CreateMensagemRequest, Model};
+use crate::models::{MensagemChat, CreateMensagemRequest};
 use crate::ports::ChatRepositoryPort;
 use crate::repositories::Repository;
 use crate::domain::errors::{DomainError, DomainResult};

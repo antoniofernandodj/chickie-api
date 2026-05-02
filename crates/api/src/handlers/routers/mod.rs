@@ -20,6 +20,7 @@ mod usuario;
 mod wipe;
 mod pagamento;
 mod chat;
+mod whatsapp;
 
 use std::sync::Arc;
 
@@ -49,6 +50,7 @@ pub use usuario::usuario_routes;
 pub use wipe::wipe_route;
 pub use pagamento::pagamento_routes;
 pub use chat::chat_routes;
+pub use whatsapp::routes as whatsapp_routes;
 
 use super::ok_handler;
 
@@ -83,6 +85,7 @@ pub fn api_routes(s: &Arc<AppState>) -> Router<Arc<AppState>> {
         .nest("/produtos", produto_public_routes())
         .nest("/config-pedido", config_pedido_public_routes())
         .nest("/pagamentos", pagamento_routes(s))
+        .nest("/whatsapp", whatsapp_routes())
         .route("/ok", get(ok_handler));
 
     let mode = std::env::var("MODE").unwrap_or_default();

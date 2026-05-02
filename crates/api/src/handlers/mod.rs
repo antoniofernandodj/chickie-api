@@ -22,6 +22,7 @@ mod entregador;
 mod openapi;
 mod pagamento;
 mod chat;
+pub mod whatsapp;
 
 use axum::{Json, response::IntoResponse};
 use serde_json::json;

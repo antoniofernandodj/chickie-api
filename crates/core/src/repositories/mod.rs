@@ -84,6 +84,7 @@ pub mod endereco_entrega_repository;
 pub mod loja_favorita_repository;
 pub mod chat_repository;
 pub mod pre_cadastro_repository;
+pub mod whatsapp_repository;
 
 // Re-export all repository structs
 pub use usuario_repository::UsuarioRepository;
@@ -111,3 +112,4 @@ pub use endereco_entrega_repository::EnderecoEntregaRepository;
 pub use loja_favorita_repository::LojaFavoritaRepository;
 pub use chat_repository::ChatRepository;
 pub use pre_cadastro_repository::PreCadastroRepository;
+pub use whatsapp_repository::WhatsAppRepository;

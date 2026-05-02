@@ -16,6 +16,7 @@ mod soft_delete_service;
 mod asaas_service;
 mod email_service;
 mod chat_service;
+mod whatsapp_service;
 
 pub use usuario_service::UsuarioService;
 pub use asaas_service::{AsaasService, PagamentoCriado};
@@ -35,3 +36,4 @@ pub use entregador_service::EntregadorService;
 pub use endereco_loja_service::EnderecoLojaService;
 pub use soft_delete_service::SoftDeleteService;
 pub use chat_service::ChatService;
+pub use whatsapp_service::WhatsAppService;

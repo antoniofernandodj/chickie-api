@@ -420,6 +420,9 @@ impl PedidoRepositoryPort for PedidoRepository {
     async fn buscar_completos_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
         self.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
     }
+    async fn listar_por_usuario(&self, usuario_uuid: Uuid) -> DomainResult<Vec<Pedido>> {
+        self.buscar_completos_por_usuario(usuario_uuid).await.map_err(|e| DomainError::Internal(e))
+    }
     async fn buscar_todos_completos(&self) -> DomainResult<Vec<Pedido>> {
         let pedidos = sqlx::query_as::<_, Pedido>("SELECT * FROM pedidos ORDER BY criado_em DESC")
             .fetch_all(&*self.pool)

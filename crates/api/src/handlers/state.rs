@@ -28,6 +28,8 @@ use chickie_core::{
         ClienteRepositoryPort,
         ChatRepositoryPort,
         ChatPublisherPort,
+        WhatsAppRepositoryPort,
+        WhatsAppConversationPort,
     },
     repositories::{
         PreCadastroRepository,
@@ -53,6 +55,7 @@ use chickie_core::{
         PromocaoRepository,
         UsuarioRepository,
         ChatRepository,
+        WhatsAppRepository,
     },
     services::{
         AsaasService,
@@ -72,9 +75,13 @@ use chickie_core::{
         PedidoService,
         UsuarioService,
         ChatService,
+        WhatsAppService,
     },
     usecases::{UploadImagemUsecase, ChatUsecase},
-    adapters::redis_chat_adapter::RedisChatAdapter,
+    adapters::{
+        redis_chat_adapter::RedisChatAdapter,
+        redis_whatsapp_adapter::RedisWhatsAppConversationAdapter,
+    },
 };
 
 pub struct AppState {
@@ -96,10 +103,12 @@ pub struct AppState {
     pub chat_service: Arc<ChatService>,
     pub chat_usecase: Arc<ChatUsecase>,
     pub upload_imagem_usecase: Arc<UploadImagemUsecase>,
+    pub whatsapp_service: Arc<WhatsAppService>,
 
     // Repositórios brutos para buscas simples nos handlers
     pub pedido_repo: Arc<PedidoRepository>,
     pub chat_repo: Arc<ChatRepository>,
+    pub whatsapp_repo: Arc<WhatsAppRepository>,
     pub cupom_repo: Arc<CupomRepository>,
     pub usuario_repo: Arc<UsuarioRepository>,
     pub loja_repo: Arc<LojaRepository>,
@@ -131,6 +140,7 @@ impl AppState {
         let endereco_loja_repo = Arc::new(EnderecoLojaRepository::new(pool.clone()));
         let loja_favorita_repo = Arc::new(LojaFavoritaRepository::new(pool.clone()));
         let chat_repo = Arc::new(ChatRepository::new(pool.clone()));
+        let whatsapp_repo = Arc::new(WhatsAppRepository::new(pool.clone()));
 
         // 3. Inicialização dos Services
         let pre_cadastro_repo = Arc::new(PreCadastroRepository::new(pool.clone()));
@@ -252,10 +262,24 @@ impl AppState {
                 .expect("Falha ao criar RedisChatAdapter")
         );
 
+        let redis_whatsapp_conv_adapter = Arc::new(
+            RedisWhatsAppConversationAdapter::new(&redis_url)
+                .expect("Falha ao criar RedisWhatsAppConversationAdapter")
+        );
+
         let chat_service = Arc::new(
             ChatService::new(
                 Arc::clone(&chat_repo) as Arc<dyn ChatRepositoryPort>,
                 Arc::clone(&redis_chat_publisher) as Arc<dyn ChatPublisherPort>
+            )
+        );
+
+        let whatsapp_service = Arc::new(
+            WhatsAppService::new(
+                Arc::clone(&whatsapp_repo) as Arc<dyn WhatsAppRepositoryPort>,
+                Arc::clone(&redis_whatsapp_conv_adapter) as Arc<dyn WhatsAppConversationPort>,
+                Arc::clone(&usuario_repo) as Arc<dyn UsuarioRepositoryPort>,
+                Arc::clone(&pedido_repo) as Arc<dyn PedidoRepositoryPort>,
             )
         );
 
@@ -300,9 +324,11 @@ impl AppState {
                 chat_service,
                 chat_usecase,
                 upload_imagem_usecase,
+                whatsapp_service: Arc::clone(&whatsapp_service),
 
                 pedido_repo: Arc::clone(&pedido_repo),
                 chat_repo: Arc::clone(&chat_repo),
+                whatsapp_repo: Arc::clone(&whatsapp_repo),
                 cupom_repo: Arc::clone(&cupom_repo),
                 usuario_repo: Arc::clone(&usuario_repo),
                 loja_repo: Arc::clone(&loja_repo),
